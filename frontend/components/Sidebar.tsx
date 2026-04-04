@@ -29,15 +29,15 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="fixed left-0 top-0 h-full w-60 bg-brand-card border-r border-brand-border flex flex-col z-30">
+    <aside className="fixed left-0 top-0 h-full w-60 bg-[#271310] border-r border-[#3E2723] flex flex-col z-30">
       {/* Logo */}
-      <div className="flex items-center gap-3 px-4 py-5 border-b border-brand-border">
-        <div className="w-9 h-9 bg-brand-primary rounded-xl flex items-center justify-center shadow-lg shadow-brand-primary/30">
-          <Coffee size={18} className="text-white" />
+      <div className="flex items-center gap-3 px-4 py-5 border-b border-[#3E2723]">
+        <div className="w-9 h-9 bg-[#D4A373] rounded-xl flex items-center justify-center shadow-lg shadow-[#D4A373]/30">
+          <Coffee size={18} className="text-[#271310]" />
         </div>
         <div>
-          <div className="text-white font-bold text-sm">Odoo POS</div>
-          <div className="text-brand-muted text-xs">Cafe Manager</div>
+          <div className="text-[#FDF9F0] font-headline font-bold text-lg leading-none mb-1 cursor-default">Odoo POS</div>
+          <div className="text-[#FDF9F0]/60 text-xs font-medium cursor-default">Cafe Manager</div>
         </div>
       </div>
 
@@ -53,13 +53,13 @@ export function Sidebar() {
               key={href}
               href={href}
               className={clsx(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150",
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-150 font-medium",
                 isActive
-                  ? "bg-brand-primary/20 text-white border border-brand-primary/30"
-                  : "text-brand-muted hover:text-white hover:bg-brand-bg"
+                  ? "bg-[#D4A373]/10 text-[#D4A373] border-b border-[#D4A373]/30"
+                  : "text-[#FDF9F0]/60 hover:text-[#FDF9F0] hover:bg-[#3E2723]/50"
               )}
             >
-              <Icon size={17} className={isActive ? "text-brand-primary" : ""} />
+              <Icon size={17} className={isActive ? "text-[#D4A373]" : "opacity-80"} />
               {label}
             </Link>
           );
@@ -67,19 +67,19 @@ export function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="px-4 py-4 border-t border-brand-border">
+      <div className="px-4 py-4 border-t border-[#3E2723]">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-brand-primary flex items-center justify-center text-white text-xs font-bold">
+          <div className="w-8 h-8 rounded-full bg-[#3E2723] flex items-center justify-center text-[#FDF9F0] text-xs font-bold border border-[#D4A373]/50">
             {(user?.name?.[0] || "A").toUpperCase()}
           </div>
-          <div>
-            <div className="text-white text-sm font-medium">{user?.name || "Admin"}</div>
-            <div className="text-brand-muted text-xs">{user?.email || "admin@cafe.com"}</div>
+          <div className="overflow-hidden">
+            <div className="text-[#FDF9F0] text-sm font-medium truncate">{user?.name || "Admin"}</div>
+            <div className="text-[#FDF9F0]/50 text-xs truncate">{user?.email || "admin@pos.com"}</div>
           </div>
         </div>
         <button
           onClick={handleLogout}
-          className="mt-3 w-full inline-flex items-center justify-center gap-2 rounded-lg border border-brand-border bg-brand-bg px-3 py-2 text-sm text-brand-muted hover:text-white hover:border-brand-primary/40 transition-all"
+          className="mt-4 w-full inline-flex items-center justify-center gap-2 rounded-lg border border-[#3E2723] bg-[#3E2723]/50 px-3 py-2.5 text-sm text-[#FDF9F0]/80 hover:text-[#D4A373] hover:border-[#D4A373]/40 transition-all"
         >
           <LogOut size={14} />
           Logout

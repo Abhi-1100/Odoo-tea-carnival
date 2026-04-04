@@ -10,6 +10,11 @@ export default function POSLayout({ children }: { children: React.ReactNode }) {
   const isFloor = pathname === "/pos";
   const isRegister = pathname.includes("/order") || pathname.includes("/payment");
 
+  // Bypass the layout wrapping for the root POS Selection screen
+  if (pathname === "/pos") {
+    return <>{children}</>;
+  }
+
   return (
     <div className="flex flex-col h-screen bg-brand-bg overflow-hidden">
       {/* Top Nav */}

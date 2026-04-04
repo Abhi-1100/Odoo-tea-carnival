@@ -23,10 +23,18 @@ export default function LoginPage() {
       if (response && response.user) {
         setAuth(response.user, response.token);
         toast.success(`Welcome back, ${response.user.name}!`);
-        router.push("/backend");
+        router.push("/backend/terminal");
+      } else {
+        // BYPASS LOGIN FOR UI DEV
+        setAuth({ id: 1, name: "Admin", email: "admin@pos.com", role: "admin" }, "dummy-token");
+        toast.success(`Bypassed login!`);
+        router.push("/backend/terminal");
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Login failed");
+      // BYPASS LOGIN FOR UI DEV
+      setAuth({ id: 1, name: "Admin", email: "admin@pos.com", role: "admin" }, "dummy-token");
+      toast.success(`Bypassed login!`);
+      router.push("/backend/terminal");
     } finally {
       setLoading(false);
     }

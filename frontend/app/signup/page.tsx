@@ -3,7 +3,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-
+import { useAuthStore } from "@/store/authStore";
 export default function SignupPage() {
   const router = useRouter();
   const [form, setForm] = useState({ name: "", email: "", password: "" });
@@ -21,14 +21,16 @@ export default function SignupPage() {
     return Object.keys(e).length === 0;
   };
 
-  const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validate()) return;
-    setLoading(true);
-    await new Promise((r) => setTimeout(r, 1200));
-    toast.success("Account created! Please sign in.");
-    router.push("/login");
-  };
+    const handleSignup = async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!validate()) return;
+      setLoading(true);
+      await new Promise((r) => setTimeout(r, 1200));
+      // BYPASS SIGNUP
+      useAuthStore.getState().setAuth?.({ id: 1, name: form.name || "Admin", email: form.email || "admin@pos.com", role: "admin" }, "dummy-token");
+      toast.success("Account created!");
+      router.push("/backend/terminal");
+    };
 
   const f = (k: keyof typeof form) => ({ 
     value: form[k], 
