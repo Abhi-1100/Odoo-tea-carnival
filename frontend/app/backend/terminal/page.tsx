@@ -1,12 +1,13 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { Power, Clock, TrendingUp, Calendar, Loader2 } from "lucide-react";
+import { Power, Clock, TrendingUp, Calendar, Loader2, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { Badge } from "@/components/ui/Badge";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/store/authStore";
 import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 interface SessionUser {
   id: number;
@@ -29,6 +30,7 @@ interface Session {
 }
 
 export default function TerminalPage() {
+  const router = useRouter();
   const { token, user } = useAuthStore();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [activeSession, setActiveSession] = useState<Session | null>(null);
@@ -41,6 +43,8 @@ export default function TerminalPage() {
   const [openingCash, setOpeningCash] = useState("");
   const [closingCash, setClosingCash] = useState("");
   const [closeNotes, setCloseNotes] = useState("");
+  const [showTopMenu, setShowTopMenu] = useState(false);
+  const [showQuickMenu, setShowQuickMenu] = useState(false);
 
   const fetchSessions = useCallback(async () => {
     if (!token) return;
@@ -116,62 +120,90 @@ export default function TerminalPage() {
         <p className="text-brand-muted text-sm mt-1">Manage your POS sessions</p>
       </div>
 
-      <div className="card p-6 max-w-lg">
-        <div className="flex items-center gap-4 mb-6">
-          <div className="w-12 h-12 rounded-xl bg-brand-primary/20 flex items-center justify-center">
-            <Power size={22} className="text-brand-primary" />
+      <div className="card p-0 overflow-hidden">
+        <div className="border-b border-brand-border px-4 py-3 flex items-center justify-between relative">
+          <div className="flex items-center gap-6 text-sm">
+            <button onClick={() => setShowTopMenu((v) => !v)} className="text-brand-muted hover:text-white">Orders</button>
+            <button onClick={() => setShowTopMenu((v) => !v)} className="text-brand-muted hover:text-white">Products</button>
+            <button onClick={() => setShowTopMenu((v) => !v)} className="text-brand-muted hover:text-white">Reporting</button>
           </div>
-          <div>
-            <div className="text-white font-bold text-lg">{activeSession?.terminalName || "No Active Session"}</div>
-            <div className="text-brand-muted text-sm">{user?.name || "Cashier"} — {user?.role || "Staff"}</div>
-          </div>
-          <Badge variant={activeSession?.status === "open" ? "open" : "closed"} className="ml-auto" />
+
+          {showTopMenu && (
+            <div className="absolute right-4 top-12 z-20 bg-[#1c2131] border border-brand-border rounded-md p-4 min-w-[280px] shadow-xl">
+              <h3 className="text-white text-2xl mb-3 text-center">Menu</h3>
+              <div className="grid grid-cols-3 gap-4 text-sm">
+                <div>
+                  <div className="text-white mb-2 font-semibold">Orders</div>
+                  <div className="space-y-1">
+                    <button onClick={() => router.push("/backend/orders")} className="block w-full text-left px-2 py-1 bg-brand-bg text-brand-muted hover:text-white">Orders</button>
+                    <button onClick={() => router.push("/backend/payments")} className="block w-full text-left px-2 py-1 text-brand-muted hover:text-white">Payment</button>
+                    <button className="block w-full text-left px-2 py-1 text-brand-muted hover:text-white">Customer</button>
+                  </div>
+                </div>
+                <div>
+                  <div className="text-white mb-2 font-semibold">Products</div>
+                  <div className="space-y-1">
+                    <button onClick={() => router.push("/backend/products")} className="block w-full text-left px-2 py-1 bg-brand-bg text-brand-muted hover:text-white">Products</button>
+                    <button onClick={() => router.push("/backend/products")} className="block w-full text-left px-2 py-1 text-brand-muted hover:text-white">Category</button>
+                  </div>
+                </div>
+                <div>
+                  <div className="text-white mb-2 font-semibold">Reporting</div>
+                  <div className="space-y-1">
+                    <button onClick={() => router.push("/backend/reports")} className="block w-full text-left px-2 py-1 bg-brand-bg text-brand-muted hover:text-white">Dashboard</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
-        {activeSession && (
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="bg-brand-bg rounded-xl p-4">
-              <div className="text-brand-muted text-xs mb-1 flex items-center gap-1.5">
-                <Clock size={12} /> Opened At
+        <div className="p-4">
+          <div className="border border-brand-border rounded-md p-4 relative">
+            <div className="flex items-start justify-between">
+              <div>
+                <div className="text-white text-3xl font-semibold mb-3">Odoo Cafe</div>
+                <div className="flex gap-8 text-brand-muted text-sm">
+                  <div>
+                    <div>Last open: <span className="text-white">{latestClosed ? new Date(latestClosed.openedAt).toLocaleDateString("en-IN") : "-"}</span></div>
+                    <div className="mt-1">Last Sell: <span className="text-white">₹{latestClosed?.totalSales?.toLocaleString() || "0"}</span></div>
+                  </div>
+                </div>
               </div>
-              <div className="text-white text-sm font-medium">{fmt(activeSession.openedAt)}</div>
-            </div>
-            <div className="bg-brand-bg rounded-xl p-4">
-              <div className="text-brand-muted text-xs mb-1 flex items-center gap-1.5">
-                <TrendingUp size={12} /> Opening Cash
+
+              <div className="relative">
+                <button
+                  onClick={() => setShowQuickMenu((v) => !v)}
+                  className="h-9 w-9 rounded border border-brand-border bg-brand-bg flex items-center justify-center text-brand-muted hover:text-white"
+                >
+                  <MoreVertical size={16} />
+                </button>
+                {showQuickMenu && (
+                  <div className="absolute right-0 top-11 bg-[#1c2131] border border-brand-border rounded-md min-w-[170px] z-20 shadow-lg">
+                    <button onClick={() => router.push("/backend/payment-methods")} className="w-full text-left px-3 py-2 text-brand-muted hover:text-white hover:bg-brand-bg">Setting</button>
+                    <button onClick={() => router.push("/backend/kitchen-settings")} className="w-full text-left px-3 py-2 text-brand-muted hover:text-white hover:bg-brand-bg">Kitchen Display</button>
+                    <button onClick={() => router.push("/pos/customer-display")} className="w-full text-left px-3 py-2 text-brand-muted hover:text-white hover:bg-brand-bg">Customer Display</button>
+                  </div>
+                )}
               </div>
-              <div className="text-white text-sm font-medium">₹{activeSession.openingCash?.toLocaleString() || "0"}</div>
             </div>
-          </div>
-        )}
 
-        {!activeSession && (
-          <div className="bg-brand-bg rounded-xl p-4 mb-6">
-            <div className="text-brand-muted text-sm text-center">No active session. Open a new session to start taking orders.</div>
+            <div className="mt-5">
+              {activeSession ? (
+                <Button size="sm" variant="danger" icon={<Power size={16} />} onClick={() => setCloseModal(true)}>
+                  Close Session
+                </Button>
+              ) : (
+                <Button size="sm" icon={<Power size={16} />} onClick={() => setOpenModal(true)}>
+                  Open Session
+                </Button>
+              )}
+            </div>
+          <div>
+            <div className="mt-4 text-xs text-brand-muted">Current terminal: {activeSession?.terminalName || terminalName}</div>
           </div>
-        )}
-
-        {activeSession ? (
-          <Button
-            fullWidth
-            size="lg"
-            variant="danger"
-            icon={<Power size={18} />}
-            onClick={() => setCloseModal(true)}
-          >
-            Close Session
-          </Button>
-        ) : (
-          <Button
-            fullWidth
-            size="lg"
-            variant="success"
-            icon={<Power size={18} />}
-            onClick={() => setOpenModal(true)}
-          >
-            Open New Session
-          </Button>
-        )}
+          </div>
+        </div>
       </div>
 
       <div>
