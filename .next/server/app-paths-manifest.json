@@ -1,9 +1,0 @@
-{
-  "/self-order/[token]/page": "app/self-order/[token]/page.js",
-  "/login/page": "app/login/page.js",
-  "/kitchen/page": "app/kitchen/page.js",
-  "/backend/payment-methods/page": "app/backend/payment-methods/page.js",
-  "/backend/products/page": "app/backend/products/page.js",
-  "/pos/page": "app/pos/page.js",
-  "/backend/page": "app/backend/page.js"
-}
