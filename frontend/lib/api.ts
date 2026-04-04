@@ -151,6 +151,19 @@ export const api = {
       apiFetch<{ success: boolean; data: unknown[] }>(`/payments/order/${orderId}`, { token }),
     confirmUPI: (data: { orderId: number; upiRef: string }, token: string) =>
       apiFetch<{ success: boolean; data: unknown }>('/payments/upi/confirm', { method: 'POST', body: data, token }),
+    createRazorpayOrder: (data: { amount: number; currency?: string; receipt?: string }, token: string) =>
+      apiFetch<{ success: boolean; data: { keyId: string; order: { id: string; amount: number; currency: string; receipt?: string } } }>(
+        '/payments/razorpay/create-order',
+        { method: 'POST', body: data, token },
+      ),
+    verifyRazorpayPayment: (
+      data: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string },
+      token: string,
+    ) =>
+      apiFetch<{ success: boolean; data: { verified: boolean; razorpay_order_id: string; razorpay_payment_id: string } }>(
+        '/payments/razorpay/verify',
+        { method: 'POST', body: data, token },
+      ),
   },
   
   paymentMethods: {

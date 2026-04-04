@@ -1,6 +1,23 @@
 const prisma = require('../../config/db');
 const { AppError } = require('../../middleware/errorHandler');
 const { getIO } = require('../../config/socket');
+const crypto = require('crypto');
+const Razorpay = require('razorpay');
+
+const getRazorpayClient = () => {
+  const keyId = process.env.RAZORPAY_KEY_ID;
+  const keySecret = process.env.RAZORPAY_KEY_SECRET;
+
+  if (!keyId || !keySecret) {
+    throw new AppError('Razorpay is not configured. Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET', 500);
+  }
+
+  return {
+    client: new Razorpay({ key_id: keyId, key_secret: keySecret }),
+    keyId,
+    keySecret,
+  };
+};
 
 /**
  * Generate auto-incremented receipt number: RCP-YYYY-XXXX
@@ -208,4 +225,61 @@ const confirmUPI = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-module.exports = { processPayment, getByOrder, getAll, confirmUPI };
+/** POST /api/payments/razorpay/create-order */
+const createRazorpayOrder = async (req, res, next) => {
+  try {
+    const { amount, currency = 'INR', receipt } = req.body;
+    const safeAmount = Number(amount);
+
+    if (!Number.isFinite(safeAmount) || safeAmount <= 0) {
+      throw new AppError('Amount must be greater than 0', 400);
+    }
+
+    const { client, keyId } = getRazorpayClient();
+    const order = await client.orders.create({
+      amount: Math.round(safeAmount * 100),
+      currency,
+      receipt: receipt || `pos_${Date.now()}`,
+      payment_capture: 1,
+    });
+
+    res.json({ success: true, data: { keyId, order } });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/** POST /api/payments/razorpay/verify */
+const verifyRazorpayPayment = async (req, res, next) => {
+  try {
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+    const { keySecret } = getRazorpayClient();
+
+    const payload = `${razorpay_order_id}|${razorpay_payment_id}`;
+    const expected = crypto.createHmac('sha256', keySecret).update(payload).digest('hex');
+
+    if (expected !== razorpay_signature) {
+      throw new AppError('Payment verification failed', 400);
+    }
+
+    res.json({
+      success: true,
+      data: {
+        verified: true,
+        razorpay_order_id,
+        razorpay_payment_id,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = {
+  processPayment,
+  getByOrder,
+  getAll,
+  confirmUPI,
+  createRazorpayOrder,
+  verifyRazorpayPayment,
+};

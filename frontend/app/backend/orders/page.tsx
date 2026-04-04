@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { Archive, Check, ChevronDown, FileDown, Loader2, Search, Trash2, X } from "lucide-react";
+import { Archive, Check, ChevronDown, FileDown, Loader2, Menu, Search, Trash2, X } from "lucide-react";
 import clsx from "clsx";
 import toast from "react-hot-toast";
 import { api } from "@/lib/api";
@@ -185,6 +186,17 @@ export default function BackendOrdersPage() {
 
   return (
     <div className="p-8 space-y-6">
+      <div className="-mx-8 -mt-8 border-b border-brand-border/60 bg-[#2b2e4a] px-5 py-3 flex items-center justify-between text-sm text-brand-muted">
+        <div className="flex items-center gap-6">
+          <Link href="/backend/orders" className="text-white">Orders</Link>
+          <Link href="/backend/products" className="hover:text-white">Products</Link>
+          <Link href="/backend/reports" className="hover:text-white">Reporting</Link>
+        </div>
+        <button className="text-brand-muted hover:text-white" aria-label="Open menu">
+          <Menu size={16} />
+        </button>
+      </div>
+
       <div>
         <h1 className="text-3xl font-bold text-white">Orders</h1>
         <p className="text-brand-muted text-sm mt-1">Manage draft, paid, and kitchen-sent orders</p>

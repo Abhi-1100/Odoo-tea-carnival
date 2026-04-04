@@ -1,26 +1,41 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Check, X, QrCode, Banknote, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { QRCodeSVG } from "qrcode.react";
 import { useCartStore } from "@/store/cartStore";
+import { useAuthStore } from "@/store/authStore";
+import { api } from "@/lib/api";
 import toast from "react-hot-toast";
 import clsx from "clsx";
 
 type Method = "cash" | "card" | "upi";
 
+declare global {
+  interface Window {
+    Razorpay?: new (options: Record<string, unknown>) => { open: () => void };
+  }
+}
+
 export default function PaymentPage({ params }: { params: { orderId: string } }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { token } = useAuthStore();
+  const upiId = process.env.NEXT_PUBLIC_UPI_ID || "cafe@ybl";
   const { items, tableNumber, getSubtotal, getTax, getTotal, clearCart } = useCartStore();
+  const queryTable = Number(searchParams.get("tableId") || 0);
+  const displayTableNumber = tableNumber || queryTable || 0;
   const total = getTotal();
 
   const [method, setMethod] = useState<Method>("cash");
   const [tendered, setTendered] = useState(total.toString());
   const [upiModal, setUpiModal] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
+  const [paidTotal, setPaidTotal] = useState(0);
   const [countdown, setCountdown] = useState(3);
+  const [processingCard, setProcessingCard] = useState(false);
 
   const change = method === "cash" ? Math.max(0, parseInt(tendered || "0") - total) : 0;
 
@@ -34,14 +49,94 @@ export default function PaymentPage({ params }: { params: { orderId: string } })
 
   const handleValidate = () => {
     if (method === "upi") { setUpiModal(true); return; }
+    if (method === "card") { handleCardPayment(); return; }
     finalisePayment();
+  };
+
+  const loadRazorpayScript = async () => {
+    if (window.Razorpay) return true;
+
+    return await new Promise<boolean>((resolve) => {
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.async = true;
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+  const handleCardPayment = async () => {
+    if (!token) {
+      toast.error("Please login again");
+      router.push("/login");
+      return;
+    }
+
+    try {
+      setProcessingCard(true);
+
+      const scriptReady = await loadRazorpayScript();
+      if (!scriptReady || !window.Razorpay) {
+        toast.error("Failed to load Razorpay SDK");
+        return;
+      }
+
+      const createOrderRes = await api.payments.createRazorpayOrder(
+        {
+          amount: total,
+          currency: "INR",
+          receipt: String(params.orderId),
+        },
+        token,
+      );
+
+      const { keyId, order } = createOrderRes.data;
+
+      const razorpay = new window.Razorpay({
+        key: keyId,
+        amount: order.amount,
+        currency: order.currency,
+        name: "Odoo POS Cafe",
+        description: `Payment for Table ${displayTableNumber}`,
+        order_id: order.id,
+        handler: async (response: Record<string, string>) => {
+          try {
+            await api.payments.verifyRazorpayPayment(
+              {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              },
+              token,
+            );
+
+            finalisePayment();
+          } catch (error: unknown) {
+            toast.error(error instanceof Error ? error.message : "Card payment verification failed");
+          }
+        },
+        theme: { color: "#ec4899" },
+        modal: {
+          ondismiss: () => {
+            setProcessingCard(false);
+          },
+        },
+      });
+
+      razorpay.open();
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Unable to start card payment");
+    } finally {
+      setProcessingCard(false);
+    }
   };
 
   const finalisePayment = () => {
     setUpiModal(false);
+    setPaidTotal(total);
     toast.success("Payment confirmed! ✅");
     setConfirmed(true);
-    clearCart();
   };
 
   const methods = [
@@ -58,7 +153,7 @@ export default function PaymentPage({ params }: { params: { orderId: string } })
             <Check size={40} className="text-green-400" />
           </div>
           <h2 className="text-3xl font-bold text-white mb-2">Payment Confirmed!</h2>
-          <p className="text-5xl font-bold text-brand-primary mt-4 mb-2">₹{total}</p>
+          <p className="text-5xl font-bold text-brand-primary mt-4 mb-2">₹{paidTotal}</p>
           <p className="text-brand-muted text-sm mb-2">Receipt #{params.orderId.slice(-6).toUpperCase()}</p>
           <p className="text-brand-muted text-xs">Redirecting in {countdown}s…</p>
           <Button className="mt-6" onClick={() => { clearCart(); router.push("/pos"); }}>Back to Floor</Button>
@@ -70,7 +165,7 @@ export default function PaymentPage({ params }: { params: { orderId: string } })
   return (
     <div className="h-full overflow-y-auto p-6 md:p-8">
       <div className="max-w-2xl mx-auto space-y-6">
-        <h1 className="text-2xl font-bold text-white">Payment — Table {tableNumber}</h1>
+        <h1 className="text-2xl font-bold text-white">Payment — Table {displayTableNumber}</h1>
 
         {/* Order Summary */}
         <div className="card p-5">
@@ -122,7 +217,16 @@ export default function PaymentPage({ params }: { params: { orderId: string } })
         {/* Action Buttons */}
         <div className="flex gap-3">
           <Button variant="ghost" fullWidth size="lg" icon={<X size={18} />} onClick={() => router.back()}>Cancel</Button>
-          <Button variant="success" fullWidth size="lg" icon={<Check size={18} />} onClick={handleValidate}>Validate Payment</Button>
+          <Button
+            variant="success"
+            fullWidth
+            size="lg"
+            icon={<Check size={18} />}
+            onClick={handleValidate}
+            disabled={processingCard}
+          >
+            {processingCard ? "Opening Razorpay..." : "Validate Payment"}
+          </Button>
         </div>
       </div>
 
@@ -130,12 +234,12 @@ export default function PaymentPage({ params }: { params: { orderId: string } })
       <Modal open={upiModal} onClose={() => setUpiModal(false)} title="UPI QR Payment" size="sm">
         <div className="flex flex-col items-center gap-4">
           <div className="bg-white p-4 rounded-xl">
-            <QRCodeSVG value={`upi://pay?pa=cafe@ybl&pn=Odoo+POS+Cafe&am=${total}`} size={180} />
+            <QRCodeSVG value={`upi://pay?pa=${upiId}&pn=Odoo+POS+Cafe&am=${total}`} size={180} />
           </div>
           <div className="text-center">
             <div className="text-brand-muted text-sm">Amount to Pay</div>
             <div className="text-4xl font-bold text-white mt-1">₹{total}</div>
-            <div className="text-brand-primary text-xs mt-1">café@ybl.com</div>
+            <div className="text-brand-primary text-xs mt-1">{upiId}</div>
           </div>
           <div className="grid grid-cols-2 gap-3 w-full">
             <Button variant="danger" icon={<X size={16} />} onClick={() => setUpiModal(false)}>Cancel</Button>

@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useState, useEffect, useCallback } from "react";
 import { Plus, Search, Trash2, X, Loader2, Menu } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -199,25 +200,8 @@ export default function ProductsPage() {
     if (!token || selectedIds.length === 0) return;
 
     try {
-      const selectedProducts = items.filter((item) => selectedIds.includes(item.id));
       await Promise.all(
-        selectedProducts.map((item) =>
-          api.products.update(
-            item.id,
-            {
-              name: item.name,
-              categoryId: item.category?.id || null,
-              price: item.price,
-              unit: item.unit,
-              taxPercent: item.taxPercent,
-              description: item.description,
-              sendToKitchen: item.sendToKitchen,
-              isActive: false,
-              variants: item.variants,
-            },
-            token,
-          ),
-        ),
+        selectedIds.map((id) => api.products.update(id, { isActive: false }, token)),
       );
       toast.success("Selected products archived");
       setSelectedIds([]);
@@ -279,9 +263,9 @@ export default function ProductsPage() {
       <div className="card overflow-hidden border border-brand-border/70">
         <div className="border-b border-brand-border px-5 py-3 flex items-center justify-between text-sm text-brand-muted">
           <div className="flex items-center gap-6">
-            <span className="hover:text-white">Orders</span>
-            <span className="text-white">Products</span>
-            <span className="hover:text-white">Reporting</span>
+            <Link href="/backend/orders" className="hover:text-white">Orders</Link>
+            <Link href="/backend/products" className="text-white">Products</Link>
+            <Link href="/backend/reports" className="hover:text-white">Reporting</Link>
           </div>
           <button className="text-brand-muted hover:text-white">
             <Menu size={16} />
@@ -290,12 +274,6 @@ export default function ProductsPage() {
 
         <div className="px-5 py-4 border-b border-brand-border">
           <div className="inline-flex items-center gap-2 mb-2">
-            <button
-              onClick={handleNew}
-              className="px-3 py-1.5 rounded-md bg-fuchsia-300/30 text-fuchsia-100 text-sm"
-            >
-              New
-            </button>
             <h1 className="text-3xl font-bold text-sky-300">Products</h1>
             {editing ? <span className="text-xs text-brand-muted">Editing #{editing.id}</span> : null}
           </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Mail, Phone, Search, Menu, Pencil, Trash2, Loader2, List } from "lucide-react";
 import toast from "react-hot-toast";
@@ -170,9 +171,9 @@ export default function BackendCustomersPage() {
       <div className="card overflow-hidden border border-brand-border/70">
         <div className="border-b border-brand-border px-5 py-3 flex items-center justify-between text-sm text-brand-muted">
           <div className="flex items-center gap-6">
-            <span className="hover:text-white">Orders</span>
-            <span className="hover:text-white">Products</span>
-            <span className="hover:text-white">Reporting</span>
+            <Link href="/backend/orders" className="hover:text-white">Orders</Link>
+            <Link href="/backend/products" className="hover:text-white">Products</Link>
+            <Link href="/backend/reports" className="hover:text-white">Reporting</Link>
           </div>
           <button className="text-brand-muted hover:text-white">
             <Menu size={16} />

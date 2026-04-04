@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  LayoutDashboard, Package, CreditCard, Map, Monitor, QrCode, ChefHat, BarChart3, Coffee, LogOut, Users, Tag
+  LayoutDashboard, Package, CreditCard, Map, Monitor, QrCode, ChefHat, BarChart3, Coffee, LogOut, Tag
 } from "lucide-react";
 import clsx from "clsx";
 import { useAuthStore } from "@/store/authStore";
@@ -12,7 +12,6 @@ const navItems = [
   { label: "POS Terminal", href: "/backend/terminal", icon: Monitor },
   { label: "Products", href: "/backend/products", icon: Package },
   { label: "Categories", href: "/backend/categories", icon: Tag },
-  { label: "Customers", href: "/backend/customers", icon: Users },
   { label: "Payment Methods", href: "/backend/payment-methods", icon: CreditCard },
   { label: "Floor Plan", href: "/backend/floors", icon: Map },
   { label: "Setting", href: "/backend/self-ordering", icon: QrCode },

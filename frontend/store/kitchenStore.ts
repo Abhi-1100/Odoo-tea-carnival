@@ -35,6 +35,8 @@ interface KitchenState {
   fetchTickets: (token: string, stage?: string) => Promise<void>;
   updateStage: (id: number, stage: string, token: string) => Promise<void>;
   markItemPrepared: (ticketId: number, itemId: number, token: string) => Promise<void>;
+  moveTicket: (ticketId: number | string) => void;
+  toggleItem: (ticketId: number | string, itemId: number | string) => void;
   addTicket: (ticket: KitchenTicket) => void;
 }
 
@@ -79,6 +81,50 @@ export const useKitchenStore = create<KitchenState>((set, get) => ({
     } catch (error) {
       console.error('Failed to mark item prepared:', error);
     }
+  },
+
+  // Local fallback used by current /kitchen page (kanban-style interaction).
+  moveTicket: (ticketId) => {
+    set({
+      tickets: get().tickets.map((ticket) => {
+        if ((ticket as unknown as { id: number | string }).id !== ticketId) return ticket;
+
+        const current = (ticket as unknown as { stage: string }).stage;
+        const next = current === 'to-cook' || current === 'to_cook'
+          ? 'preparing'
+          : current === 'preparing'
+            ? 'completed'
+            : 'completed';
+
+        return { ...ticket, stage: next as KitchenTicket['stage'] };
+      }),
+    });
+  },
+
+  // Local fallback used by current /kitchen page item toggle interaction.
+  toggleItem: (ticketId, itemId) => {
+    set({
+      tickets: get().tickets.map((ticket) => {
+        if ((ticket as unknown as { id: number | string }).id !== ticketId) return ticket;
+
+        const nextItems = (ticket.items as unknown as Array<Record<string, unknown>>).map((item) => {
+          const candidateId = (item.productId as number | string | undefined) ?? (item.id as number | string | undefined);
+          if (candidateId !== itemId) return item;
+
+          if (typeof item.done === 'boolean') {
+            return { ...item, done: !item.done };
+          }
+
+          if (typeof item.isPrepared === 'boolean') {
+            return { ...item, isPrepared: !item.isPrepared };
+          }
+
+          return item;
+        });
+
+        return { ...ticket, items: nextItems as KitchenTicketItem[] };
+      }),
+    });
   },
   
   addTicket: (ticket) => set({ tickets: [ticket, ...get().tickets] }),

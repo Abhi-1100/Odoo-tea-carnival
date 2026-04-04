@@ -95,6 +95,7 @@ export default function TerminalPage() {
       setOpenModal(false);
       setOpeningCash("");
       fetchSessions();
+      router.push("/pos");
     } catch (error: unknown) {
       toast.error(error instanceof Error ? error.message : "Failed to open session");
     } finally {

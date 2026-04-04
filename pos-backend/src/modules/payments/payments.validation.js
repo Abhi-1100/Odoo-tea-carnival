@@ -12,4 +12,21 @@ const confirmUPISchema = z.object({
   upiRef: z.string().min(1, 'UPI reference is required'),
 });
 
-module.exports = { processPaymentSchema, confirmUPISchema };
+const createRazorpayOrderSchema = z.object({
+  amount: z.number().positive('Amount is required'),
+  currency: z.string().optional().default('INR'),
+  receipt: z.string().optional(),
+});
+
+const verifyRazorpayPaymentSchema = z.object({
+  razorpay_order_id: z.string().min(1),
+  razorpay_payment_id: z.string().min(1),
+  razorpay_signature: z.string().min(1),
+});
+
+module.exports = {
+  processPaymentSchema,
+  confirmUPISchema,
+  createRazorpayOrderSchema,
+  verifyRazorpayPaymentSchema,
+};
