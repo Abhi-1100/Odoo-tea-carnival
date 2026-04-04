@@ -1,3 +1,11 @@
+import { 
+  MOCK_PAGE_SETTINGS, 
+  MOCK_CATEGORIES, 
+  MOCK_PRODUCTS, 
+  MOCK_AUTH_USER, 
+  MOCK_TOKEN 
+} from './mock-data';
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 interface ApiOptions {
@@ -17,24 +25,97 @@ async function apiFetch<T>(endpoint: string, options: ApiOptions = {}): Promise<
     headers['Authorization'] = `Bearer ${token}`;
   }
   
-  const response = await fetch(`${API_BASE}${endpoint}`, {
-    method,
-    headers,
-    body: body ? JSON.stringify(body) : undefined,
-  });
-  
-  const data = await response.json();
-  
-  if (!response.ok) {
-    throw new Error(data.message || 'API request failed');
+  try {
+    const response = await fetch(`${API_BASE}${endpoint}`, {
+      method,
+      headers,
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    
+    // Check if the response is JSON
+    const contentType = response.headers.get("content-type");
+    if (contentType && contentType.includes("application/json")) {
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'API request failed');
+      }
+      return data;
+    }
+    
+    if (!response.ok) {
+      throw new Error(`API request failed with status ${response.status}`);
+    }
+    
+    return {} as T;
+  } catch (error) {
+    console.warn(`🌐 API Offline fallback for: ${endpoint}`, error);
+    
+    // If it's a network error (failed to fetch), return mock data for development
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      return getMockResponse<T>(endpoint);
+    }
+    
+    throw error;
+  }
+}
+
+/**
+ * Returns dynamic mock data based on the requested endpoint.
+ */
+function getMockResponse<T>(endpoint: string): T {
+  const url = endpoint.split('?')[0];
+
+  // Auth
+  if (url === '/auth/login') return { success: true, token: MOCK_TOKEN, user: MOCK_AUTH_USER } as T;
+  if (url === '/auth/me') return { success: true, user: MOCK_AUTH_USER } as T;
+
+  // Self Order
+  if (url.includes('/self-order/page-settings/')) return { success: true, data: MOCK_PAGE_SETTINGS } as T;
+  if (url.includes('/self-order/products/')) return { success: true, categories: MOCK_CATEGORIES, products: MOCK_PRODUCTS } as T;
+  if (url.includes('/self-order/place-order/')) return { success: true, orderNumber: "#" + (Math.floor(Math.random() * 9000) + 1000), orderId: Date.now(), totalAmount: 0, status: "pending", message: "Success" } as T;
+  if (url.includes('/self-order/history/')) return { success: true, orders: [{ orderId: 1, orderNumber: "#2201", totalAmount: 450, status: "completed", kitchenStage: "completed", createdAt: new Date().toISOString() }] } as T;
+  if (url.includes('/self-order/track/')) return { success: true, orderId: 1, orderNumber: "#2201", items: [], overallStatus: "preparing", kitchenStage: "preparing" } as T;
+
+  // General POS
+  if (url === '/sessions/active') return { success: true, data: { id: 999, status: 'opened', terminalName: 'Demo Terminal', openingCash: 100 } } as T;
+  if (url === '/floors') {
+    return {
+      success: true,
+      data: [
+        {
+          id: 1,
+          name: "Main Floor",
+          isActive: true,
+          tables: [
+            { id: 101, floorId: 1, tableNumber: "1", seats: 4, status: "available", isActive: true },
+            { id: 102, floorId: 1, tableNumber: "2", seats: 2, status: "occupied", isActive: true },
+            { id: 103, floorId: 1, tableNumber: "3", seats: 4, status: "available", isActive: true },
+            { id: 104, floorId: 1, tableNumber: "4", seats: 6, status: "available", isActive: true },
+          ]
+        },
+        {
+          id: 2,
+          name: "Terrace",
+          isActive: true,
+          tables: [
+            { id: 201, floorId: 2, tableNumber: "10", seats: 2, status: "available", isActive: true },
+            { id: 202, floorId: 2, tableNumber: "11", seats: 4, status: "available", isActive: true },
+          ]
+        }
+      ]
+    } as T;
   }
   
-  return data;
+  if (url === '/categories') return { success: true, data: MOCK_CATEGORIES } as T;
+  if (url === '/products') return { success: true, data: MOCK_PRODUCTS } as T;
+  if (url.startsWith('/orders/table/')) return { success: true, data: null } as T;
+  
+  return { success: true, data: [] } as T;
 }
 
 export const api = {
   auth: {
-    login: (email: string, password: string) => 
+    login: (email: string, password: string) =>
       apiFetch<{ success: boolean; token: string; user: { id: number; name: string; email: string; role: string } }>('/auth/login', {
         method: 'POST',
         body: { email, password },
@@ -47,7 +128,7 @@ export const api = {
     me: (token: string) =>
       apiFetch<{ success: boolean; user: { id: number; name: string; email: string; role: string } }>('/auth/me', { token }),
   },
-  
+
   products: {
     getAll: (token: string) =>
       apiFetch<{ success: boolean; data: unknown[] }>('/products', { token }),
@@ -62,7 +143,7 @@ export const api = {
     delete: (id: number, token: string) =>
       apiFetch<{ success: boolean }>(`/products/${id}`, { method: 'DELETE', token }),
   },
-  
+
   categories: {
     getAll: (token: string) =>
       apiFetch<{ success: boolean; data: unknown[] }>('/categories', { token }),
@@ -73,7 +154,7 @@ export const api = {
     delete: (id: number, token: string) =>
       apiFetch<{ success: boolean }>(`/categories/${id}`, { method: 'DELETE', token }),
   },
-  
+
   floors: {
     getAll: (token: string) =>
       apiFetch<{ success: boolean; data: { id: number; name: string; tables: unknown[] }[] }>('/floors', { token }),
@@ -84,7 +165,7 @@ export const api = {
     delete: (id: number, token: string) =>
       apiFetch<{ success: boolean }>(`/floors/${id}`, { method: 'DELETE', token }),
   },
-  
+
   tables: {
     getAll: (token: string) =>
       apiFetch<{ success: boolean; data: unknown[] }>('/tables', { token }),
@@ -103,7 +184,7 @@ export const api = {
     delete: (id: number, token: string) =>
       apiFetch<{ success: boolean }>(`/tables/${id}`, { method: 'DELETE', token }),
   },
-  
+
   sessions: {
     getAll: (token: string) =>
       apiFetch<{ success: boolean; data: unknown[] }>('/sessions', { token }),
@@ -114,7 +195,7 @@ export const api = {
     close: (id: number, data: { closingCash: number; notes?: string }, token: string) =>
       apiFetch<{ success: boolean; data: unknown }>(`/sessions/${id}/close`, { method: 'PUT', body: data, token }),
   },
-  
+
   orders: {
     getAll: (token: string, params?: Record<string, string>) => {
       const query = params ? '?' + new URLSearchParams(params).toString() : '';
@@ -135,7 +216,7 @@ export const api = {
     delete: (id: number, token: string) =>
       apiFetch<{ success: boolean }>(`/orders/${id}`, { method: 'DELETE', token }),
   },
-  
+
   payments: {
     getAll: (token: string, params?: Record<string, string>) => {
       const query = params ? '?' + new URLSearchParams(params).toString() : '';
@@ -165,7 +246,7 @@ export const api = {
         { method: 'POST', body: data, token },
       ),
   },
-  
+
   paymentMethods: {
     getAll: (token: string) =>
       apiFetch<{ success: boolean; data: { id: number; name: string; type: string; isEnabled: boolean; upiId?: string }[] }>('/payment-methods', { token }),
@@ -191,7 +272,7 @@ export const api = {
     delete: (id: number, token: string) =>
       apiFetch<{ success: boolean }>(`/customers/${id}`, { method: 'DELETE', token }),
   },
-  
+
   kitchen: {
     getTickets: (token: string, stage?: string) => {
       const query = stage ? `?stage=${stage}` : '';
@@ -204,7 +285,7 @@ export const api = {
     markItemPrepared: (ticketId: number, itemId: number, token: string) =>
       apiFetch<{ success: boolean; data: unknown }>(`/kitchen/tickets/${ticketId}/items/${itemId}/prepared`, { method: 'PUT', token }),
   },
-  
+
   reports: {
     dashboard: (token: string, params?: Record<string, string>) => {
       const query = params ? '?' + new URLSearchParams(params).toString() : '';

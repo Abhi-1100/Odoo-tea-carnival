@@ -1,18 +1,42 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Cormorant+Garamond:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Manrope:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --bg: #1a1a2e;
-  --card: #2a2a3e;
+  --bg: #0d0d0b;
+  /* Coffee Leo Theme - Nocturnal Atelier / Elegance */
+  --coffee-dark: #0d0d0b;
+  --coffee-surface: #161614;
+  --coffee-raised: #1f1f1c;
+  --coffee-gold: #e8a838;
+  --coffee-champagne: #f2dfa8;
+
+  --card: #161614;
   --border: #3a3a5e;
-  --primary: #e84393;
+  --primary: #e8a838;
   --teal: #00c9a7;
   --success: #22c55e;
   --warning: #f97316;
   --danger: #ef4444;
   --muted: #94a3b8;
+}
+
+.noise-grain {
+  position: relative;
+}
+
+.noise-grain::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.03;
+  z-index: 1;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 }
 
 * {
@@ -21,7 +45,8 @@
   padding: 0;
 }
 
-html, body {
+html,
+body {
   background-color: var(--bg);
   color: #ffffff;
   font-family: 'Inter', sans-serif;
@@ -50,27 +75,35 @@ html, body {
   .btn-primary {
     @apply bg-brand-primary hover:bg-pink-600 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 active:scale-95;
   }
+
   .btn-success {
     @apply bg-brand-success hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 active:scale-95;
   }
+
   .btn-danger {
     @apply bg-brand-danger hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 active:scale-95;
   }
+
   .btn-ghost {
     @apply bg-brand-border hover:bg-brand-card text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 active:scale-95;
   }
+
   .btn-teal {
     @apply bg-brand-teal hover:bg-teal-500 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 active:scale-95;
   }
+
   .card {
     @apply bg-brand-card border border-brand-border rounded-xl;
   }
+
   .input-dark {
     @apply w-full bg-brand-bg border border-brand-border rounded-lg px-3 py-2 text-white placeholder-brand-muted focus:outline-none focus:border-brand-primary transition-colors;
   }
+
   .sidebar-item {
     @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-brand-muted hover:text-white hover:bg-brand-card transition-all cursor-pointer;
   }
+
   .sidebar-item-active {
     @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-white bg-brand-primary/20 border border-brand-primary/30;
   }

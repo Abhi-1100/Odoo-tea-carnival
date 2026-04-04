@@ -39,6 +39,7 @@ interface MobileProduct {
   price: number;
   categoryId: number | null;
   image: string | null;
+  description?: string;
   emoji?: string;
   variants: { id: number; attribute: string; value: string; extraPrice: number }[];
   addons: { id: number; name: string; price: number }[];
@@ -71,6 +72,8 @@ export default function SelfOrderPage({ params }: { params: { token: string } })
 
   const isViewOnly = mode === "qr_menu";
 
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
     let mounted = true;
 
@@ -89,13 +92,15 @@ export default function SelfOrderPage({ params }: { params: { token: string } })
         setProducts(productsRes.products);
         setCat(productsRes.categories[0]?.id || "all");
         
-        // If QR menu mode, skip splash and go straight to menu
+        // If QR menu mode, go straight to menu
         if (settingsRes.data.mode === "qr_menu") {
           setScreen("menu");
         }
       } catch {
         if (!mounted) return;
         toast.error("Invalid or expired self-order token");
+      } finally {
+        if (mounted) setIsLoading(false);
       }
     };
 
@@ -105,12 +110,6 @@ export default function SelfOrderPage({ params }: { params: { token: string } })
       mounted = false;
     };
   }, [params.token]);
-
-  useEffect(() => {
-    if (isViewOnly) return; // Skip splash auto-advance in QR menu mode
-    const timer = setTimeout(() => setScreen("menu"), 1700);
-    return () => clearTimeout(timer);
-  }, [isViewOnly]);
 
   useEffect(() => {
     if (!pageSettings?.backgroundImages?.length) return;
@@ -355,6 +354,15 @@ export default function SelfOrderPage({ params }: { params: { token: string } })
   };
 
   const backgroundStyle = screen === "splash" ? splashBackgroundStyle : pageBackgroundStyle;
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#0b0e14] flex flex-col items-center justify-center p-6">
+        <div className="w-12 h-12 border-4 border-[#c9b1c6] border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-white/60 font-medium animate-pulse">Loading Menu...</p>
+      </div>
+    );
+  }
 
   // QR Menu View - Digital menu card (view-only)
   if (isViewOnly && screen === "menu") {
