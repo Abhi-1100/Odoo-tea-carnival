@@ -198,17 +198,31 @@ model PosSession {
   @@map("pos_sessions")
 }
 
+model SelfOrderSettings {
+  id               Int      @id @default(autoincrement())
+  isEnabled        Boolean  @default(false) @map("is_enabled")
+  mode             String   @default("online_ordering") @db.VarChar(20)
+  payAtCounter     Boolean  @default(true) @map("pay_at_counter")
+  backgroundColor  String   @default("#95416a") @map("background_color") @db.VarChar(20)
+  backgroundImages Json     @default("[]") @map("background_images")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@map("self_order_settings")
+}
+
 model SelfOrderToken {
   id        Int       @id @default(autoincrement())
   token     String    @unique @db.VarChar(100)
   tableId   Int       @map("table_id")
-  sessionId Int       @map("session_id")
+  sessionId Int?      @map("session_id")
+  isPermanent Boolean @default(true) @map("is_permanent")
+  url       String?   @db.VarChar(255)
   isUsed    Boolean   @default(false) @map("is_used")
   expiresAt DateTime? @map("expires_at")
   createdAt DateTime  @default(now()) @map("created_at")
 
   table     Table      @relation(fields: [tableId], references: [id])
-  session   PosSession @relation(fields: [sessionId], references: [id])
+  session   PosSession? @relation(fields: [sessionId], references: [id])
   orders    Order[]
 
   @@index([token], name: "idx_self_order_tokens_token")

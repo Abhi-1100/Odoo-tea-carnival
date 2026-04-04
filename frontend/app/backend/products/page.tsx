@@ -60,6 +60,10 @@ export default function ProductsPage() {
   const [tab, setTab] = useState<"general" | "variants">("general");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [categoryModal, setCategoryModal] = useState(false);
+  const [categoryName, setCategoryName] = useState("");
+  const [categoryDescription, setCategoryDescription] = useState("");
+  const [savingCategory, setSavingCategory] = useState(false);
 
   const fetchProducts = useCallback(async () => {
     if (!token) return;
@@ -163,6 +167,44 @@ export default function ProductsPage() {
     }
   };
 
+  const handleCreateCategory = async () => {
+    if (!token) return;
+
+    const name = categoryName.trim();
+    if (!name) {
+      toast.error("Category name is required");
+      return;
+    }
+
+    const exists = categories.some((c) => c.name.toLowerCase() === name.toLowerCase());
+    if (exists) {
+      toast.error("Category already exists");
+      return;
+    }
+
+    try {
+      setSavingCategory(true);
+      const res = await api.categories.create({
+        name,
+        description: categoryDescription.trim() || undefined,
+        isActive: true,
+      }, token);
+
+      const created = res.data as Category;
+      setCategories((prev) => [created, ...prev]);
+      setForm((prev) => ({ ...prev, categoryId: created.id }));
+      setCatFilter(created.name);
+      setCategoryName("");
+      setCategoryDescription("");
+      setCategoryModal(false);
+      toast.success("Category added");
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Failed to add category");
+    } finally {
+      setSavingCategory(false);
+    }
+  };
+
   const fld = (key: keyof typeof form) => ({
     value: form[key] as string | number | boolean,
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -178,9 +220,14 @@ export default function ProductsPage() {
           <h1 className="text-2xl font-bold text-white">Products</h1>
           <p className="text-brand-muted text-sm mt-1">{items.length} products total</p>
         </div>
-        <Button icon={<Plus size={16} />} onClick={openAdd}>
-          Add Product
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" icon={<Plus size={16} />} onClick={() => setCategoryModal(true)}>
+            Add Category
+          </Button>
+          <Button icon={<Plus size={16} />} onClick={openAdd}>
+            Add Product
+          </Button>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-3">
@@ -294,14 +341,19 @@ export default function ProductsPage() {
             </div>
             <div>
               <label className="block text-xs text-brand-muted mb-1.5">Category</label>
-              <select {...fld("categoryId")} className="input-dark">
-                <option value="">Select category</option>
-                {categories.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
+              <div className="flex gap-2">
+                <select {...fld("categoryId")} className="input-dark flex-1">
+                  <option value="">Select category</option>
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+                <Button type="button" variant="ghost" onClick={() => setCategoryModal(true)}>
+                  New
+                </Button>
+              </div>
             </div>
             <div>
               <label className="block text-xs text-brand-muted mb-1.5">Price (₹)</label>
@@ -418,6 +470,37 @@ export default function ProductsPage() {
             {saving ? <Loader2 className="animate-spin mr-2" size={16} /> : null}
             {editing ? "Save Changes" : "Add Product"}
           </Button>
+        </div>
+      </Modal>
+
+      <Modal open={categoryModal} onClose={() => setCategoryModal(false)} title="Add Category" size="sm">
+        <div className="space-y-4">
+          <div>
+            <label className="block text-xs text-brand-muted mb-1.5">Category Name *</label>
+            <input
+              value={categoryName}
+              onChange={(e) => setCategoryName(e.target.value)}
+              placeholder="e.g. Tea"
+              className="input-dark"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-brand-muted mb-1.5">Description (Optional)</label>
+            <textarea
+              value={categoryDescription}
+              onChange={(e) => setCategoryDescription(e.target.value)}
+              rows={3}
+              placeholder="Short note for this category"
+              className="input-dark resize-none"
+            />
+          </div>
+          <div className="flex justify-end gap-3">
+            <Button variant="ghost" onClick={() => setCategoryModal(false)}>Cancel</Button>
+            <Button onClick={handleCreateCategory} disabled={savingCategory}>
+              {savingCategory ? <Loader2 className="animate-spin mr-2" size={16} /> : null}
+              Add Category
+            </Button>
+          </div>
         </div>
       </Modal>
     </div>

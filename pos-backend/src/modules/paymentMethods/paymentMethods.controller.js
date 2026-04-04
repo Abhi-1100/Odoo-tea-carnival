@@ -32,9 +32,10 @@ const toggle = async (req, res, next) => {
 /** PUT /api/payment-methods/:id/upi */
 const saveUPI = async (req, res, next) => {
   try {
+    const normalizedUpi = req.body.upiId.trim().toLowerCase();
     const updated = await prisma.paymentMethod.update({
       where: { id: parseInt(req.params.id) },
-      data: { upiId: req.body.upiId },
+      data: { upiId: normalizedUpi, isEnabled: true },
     });
     res.json({ success: true, data: updated });
   } catch (error) { next(error); }

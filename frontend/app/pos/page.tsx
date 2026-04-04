@@ -16,12 +16,14 @@ const statusColor = {
 
 export default function POSFloorPage() {
   const router = useRouter();
-  const { token, isAuthenticated } = useAuthStore();
+  const { token, isAuthenticated, hasHydrated } = useAuthStore();
   const { floors, loading, error, activeFloorId, setActiveFloor, fetchFloors } = useFloorStore();
   const { setSession } = useCartStore();
   const [initError, setInitError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!hasHydrated) return;
+
     if (!isAuthenticated || !token) {
       router.push("/login");
       return;
@@ -46,7 +48,7 @@ export default function POSFloorPage() {
     };
 
     init();
-  }, [isAuthenticated, token, router, fetchFloors, setSession]);
+  }, [hasHydrated, isAuthenticated, token, router, fetchFloors, setSession]);
 
   const currentFloor = floors.find((f) => f.id === activeFloorId);
 
@@ -60,7 +62,7 @@ export default function POSFloorPage() {
       <div className="h-full flex items-center justify-center">
         <div className="text-center">
           <p className="text-brand-danger mb-4">{initError}</p>
-          <button onClick={() => router.push("/backend")} className="btn-primary">
+          <button onClick={() => router.push("/dashboard")} className="btn-primary">
             Go to Backend
           </button>
         </div>

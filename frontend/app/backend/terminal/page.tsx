@@ -1,12 +1,27 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { Power, Clock, TrendingUp, Calendar, Loader2 } from "lucide-react";
+import {
+  Power,
+  Clock,
+  TrendingUp,
+  Calendar,
+  Loader2,
+  MoreVertical,
+  LayoutGrid,
+  ClipboardList,
+  Wallet,
+  Users,
+  Box,
+  Tags,
+  BarChart3,
+} from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { Badge } from "@/components/ui/Badge";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/store/authStore";
 import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 interface SessionUser {
   id: number;
@@ -29,6 +44,7 @@ interface Session {
 }
 
 export default function TerminalPage() {
+  const router = useRouter();
   const { token, user } = useAuthStore();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [activeSession, setActiveSession] = useState<Session | null>(null);
@@ -41,6 +57,8 @@ export default function TerminalPage() {
   const [openingCash, setOpeningCash] = useState("");
   const [closingCash, setClosingCash] = useState("");
   const [closeNotes, setCloseNotes] = useState("");
+  const [showTopMenu, setShowTopMenu] = useState(false);
+  const [showQuickMenu, setShowQuickMenu] = useState(false);
 
   const fetchSessions = useCallback(async () => {
     if (!token) return;
@@ -109,6 +127,11 @@ export default function TerminalPage() {
 
   const latestClosed = sessions.find((s) => s.status === "closed");
 
+  const navigateTo = (path: string) => {
+    setShowTopMenu(false);
+    router.push(path);
+  };
+
   return (
     <div className="p-8 space-y-8">
       <div>
@@ -116,62 +139,160 @@ export default function TerminalPage() {
         <p className="text-brand-muted text-sm mt-1">Manage your POS sessions</p>
       </div>
 
-      <div className="card p-6 max-w-lg">
-        <div className="flex items-center gap-4 mb-6">
-          <div className="w-12 h-12 rounded-xl bg-brand-primary/20 flex items-center justify-center">
-            <Power size={22} className="text-brand-primary" />
-          </div>
-          <div>
-            <div className="text-white font-bold text-lg">{activeSession?.terminalName || "No Active Session"}</div>
-            <div className="text-brand-muted text-sm">{user?.name || "Cashier"} — {user?.role || "Staff"}</div>
-          </div>
-          <Badge variant={activeSession?.status === "open" ? "open" : "closed"} className="ml-auto" />
+      <div className="card p-0 overflow-hidden">
+        <div className="border-b border-brand-border px-4 py-3 flex items-center justify-between relative">
+          <button
+            onClick={() => setShowTopMenu((v) => !v)}
+            className="inline-flex items-center gap-2 rounded-lg border border-brand-border bg-brand-bg/50 px-3 py-2 text-sm text-brand-muted hover:text-white hover:border-brand-primary/50 transition-colors"
+          >
+            <LayoutGrid size={14} />
+            Navigation Menu
+          </button>
+
+          {showTopMenu && (
+            <div className="absolute right-4 top-14 z-20 w-[min(880px,calc(100vw-3rem))] rounded-2xl border border-brand-border/70 bg-gradient-to-br from-[#181f34] via-[#171d31] to-[#121827] p-5 shadow-[0_20px_60px_rgba(3,8,23,.55)]">
+              <div className="mb-4 flex items-center justify-between">
+                <div>
+                  <h3 className="text-white text-3xl font-semibold leading-none">Menu</h3>
+                  <p className="mt-1 text-xs text-brand-muted">Jump to core POS modules</p>
+                </div>
+                <button
+                  onClick={() => setShowTopMenu(false)}
+                  className="rounded-md border border-brand-border px-2.5 py-1 text-xs text-brand-muted hover:text-white"
+                >
+                  Close
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div className="rounded-xl border border-brand-border/70 bg-brand-bg/30 p-3">
+                  <div className="mb-3 flex items-center gap-2 text-white font-semibold">
+                    <ClipboardList size={14} className="text-brand-primary" />
+                    Orders
+                  </div>
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => navigateTo("/backend/orders")}
+                      className="w-full rounded-lg border border-transparent bg-brand-bg px-3 py-2 text-left text-brand-muted hover:text-white hover:border-brand-primary/40"
+                    >
+                      Orders
+                    </button>
+                    <button
+                      onClick={() => navigateTo("/backend/payments")}
+                      className="w-full rounded-lg border border-transparent px-3 py-2 text-left text-brand-muted hover:text-white hover:border-brand-primary/40 hover:bg-brand-bg/60"
+                    >
+                      Payment
+                    </button>
+                    <button
+                      onClick={() => navigateTo("/pos/customer-display")}
+                      className="w-full rounded-lg border border-transparent px-3 py-2 text-left text-brand-muted hover:text-white hover:border-brand-primary/40 hover:bg-brand-bg/60"
+                    >
+                      Customer
+                    </button>
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-brand-border/70 bg-brand-bg/30 p-3">
+                  <div className="mb-3 flex items-center gap-2 text-white font-semibold">
+                    <Box size={14} className="text-brand-primary" />
+                    Products
+                  </div>
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => navigateTo("/backend/products")}
+                      className="w-full rounded-lg border border-transparent bg-brand-bg px-3 py-2 text-left text-brand-muted hover:text-white hover:border-brand-primary/40"
+                    >
+                      Products
+                    </button>
+                    <button
+                      onClick={() => navigateTo("/backend/products")}
+                      className="w-full rounded-lg border border-transparent px-3 py-2 text-left text-brand-muted hover:text-white hover:border-brand-primary/40 hover:bg-brand-bg/60"
+                    >
+                      Category
+                    </button>
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-brand-border/70 bg-brand-bg/30 p-3">
+                  <div className="mb-3 flex items-center gap-2 text-white font-semibold">
+                    <BarChart3 size={14} className="text-brand-primary" />
+                    Reporting
+                  </div>
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => navigateTo("/backend/reports")}
+                      className="w-full rounded-lg border border-transparent bg-brand-bg px-3 py-2 text-left text-brand-muted hover:text-white hover:border-brand-primary/40"
+                    >
+                      Dashboard
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 text-xs text-brand-muted">
+                <div className="rounded-lg bg-brand-bg/40 px-3 py-2 inline-flex items-center gap-2">
+                  <Wallet size={13} />
+                  Billing and payments
+                </div>
+                <div className="rounded-lg bg-brand-bg/40 px-3 py-2 inline-flex items-center gap-2">
+                  <Tags size={13} />
+                  Product and category setup
+                </div>
+                <div className="rounded-lg bg-brand-bg/40 px-3 py-2 inline-flex items-center gap-2">
+                  <Users size={13} />
+                  Staff and customer visibility
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
-        {activeSession && (
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="bg-brand-bg rounded-xl p-4">
-              <div className="text-brand-muted text-xs mb-1 flex items-center gap-1.5">
-                <Clock size={12} /> Opened At
+        <div className="p-4">
+          <div className="border border-brand-border rounded-md p-4 relative">
+            <div className="flex items-start justify-between">
+              <div>
+                <div className="text-white text-3xl font-semibold mb-3">Odoo Cafe</div>
+                <div className="flex gap-8 text-brand-muted text-sm">
+                  <div>
+                    <div>Last open: <span className="text-white">{latestClosed ? new Date(latestClosed.openedAt).toLocaleDateString("en-IN") : "-"}</span></div>
+                    <div className="mt-1">Last Sell: <span className="text-white">₹{latestClosed?.totalSales?.toLocaleString() || "0"}</span></div>
+                  </div>
+                </div>
               </div>
-              <div className="text-white text-sm font-medium">{fmt(activeSession.openedAt)}</div>
-            </div>
-            <div className="bg-brand-bg rounded-xl p-4">
-              <div className="text-brand-muted text-xs mb-1 flex items-center gap-1.5">
-                <TrendingUp size={12} /> Opening Cash
+
+              <div className="relative">
+                <button
+                  onClick={() => setShowQuickMenu((v) => !v)}
+                  className="h-9 w-9 rounded border border-brand-border bg-brand-bg flex items-center justify-center text-brand-muted hover:text-white"
+                >
+                  <MoreVertical size={16} />
+                </button>
+                {showQuickMenu && (
+                  <div className="absolute right-0 top-11 bg-[#1c2131] border border-brand-border rounded-md min-w-[170px] z-20 shadow-lg">
+                    <button onClick={() => router.push("/backend/payment-methods")} className="w-full text-left px-3 py-2 text-brand-muted hover:text-white hover:bg-brand-bg">Setting</button>
+                    <button onClick={() => router.push("/backend/kitchen-settings")} className="w-full text-left px-3 py-2 text-brand-muted hover:text-white hover:bg-brand-bg">Kitchen Display</button>
+                    <button onClick={() => router.push("/pos/customer-display")} className="w-full text-left px-3 py-2 text-brand-muted hover:text-white hover:bg-brand-bg">Customer Display</button>
+                  </div>
+                )}
               </div>
-              <div className="text-white text-sm font-medium">₹{activeSession.openingCash?.toLocaleString() || "0"}</div>
             </div>
-          </div>
-        )}
 
-        {!activeSession && (
-          <div className="bg-brand-bg rounded-xl p-4 mb-6">
-            <div className="text-brand-muted text-sm text-center">No active session. Open a new session to start taking orders.</div>
+            <div className="mt-5">
+              {activeSession ? (
+                <Button size="sm" variant="danger" icon={<Power size={16} />} onClick={() => setCloseModal(true)}>
+                  Close Session
+                </Button>
+              ) : (
+                <Button size="sm" icon={<Power size={16} />} onClick={() => setOpenModal(true)}>
+                  Open Session
+                </Button>
+              )}
+            </div>
+          <div>
+            <div className="mt-4 text-xs text-brand-muted">Current terminal: {activeSession?.terminalName || terminalName}</div>
           </div>
-        )}
-
-        {activeSession ? (
-          <Button
-            fullWidth
-            size="lg"
-            variant="danger"
-            icon={<Power size={18} />}
-            onClick={() => setCloseModal(true)}
-          >
-            Close Session
-          </Button>
-        ) : (
-          <Button
-            fullWidth
-            size="lg"
-            variant="success"
-            icon={<Power size={18} />}
-            onClick={() => setOpenModal(true)}
-          >
-            Open New Session
-          </Button>
-        )}
+          </div>
+        </div>
       </div>
 
       <div>

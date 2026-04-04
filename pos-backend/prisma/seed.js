@@ -37,6 +37,21 @@ async function main() {
   });
 
   console.log('✅ Default admin user seeded (admin@pos.com / admin123)');
+
+  const existingSettings = await prisma.selfOrderSettings.findFirst();
+  if (!existingSettings) {
+    await prisma.selfOrderSettings.create({
+      data: {
+        isEnabled: false,
+        mode: 'online_ordering',
+        payAtCounter: true,
+          backgroundColor: '#95416a',
+        backgroundImages: [],
+      },
+    });
+  }
+
+  console.log('✅ Default self-order settings seeded');
 }
 
 main()

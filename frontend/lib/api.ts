@@ -98,6 +98,8 @@ export const api = {
       apiFetch<{ success: boolean; data: unknown }>(`/tables/${id}`, { method: 'PUT', body: data, token }),
     updateStatus: (id: number, status: string, token: string) =>
       apiFetch<{ success: boolean; data: unknown }>(`/tables/${id}/status`, { method: 'PUT', body: { status }, token }),
+    delete: (id: number, token: string) =>
+      apiFetch<{ success: boolean }>(`/tables/${id}`, { method: 'DELETE', token }),
   },
 
   sessions: {
@@ -133,6 +135,10 @@ export const api = {
   },
 
   payments: {
+    getAll: (token: string, params?: Record<string, string>) => {
+      const query = params ? '?' + new URLSearchParams(params).toString() : '';
+      return apiFetch<{ success: boolean; data: unknown[] }>(`/payments${query}`, { token });
+    },
     process: (data: { orderId: number; method: string; amountPaid: number; upiRef?: string }, token: string) =>
       apiFetch<{ success: boolean; paymentId: number; receiptNumber: string; amountPaid: number; change: number; method: string; status: string }>('/payments', {
         method: 'POST',
@@ -186,6 +192,216 @@ export const api = {
       const query = params ? '?' + new URLSearchParams(params).toString() : '';
       return apiFetch<{ success: boolean; data: unknown[] }>(`/reports/products${query}`, { token });
     },
+    exportPdf: async (token: string, params?: Record<string, string>) => {
+      const query = params ? '?' + new URLSearchParams(params).toString() : '';
+      const response = await fetch(`${API_BASE}/reports/export/pdf${query}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) {
+        let message = 'Failed to export PDF';
+        try {
+          const data = await response.json();
+          message = data?.message || message;
+        } catch {
+          // Ignore parse errors for binary responses.
+        }
+        throw new Error(message);
+      }
+      return response.blob();
+    },
+    exportXls: async (token: string, params?: Record<string, string>) => {
+      const query = params ? '?' + new URLSearchParams(params).toString() : '';
+      const response = await fetch(`${API_BASE}/reports/export/xls${query}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) {
+        let message = 'Failed to export XLS';
+        try {
+          const data = await response.json();
+          message = data?.message || message;
+        } catch {
+          // Ignore parse errors for binary responses.
+        }
+        throw new Error(message);
+      }
+      return response.blob();
+    },
+  },
+
+  selfOrder: {
+    getPageSettings: (token: string) =>
+      apiFetch<{
+        success: boolean;
+        data: {
+          restaurantName: string;
+          logo: string | null;
+          backgroundImages: string[];
+          backgroundColor: string;
+          tableId: number;
+          tableName: string;
+          mode: 'online_ordering' | 'qr_menu';
+        };
+      }>(`/self-order/page-settings/${token}`),
+
+    getProductsForPage: (token: string) =>
+      apiFetch<{
+        success: boolean;
+        categories: { id: number; name: string; color: string }[];
+        products: {
+          id: number;
+          name: string;
+          price: number;
+          categoryId: number | null;
+          image: string | null;
+          emoji?: string;
+          variants: { id: number; attribute: string; value: string; extraPrice: number }[];
+          addons: { id: number; name: string; price: number }[];
+        }[];
+      }>(`/self-order/products/${token}`),
+
+    getSettings: (token: string) =>
+      apiFetch<{
+        success: boolean;
+        data: {
+          isEnabled: boolean;
+          mode: 'online_ordering' | 'qr_menu';
+          payAtCounter: boolean;
+          backgroundColor: string;
+          backgroundImages: string[];
+        };
+      }>('/self-order/settings', { token }),
+
+    saveSettings: (
+      data: { isEnabled: boolean; mode: 'online_ordering' | 'qr_menu'; payAtCounter?: boolean; backgroundColor?: string },
+      token: string,
+    ) => apiFetch<{ success: boolean; data: { isEnabled: boolean; mode: 'online_ordering' | 'qr_menu'; payAtCounter: boolean; backgroundColor: string; backgroundImages: string[] } }>(
+      '/self-order/settings',
+      { method: 'PUT', body: data, token },
+    ),
+
+    uploadBackgroundImages: async (files: File[], token: string) => {
+      const formData = new FormData();
+      files.forEach((file) => formData.append('images', file));
+
+      const response = await fetch(`${API_BASE}/self-order/settings/background`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Background image upload failed');
+      }
+
+      return data as { success: boolean; images: string[] };
+    },
+
+    removeBackgroundImage: (imageUrl: string, token: string) =>
+      apiFetch<{ success: boolean; data: { backgroundImages: string[] } }>('/self-order/settings/background', {
+        method: 'DELETE',
+        body: { imageUrl },
+        token,
+      }),
+
+    generateTokens: (token: string) =>
+      apiFetch<{ success: boolean; tokens: { tableId: number; tableName: string; token: string; url: string }[] }>(
+        '/self-order/generate-tokens',
+        { method: 'POST', token },
+      ),
+
+    getTokens: (token: string) =>
+      apiFetch<{ success: boolean; tokens: { tableId: number; tableName: string; token: string; url: string }[] }>(
+        '/self-order/tokens',
+        { token },
+      ),
+
+    regenerateToken: (tableId: number, token: string) =>
+      apiFetch<{ success: boolean; token: { tableId: number; tableName: string; token: string; url: string } }>(
+        `/self-order/tokens/${tableId}/regenerate`,
+        { method: 'POST', token },
+      ),
+
+    downloadQrPdf: async (token: string) => {
+      const response = await fetch(`${API_BASE}/self-order/download-qr-pdf`, {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!response.ok) {
+        let message = 'Failed to download QR PDF';
+        try {
+          const err = await response.json();
+          message = err.message || message;
+        } catch {
+          // Ignore JSON parse errors for non-JSON responses.
+        }
+        throw new Error(message);
+      }
+
+      return response.blob();
+    },
+
+    validateToken: (token: string) =>
+      apiFetch<{
+        success: boolean;
+        valid: boolean;
+        tableId: number;
+        tableName: string;
+        sessionId: number | null;
+        mode: 'online_ordering' | 'qr_menu';
+        payAtCounter: boolean;
+        backgroundImages: string[];
+      }>(`/self-order/validate/${token}`),
+
+    placeOrderByToken: (
+      token: string,
+      data: {
+        customerName?: string;
+        items: {
+          productId: number;
+          variantId?: number | null;
+          addons?: number[];
+          quantity: number;
+          unitPrice?: number;
+          notes?: string;
+        }[];
+        totalAmount?: number;
+      },
+    ) =>
+      apiFetch<{
+        success: boolean;
+        orderNumber: string;
+        orderId: number;
+        tableId: number;
+        tableName: string;
+        totalAmount: number;
+        status: string;
+        message: string;
+      }>(`/self-order/place-order/${token}`, { method: 'POST', body: data }),
+
+    trackOrder: (orderId: number) =>
+      apiFetch<{
+        success: boolean;
+        orderId: number;
+        orderNumber: string;
+        items: { id: number; productName: string; quantity: number; status: string }[];
+        overallStatus: string;
+        kitchenStage: string;
+      }>(`/self-order/track/${orderId}`),
+
+    getOrderHistory: (token: string) =>
+      apiFetch<{
+        success: boolean;
+        orders: {
+          orderId: number;
+          orderNumber: string;
+          totalAmount: number;
+          status: string;
+          kitchenStage: string;
+          createdAt: string;
+        }[];
+      }>(`/self-order/history/${token}`),
   },
 };
 
