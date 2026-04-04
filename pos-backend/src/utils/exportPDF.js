@@ -1,5 +1,7 @@
 const PDFDocument = require('pdfkit');
 
+const formatRs = (amount) => `Rs. ${Number(amount).toFixed(2)}`;
+
 /**
  * Export sales report as PDF
  * @param {import('express').Response} res - Express response
@@ -32,9 +34,9 @@ async function exportSalesReportPDF(res, data) {
   doc.fontSize(14).fillColor('#000000').font('Helvetica-Bold').text('Summary');
   doc.moveDown(0.5);
   doc.fontSize(11).font('Helvetica');
-  doc.text(`Total Sales: $${totalSales.toFixed(2)}`);
+  doc.text(`Total Sales: ${formatRs(totalSales)}`);
   doc.text(`Total Orders: ${orders.length}`);
-  doc.text(`Average Order Value: $${orders.length > 0 ? (totalSales / orders.length).toFixed(2) : '0.00'}`);
+  doc.text(`Average Order Value: ${formatRs(orders.length > 0 ? totalSales / orders.length : 0)}`);
   doc.moveDown(1);
 
   // Divider
@@ -80,7 +82,7 @@ async function exportSalesReportPDF(res, data) {
     doc.text(order.orderNumber, col1, y, { width: 100 });
     doc.text(order.table?.tableNumber || '-', col2, y, { width: 60 });
     doc.text(order.createdByUser?.name || '-', col3, y, { width: 90 });
-    doc.text(`$${Number(order.totalAmount).toFixed(2)}`, col4, y, { width: 80 });
+    doc.text(formatRs(order.totalAmount), col4, y, { width: 80 });
     doc.text(order.payments?.[0]?.paymentMethod?.name || '-', col5, y, { width: 60 });
     doc.text(new Date(order.createdAt).toLocaleDateString(), col6, y, { width: 60 });
 

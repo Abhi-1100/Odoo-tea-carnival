@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { Coffee } from "lucide-react";
+import { api } from "@/lib/api";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -28,11 +29,22 @@ export default function SignupPage() {
     e.preventDefault();
     if (!validate()) return;
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1200));
-    toast.success("Account created! Welcome to the Atelier.", {
-      style: { background: '#161614', color: '#e8a838', border: '1px solid #e8a83833' }
-    });
-    router.push("/login");
+    try {
+      await api.auth.signup({
+        name: form.name.trim(),
+        email: form.email.trim(),
+        password: form.password,
+      });
+
+      toast.success("Account created! Welcome to the Atelier.", {
+        style: { background: '#161614', color: '#e8a838', border: '1px solid #e8a83833' }
+      });
+      router.push("/login");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Signup failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const setField = (k: keyof typeof form, val: any) => {
