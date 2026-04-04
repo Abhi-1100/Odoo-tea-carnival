@@ -1,6 +1,20 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { Power, Clock, TrendingUp, Calendar, Loader2, MoreVertical } from "lucide-react";
+import {
+  Power,
+  Clock,
+  TrendingUp,
+  Calendar,
+  Loader2,
+  MoreVertical,
+  LayoutGrid,
+  ClipboardList,
+  Wallet,
+  Users,
+  Box,
+  Tags,
+  BarChart3,
+} from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { Badge } from "@/components/ui/Badge";
@@ -113,6 +127,11 @@ export default function TerminalPage() {
 
   const latestClosed = sessions.find((s) => s.status === "closed");
 
+  const navigateTo = (path: string) => {
+    setShowTopMenu(false);
+    router.push(path);
+  };
+
   return (
     <div className="p-8 space-y-8">
       <div>
@@ -122,36 +141,106 @@ export default function TerminalPage() {
 
       <div className="card p-0 overflow-hidden">
         <div className="border-b border-brand-border px-4 py-3 flex items-center justify-between relative">
-          <div className="flex items-center gap-6 text-sm">
-            <button onClick={() => setShowTopMenu((v) => !v)} className="text-brand-muted hover:text-white">Orders</button>
-            <button onClick={() => setShowTopMenu((v) => !v)} className="text-brand-muted hover:text-white">Products</button>
-            <button onClick={() => setShowTopMenu((v) => !v)} className="text-brand-muted hover:text-white">Reporting</button>
-          </div>
+          <button
+            onClick={() => setShowTopMenu((v) => !v)}
+            className="inline-flex items-center gap-2 rounded-lg border border-brand-border bg-brand-bg/50 px-3 py-2 text-sm text-brand-muted hover:text-white hover:border-brand-primary/50 transition-colors"
+          >
+            <LayoutGrid size={14} />
+            Navigation Menu
+          </button>
 
           {showTopMenu && (
-            <div className="absolute right-4 top-12 z-20 bg-[#1c2131] border border-brand-border rounded-md p-4 min-w-[280px] shadow-xl">
-              <h3 className="text-white text-2xl mb-3 text-center">Menu</h3>
-              <div className="grid grid-cols-3 gap-4 text-sm">
+            <div className="absolute right-4 top-14 z-20 w-[min(880px,calc(100vw-3rem))] rounded-2xl border border-brand-border/70 bg-gradient-to-br from-[#181f34] via-[#171d31] to-[#121827] p-5 shadow-[0_20px_60px_rgba(3,8,23,.55)]">
+              <div className="mb-4 flex items-center justify-between">
                 <div>
-                  <div className="text-white mb-2 font-semibold">Orders</div>
-                  <div className="space-y-1">
-                    <button onClick={() => router.push("/backend/orders")} className="block w-full text-left px-2 py-1 bg-brand-bg text-brand-muted hover:text-white">Orders</button>
-                    <button onClick={() => router.push("/backend/payments")} className="block w-full text-left px-2 py-1 text-brand-muted hover:text-white">Payment</button>
-                    <button className="block w-full text-left px-2 py-1 text-brand-muted hover:text-white">Customer</button>
+                  <h3 className="text-white text-3xl font-semibold leading-none">Menu</h3>
+                  <p className="mt-1 text-xs text-brand-muted">Jump to core POS modules</p>
+                </div>
+                <button
+                  onClick={() => setShowTopMenu(false)}
+                  className="rounded-md border border-brand-border px-2.5 py-1 text-xs text-brand-muted hover:text-white"
+                >
+                  Close
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div className="rounded-xl border border-brand-border/70 bg-brand-bg/30 p-3">
+                  <div className="mb-3 flex items-center gap-2 text-white font-semibold">
+                    <ClipboardList size={14} className="text-brand-primary" />
+                    Orders
+                  </div>
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => navigateTo("/backend/orders")}
+                      className="w-full rounded-lg border border-transparent bg-brand-bg px-3 py-2 text-left text-brand-muted hover:text-white hover:border-brand-primary/40"
+                    >
+                      Orders
+                    </button>
+                    <button
+                      onClick={() => navigateTo("/backend/payments")}
+                      className="w-full rounded-lg border border-transparent px-3 py-2 text-left text-brand-muted hover:text-white hover:border-brand-primary/40 hover:bg-brand-bg/60"
+                    >
+                      Payment
+                    </button>
+                    <button
+                      onClick={() => navigateTo("/pos/customer-display")}
+                      className="w-full rounded-lg border border-transparent px-3 py-2 text-left text-brand-muted hover:text-white hover:border-brand-primary/40 hover:bg-brand-bg/60"
+                    >
+                      Customer
+                    </button>
                   </div>
                 </div>
-                <div>
-                  <div className="text-white mb-2 font-semibold">Products</div>
-                  <div className="space-y-1">
-                    <button onClick={() => router.push("/backend/products")} className="block w-full text-left px-2 py-1 bg-brand-bg text-brand-muted hover:text-white">Products</button>
-                    <button onClick={() => router.push("/backend/products")} className="block w-full text-left px-2 py-1 text-brand-muted hover:text-white">Category</button>
+
+                <div className="rounded-xl border border-brand-border/70 bg-brand-bg/30 p-3">
+                  <div className="mb-3 flex items-center gap-2 text-white font-semibold">
+                    <Box size={14} className="text-brand-primary" />
+                    Products
+                  </div>
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => navigateTo("/backend/products")}
+                      className="w-full rounded-lg border border-transparent bg-brand-bg px-3 py-2 text-left text-brand-muted hover:text-white hover:border-brand-primary/40"
+                    >
+                      Products
+                    </button>
+                    <button
+                      onClick={() => navigateTo("/backend/products")}
+                      className="w-full rounded-lg border border-transparent px-3 py-2 text-left text-brand-muted hover:text-white hover:border-brand-primary/40 hover:bg-brand-bg/60"
+                    >
+                      Category
+                    </button>
                   </div>
                 </div>
-                <div>
-                  <div className="text-white mb-2 font-semibold">Reporting</div>
-                  <div className="space-y-1">
-                    <button onClick={() => router.push("/backend/reports")} className="block w-full text-left px-2 py-1 bg-brand-bg text-brand-muted hover:text-white">Dashboard</button>
+
+                <div className="rounded-xl border border-brand-border/70 bg-brand-bg/30 p-3">
+                  <div className="mb-3 flex items-center gap-2 text-white font-semibold">
+                    <BarChart3 size={14} className="text-brand-primary" />
+                    Reporting
                   </div>
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => navigateTo("/backend/reports")}
+                      className="w-full rounded-lg border border-transparent bg-brand-bg px-3 py-2 text-left text-brand-muted hover:text-white hover:border-brand-primary/40"
+                    >
+                      Dashboard
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 text-xs text-brand-muted">
+                <div className="rounded-lg bg-brand-bg/40 px-3 py-2 inline-flex items-center gap-2">
+                  <Wallet size={13} />
+                  Billing and payments
+                </div>
+                <div className="rounded-lg bg-brand-bg/40 px-3 py-2 inline-flex items-center gap-2">
+                  <Tags size={13} />
+                  Product and category setup
+                </div>
+                <div className="rounded-lg bg-brand-bg/40 px-3 py-2 inline-flex items-center gap-2">
+                  <Users size={13} />
+                  Staff and customer visibility
                 </div>
               </div>
             </div>

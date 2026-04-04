@@ -67,9 +67,12 @@ export default function BackendOrdersPage() {
     setLoading(true);
     try {
       const res = await api.orders.getAll(token);
-      setOrders((res.data as Order[]) || []);
-      if (!selectedOrderId && res.data?.length) {
-        setSelectedOrderId((res.data as Order[])[0].id);
+      const nextOrders = (res.data as Order[]) || [];
+      setOrders(nextOrders);
+
+      // Keep selection only if the selected order still exists after refresh.
+      if (selectedOrderId && !nextOrders.some((order) => order.id === selectedOrderId)) {
+        setSelectedOrderId(null);
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to load orders");
@@ -98,7 +101,7 @@ export default function BackendOrdersPage() {
     [orders, selectedIds],
   );
 
-  const selectedOrder = orders.find((order) => order.id === selectedOrderId) || filteredOrders[0] || null;
+  const selectedOrder = orders.find((order) => order.id === selectedOrderId) || null;
 
   const toggleSelect = (id: number) => {
     setSelectedIds((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]));

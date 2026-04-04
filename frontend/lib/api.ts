@@ -135,6 +135,10 @@ export const api = {
   },
   
   payments: {
+    getAll: (token: string, params?: Record<string, string>) => {
+      const query = params ? '?' + new URLSearchParams(params).toString() : '';
+      return apiFetch<{ success: boolean; data: unknown[] }>(`/payments${query}`, { token });
+    },
     process: (data: { orderId: number; method: string; amountPaid: number; upiRef?: string }, token: string) =>
       apiFetch<{ success: boolean; paymentId: number; receiptNumber: string; amountPaid: number; change: number; method: string; status: string }>('/payments', {
         method: 'POST',
