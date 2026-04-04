@@ -200,7 +200,7 @@ export default function ReportsPage() {
     <div className="p-8 space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Dashboard Reporting</h1>
+          <h1 className="text-2xl font-bold text-brand-text">Dashboard Reporting</h1>
           <p className="text-brand-muted text-sm mt-1">Real-time reporting based on selected filters</p>
         </div>
         <div className="flex items-center gap-2">
@@ -223,8 +223,8 @@ export default function ReportsPage() {
                 className={clsx(
                   "px-3 py-1.5 rounded-md text-xs border transition-all",
                   period === p
-                    ? "bg-brand-primary text-white border-brand-primary"
-                    : "bg-brand-bg text-brand-muted border-brand-border hover:text-white",
+                    ? "bg-brand-primary text-brand-text border-brand-primary"
+                    : "bg-brand-bg text-brand-muted border-brand-border hover:text-brand-text",
                 )}
               >
                 {p}
@@ -269,7 +269,7 @@ export default function ReportsPage() {
           <div className="flex items-start justify-between">
             <div>
               <p className="text-brand-muted text-xs mb-2">Total orders</p>
-              <p className="text-3xl font-bold text-white">{totalOrders}</p>
+              <p className="text-3xl font-bold text-brand-text">{totalOrders}</p>
               <p className="text-green-400 text-xs mt-1">Based on selection</p>
             </div>
             <div className="w-10 h-10 rounded-lg flex items-center justify-center text-brand-teal bg-brand-teal/20"><ShoppingCart size={18} /></div>
@@ -280,7 +280,7 @@ export default function ReportsPage() {
           <div className="flex items-start justify-between">
             <div>
               <p className="text-brand-muted text-xs mb-2">Revenue</p>
-              <p className="text-3xl font-bold text-white">₹{Math.round(totalRevenue).toLocaleString()}</p>
+              <p className="text-3xl font-bold text-brand-text">₹{Math.round(totalRevenue).toLocaleString()}</p>
               <p className="text-green-400 text-xs mt-1">Since last period</p>
             </div>
             <div className="w-10 h-10 rounded-lg flex items-center justify-center text-brand-primary bg-brand-primary/20"><DollarSign size={18} /></div>
@@ -291,7 +291,7 @@ export default function ReportsPage() {
           <div className="flex items-start justify-between">
             <div>
               <p className="text-brand-muted text-xs mb-2">Average Order</p>
-              <p className="text-3xl font-bold text-white">₹{Math.round(averageOrderValue).toLocaleString()}</p>
+              <p className="text-3xl font-bold text-brand-text">₹{Math.round(averageOrderValue).toLocaleString()}</p>
               <p className="text-red-400 text-xs mt-1">Calculated live</p>
             </div>
             <div className="w-10 h-10 rounded-lg flex items-center justify-center text-orange-400 bg-orange-400/20"><TrendingUp size={18} /></div>
@@ -301,7 +301,7 @@ export default function ReportsPage() {
 
       <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
         <div className="card p-6 xl:col-span-3">
-          <h2 className="text-white font-semibold mb-4">Sales</h2>
+          <h2 className="text-brand-text font-semibold mb-4">Sales</h2>
           <ResponsiveContainer width="100%" height={260}>
             <LineChart data={salesTimeline} margin={{ left: 12, right: 12 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#31354a" />
@@ -314,7 +314,7 @@ export default function ReportsPage() {
         </div>
 
         <div className="card p-6 xl:col-span-2">
-          <h2 className="text-white font-semibold mb-4">Top selling Category</h2>
+          <h2 className="text-brand-text font-semibold mb-4">Top selling Category</h2>
           <ResponsiveContainer width="100%" height={260}>
             <PieChart>
               <Pie
@@ -337,7 +337,7 @@ export default function ReportsPage() {
 
       <div className="card overflow-hidden">
         <div className="px-6 py-4 border-b border-brand-border flex items-center justify-between">
-          <h2 className="text-white font-semibold">Top Orders</h2>
+          <h2 className="text-brand-text font-semibold">Top Orders</h2>
           <span className="text-brand-muted text-xs">High amount among available orders</span>
         </div>
         <table className="w-full">
@@ -357,7 +357,7 @@ export default function ReportsPage() {
                   <td className="px-5 py-3 text-brand-muted text-sm">Shop Virtual Admin</td>
                   <td className="px-5 py-3 text-brand-muted text-sm">{new Date(o.createdAt).toLocaleDateString("en-IN")}</td>
                   <td className="px-5 py-3 text-brand-muted text-sm">{o.createdByUser?.name || "-"}</td>
-                  <td className="px-5 py-3 text-white text-sm font-semibold">₹{Math.round(Number(o.totalAmount)).toLocaleString()}</td>
+                  <td className="px-5 py-3 text-brand-text text-sm font-semibold">₹{Math.round(Number(o.totalAmount)).toLocaleString()}</td>
                 </tr>
               ))
             ) : (
@@ -371,7 +371,7 @@ export default function ReportsPage() {
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <div className="card p-6">
-          <h2 className="text-sky-300 font-semibold mb-4">Top Product</h2>
+          <h2 className="text-brand-primary font-semibold mb-4">Top Product</h2>
           <table className="w-full">
             <thead>
               <tr className="border-b border-brand-border">
@@ -384,9 +384,9 @@ export default function ReportsPage() {
               {topProducts.length > 0 ? (
                 topProducts.map((p) => (
                   <tr key={p.productId} className="border-b border-brand-border/30">
-                    <td className="px-3 py-2 text-white text-sm">{p.productName}</td>
+                    <td className="px-3 py-2 text-brand-text text-sm">{p.productName}</td>
                     <td className="px-3 py-2 text-brand-muted text-sm">{p.totalQuantity}</td>
-                    <td className="px-3 py-2 text-white text-sm">₹{Math.round(Number(p.totalRevenue)).toLocaleString()}</td>
+                    <td className="px-3 py-2 text-brand-text text-sm">₹{Math.round(Number(p.totalRevenue)).toLocaleString()}</td>
                   </tr>
                 ))
               ) : (
@@ -399,7 +399,7 @@ export default function ReportsPage() {
         </div>
 
         <div className="card p-6">
-          <h2 className="text-sky-300 font-semibold mb-4">Top Category</h2>
+          <h2 className="text-brand-primary font-semibold mb-4">Top Category</h2>
           <table className="w-full">
             <thead>
               <tr className="border-b border-brand-border">
@@ -412,8 +412,8 @@ export default function ReportsPage() {
               {categoryTotals.length > 0 ? (
                 categoryTotals.slice(0, 6).map((c) => (
                   <tr key={c.name} className="border-b border-brand-border/30">
-                    <td className="px-3 py-2 text-white text-sm">{c.name}</td>
-                    <td className="px-3 py-2 text-white text-sm">₹{Math.round(Number(c.value)).toLocaleString()}</td>
+                    <td className="px-3 py-2 text-brand-text text-sm">{c.name}</td>
+                    <td className="px-3 py-2 text-brand-text text-sm">₹{Math.round(Number(c.value)).toLocaleString()}</td>
                   </tr>
                 ))
               ) : (

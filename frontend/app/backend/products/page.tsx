@@ -50,11 +50,11 @@ const emptyProduct = {
 const unitOptions = ["KG", "Unit", "Liter"];
 const taxOptions = [5, 18, 28];
 const categoryColorClasses = [
-  "bg-sky-500/20 text-sky-300",
-  "bg-amber-500/20 text-amber-300",
-  "bg-emerald-500/20 text-emerald-300",
-  "bg-violet-500/20 text-violet-300",
-  "bg-rose-500/20 text-rose-300",
+  "bg-sky-100 text-sky-800 border border-sky-200",
+  "bg-amber-100 text-amber-800 border border-amber-200",
+  "bg-emerald-100 text-emerald-800 border border-emerald-200",
+  "bg-violet-100 text-violet-800 border border-violet-200",
+  "bg-rose-100 text-rose-800 border border-rose-200",
 ];
 
 export default function ProductsPage() {
@@ -279,11 +279,11 @@ export default function ProductsPage() {
       <div className="card overflow-hidden border border-brand-border/70">
         <div className="border-b border-brand-border px-5 py-3 flex items-center justify-between text-sm text-brand-muted">
           <div className="flex items-center gap-6">
-            <span className="hover:text-white">Orders</span>
-            <span className="text-white">Products</span>
-            <span className="hover:text-white">Reporting</span>
+            <span className="hover:text-brand-text">Orders</span>
+            <span className="text-brand-text">Products</span>
+            <span className="hover:text-brand-text">Reporting</span>
           </div>
-          <button className="text-brand-muted hover:text-white">
+          <button className="text-brand-muted hover:text-brand-text">
             <Menu size={16} />
           </button>
         </div>
@@ -292,11 +292,11 @@ export default function ProductsPage() {
           <div className="inline-flex items-center gap-2 mb-2">
             <button
               onClick={handleNew}
-              className="px-3 py-1.5 rounded-md bg-fuchsia-300/30 text-fuchsia-100 text-sm"
+              className="px-3 py-1.5 rounded-md bg-brand-primary/10 border border-brand-primary/20 text-brand-primary text-sm"
             >
               New
             </button>
-            <h1 className="text-3xl font-bold text-sky-300">Products</h1>
+            <h1 className="text-3xl font-bold text-brand-primary">Products</h1>
             {editing ? <span className="text-xs text-brand-muted">Editing #{editing.id}</span> : null}
           </div>
           <p className="text-brand-muted text-sm">{items.length} products total</p>
@@ -316,7 +316,7 @@ export default function ProductsPage() {
           <button
             onClick={() => setTab("general")}
             className={`px-4 py-2 text-sm border border-brand-border border-b-0 rounded-t-md ${
-              tab === "general" ? "bg-brand-bg text-white" : "text-brand-muted"
+              tab === "general" ? "bg-brand-bg text-brand-text" : "text-brand-muted"
             }`}
           >
             General Info
@@ -324,7 +324,7 @@ export default function ProductsPage() {
           <button
             onClick={() => setTab("variants")}
             className={`px-4 py-2 text-sm border border-brand-border border-b-0 rounded-t-md ${
-              tab === "variants" ? "bg-brand-bg text-white" : "text-brand-muted"
+              tab === "variants" ? "bg-brand-bg text-brand-text" : "text-brand-muted"
             }`}
           >
             Varint
@@ -335,9 +335,9 @@ export default function ProductsPage() {
           <div className="px-5 py-5 grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="space-y-5">
               <div>
-                <label className="text-white text-2xl sr-only">Category</label>
-                <div className="text-white text-3xl hidden">Category</div>
-                <div className="text-white text-sm mb-2">Category</div>
+                <label className="text-brand-text text-2xl sr-only">Category</label>
+                <div className="text-brand-text text-3xl hidden">Category</div>
+                <div className="text-brand-text text-sm mb-2">Category</div>
                 <div className="flex items-center gap-2">
                   {categoryLabel ? (
                     <span className={"inline-flex items-center gap-1 rounded-md px-3 py-1 text-sm " + categoryBadgeClass(categoryLabel)}>
@@ -345,7 +345,7 @@ export default function ProductsPage() {
                       <button
                         type="button"
                         onClick={() => setForm((p) => ({ ...p, categoryId: null }))}
-                        className="text-inherit/80 hover:text-white"
+                        className="text-inherit/80 hover:text-brand-text"
                       >
                         <X size={12} />
                       </button>
@@ -368,7 +368,7 @@ export default function ProductsPage() {
               </div>
 
               <div>
-                <div className="text-white text-sm mb-2">Product Description</div>
+                <div className="text-brand-text text-sm mb-2">Product Description</div>
                 <input
                   value={form.description}
                   onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
@@ -381,7 +381,7 @@ export default function ProductsPage() {
             <div className="space-y-5">
               <div className="grid grid-cols-[1fr_140px] gap-3 items-end">
                 <div>
-                  <div className="text-white text-sm mb-2">Prices</div>
+                  <div className="text-brand-text text-sm mb-2">Prices</div>
                   <input
                     type="number"
                     value={form.price}
@@ -390,7 +390,7 @@ export default function ProductsPage() {
                   />
                 </div>
                 <div>
-                  <div className="text-white text-sm mb-2">UOM</div>
+                  <div className="text-brand-text text-sm mb-2">UOM</div>
                   <select
                     value={form.unit}
                     onChange={(e) => setForm((p) => ({ ...p, unit: e.target.value }))}
@@ -405,7 +405,7 @@ export default function ProductsPage() {
 
               <div className="grid grid-cols-[1fr_140px] gap-3 items-end">
                 <div>
-                  <div className="text-white text-sm mb-2">Tax</div>
+                  <div className="text-brand-text text-sm mb-2">Tax</div>
                   <select
                     value={form.taxPercent}
                     onChange={(e) => setForm((p) => ({ ...p, taxPercent: Number(e.target.value) }))}
@@ -470,7 +470,7 @@ export default function ProductsPage() {
                   />
                   <button
                     onClick={() => setForm((p) => ({ ...p, variants: p.variants.filter((_, idx) => idx !== i) }))}
-                    className="col-span-1 h-9 w-9 rounded border border-brand-border text-red-300 hover:text-red-100 inline-flex items-center justify-center"
+                    className="col-span-1 h-9 w-9 rounded border border-brand-border text-red-500 hover:text-red-700 inline-flex items-center justify-center"
                   >
                     <Trash2 size={14} />
                   </button>
@@ -479,7 +479,7 @@ export default function ProductsPage() {
 
               <button
                 onClick={() => setForm((p) => ({ ...p, variants: [...p.variants, { attribute: "", value: "", extraPrice: 0 }] }))}
-                className="w-full py-2 text-left px-3 text-sky-300 hover:bg-brand-bg/30"
+                className="w-full py-2 text-left px-3 text-brand-primary hover:bg-brand-bg/30"
               >
                 New
               </button>
@@ -512,8 +512,8 @@ export default function ProductsPage() {
               onClick={() => setCatFilter(c)}
               className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                 catFilter === c
-                  ? "bg-brand-primary text-white"
-                  : "bg-brand-card text-brand-muted hover:text-white border border-brand-border"
+                  ? "bg-brand-primary text-brand-text"
+                  : "bg-brand-card text-brand-muted hover:text-brand-text border border-brand-border"
               }`}
             >
               {c}
@@ -525,21 +525,21 @@ export default function ProductsPage() {
       <div className="card overflow-hidden">
         <div className="px-4 py-2 border-b border-brand-border flex items-center justify-end gap-2 relative">
           {selectedIds.length > 0 && (
-            <span className="px-3 py-1.5 rounded bg-sky-500/20 text-sky-300 text-xs">x {selectedIds.length} Selected</span>
+            <span className="px-3 py-1.5 rounded bg-sky-100 text-sky-800 border border-sky-200 text-xs">x {selectedIds.length} Selected</span>
           )}
           <button
             onClick={() => setActionOpen((v) => !v)}
-            className="px-3 py-1.5 text-xs border border-brand-border bg-brand-bg text-white rounded"
+            className="px-3 py-1.5 text-xs border border-brand-border bg-brand-bg text-brand-text rounded"
           >
             * Action
           </button>
 
           {actionOpen && (
-            <div className="absolute right-4 top-11 z-10 min-w-28 border border-brand-border bg-[#151a28] rounded shadow-xl overflow-hidden">
-              <button onClick={archiveSelected} className="block w-full text-left px-3 py-2 text-xs text-brand-muted hover:text-white hover:bg-brand-bg">
+            <div className="absolute right-4 top-11 z-10 min-w-28 border border-brand-border bg-brand-card rounded shadow-xl overflow-hidden">
+              <button onClick={archiveSelected} className="block w-full text-left px-3 py-2 text-xs text-brand-muted hover:text-brand-text hover:bg-brand-bg">
                 ^ Archived
               </button>
-              <button onClick={deleteSelected} className="block w-full text-left px-3 py-2 text-xs text-red-300 hover:text-white hover:bg-brand-bg">
+              <button onClick={deleteSelected} className="block w-full text-left px-3 py-2 text-xs text-red-500 hover:text-brand-text hover:bg-brand-bg">
                 Delete
               </button>
             </div>
@@ -572,12 +572,12 @@ export default function ProductsPage() {
                       >
                         {selectedIds.includes(p.id) ? "x" : ""}
                       </button>
-                      <button onClick={() => openEdit(p)} className="text-white text-sm font-medium hover:text-sky-300">
+                      <button onClick={() => openEdit(p)} className="text-brand-text text-sm font-medium hover:text-brand-primary">
                         {p.name}
                       </button>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-white text-sm font-semibold">${p.price}</td>
+                  <td className="px-4 py-3 text-brand-text text-sm font-semibold">${p.price}</td>
                   <td className="px-4 py-3 text-brand-muted text-sm">{p.taxPercent}%</td>
                   <td className="px-4 py-3 text-brand-muted text-sm">{p.unit}</td>
                   <td className="px-4 py-3">
@@ -585,10 +585,10 @@ export default function ProductsPage() {
                       <span className={"px-3 py-1 rounded-md text-sm " + categoryBadgeClass(p.category?.name)}>
                         {p.category?.name || "Uncategorized"}
                       </span>
-                      {!p.isActive ? <span className="px-2 py-1 rounded text-xs bg-slate-500/20 text-slate-300">Archived</span> : null}
+                      {!p.isActive ? <span className="px-2 py-1 rounded text-xs bg-slate-500/20 text-brand-text">Archived</span> : null}
                       <button
                         onClick={() => handleDelete(p.id)}
-                        className="h-7 w-7 rounded border border-brand-border text-red-300 hover:text-red-100 inline-flex items-center justify-center"
+                        className="h-7 w-7 rounded border border-brand-border text-red-500 hover:text-red-700 inline-flex items-center justify-center"
                         title="Delete"
                       >
                         <Trash2 size={13} />

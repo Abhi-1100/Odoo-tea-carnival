@@ -214,13 +214,13 @@ export default function SelfOrderingSettingsPage() {
           <div className="text-orange-300 font-medium tracking-wide">Setting</div>
 
           <section className="card border border-brand-border/80 rounded-none overflow-hidden">
-            <div className="px-4 py-2 bg-brand-bg/70 border-b border-brand-border/80 text-white font-semibold">
+            <div className="px-4 py-2 bg-brand-bg/70 border-b border-brand-border/80 text-brand-text font-semibold">
               Mobile Order
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6">
               <div className="space-y-4">
-                <label className="flex items-center gap-3 text-white">
+                <label className="flex items-center gap-3 text-brand-text">
                   <input
                     type="checkbox"
                     checked={settings.isEnabled}
@@ -250,21 +250,21 @@ export default function SelfOrderingSettingsPage() {
                           <button
                             type="button"
                             onClick={previewWebpage}
-                            className="block text-sky-300 hover:text-sky-200 text-sm"
+                            className="block text-brand-primary hover:text-sky-200 text-sm"
                           >
                             Preview webpage --&gt;
                           </button>
                           <button
                             type="button"
                             onClick={downloadQrPdf}
-                            className="block text-sky-300 hover:text-sky-200 text-sm"
+                            className="block text-brand-primary hover:text-sky-200 text-sm"
                           >
                             Download QR code --&gt;
                           </button>
                         </div>
 
                         <div className="max-w-xs border border-brand-primary/40 px-3 py-2 text-sm">
-                          <div className="text-white mb-1">Payment Method</div>
+                          <div className="text-brand-text mb-1">Payment Method</div>
                           <label className="flex items-center gap-2 text-sky-200">
                             <input type="checkbox" checked disabled className="accent-brand-primary cursor-not-allowed" />
                             Pay at counter
@@ -277,7 +277,7 @@ export default function SelfOrderingSettingsPage() {
 
                         <div className="text-sm text-brand-muted max-w-md pt-1">
                           Create a webpage use database URL with append token post URL
-                          <div className="text-sky-300 mt-1">e.g {tokens[0]?.url || "abcd.com/s/asdfghhjkl"}</div>
+                          <div className="text-brand-primary mt-1">e.g {tokens[0]?.url || "abcd.com/s/asdfghhjkl"}</div>
                           <div className="grid grid-cols-3 gap-2 mt-2 text-xs">
                             <div>
                               <div className="text-green-400">Domain</div>
@@ -299,14 +299,14 @@ export default function SelfOrderingSettingsPage() {
                           <button
                             type="button"
                             onClick={previewWebpage}
-                            className="block text-sky-300 hover:text-sky-200 text-sm"
+                            className="block text-brand-primary hover:text-sky-200 text-sm"
                           >
                             Preview webpage --&gt;
                           </button>
                           <button
                             type="button"
                             onClick={downloadQrPdf}
-                            className="block text-sky-300 hover:text-sky-200 text-sm"
+                            className="block text-brand-primary hover:text-sky-200 text-sm"
                           >
                             Download QR code --&gt;
                           </button>
@@ -322,7 +322,7 @@ export default function SelfOrderingSettingsPage() {
               </div>
 
               <div className="space-y-3">
-                <div className="text-white font-medium">Background</div>
+                <div className="text-brand-text font-medium">Background</div>
 
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-2 text-brand-muted text-sm">
@@ -373,7 +373,7 @@ export default function SelfOrderingSettingsPage() {
                           <button
                             type="button"
                             onClick={() => removeImage(image)}
-                            className="ml-auto text-red-300 hover:text-red-200"
+                            className="ml-auto text-red-500 hover:text-red-200"
                             disabled={removingImageUrl === image}
                             title="Cancel image"
                           >

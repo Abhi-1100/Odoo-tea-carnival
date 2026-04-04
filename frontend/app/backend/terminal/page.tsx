@@ -200,7 +200,7 @@ export default function TerminalPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
               <div className="space-y-6">
                 <label className="flex items-center gap-4 group cursor-pointer">
-                  <div className="w-6 h-6 rounded-full bg-[#3E2723] flex items-center justify-center text-white">
+                  <div className="w-6 h-6 rounded-full bg-[#3E2723] flex items-center justify-center text-brand-text">
                     <span className="material-symbols-outlined text-sm font-bold">check</span>
                   </div>
                   <span className="text-[#271310]/80 font-medium">Cash</span>
@@ -208,7 +208,7 @@ export default function TerminalPage() {
                 
                 <div className="space-y-4">
                   <label className="flex items-center gap-4 group cursor-pointer">
-                    <div className="w-6 h-6 rounded-full bg-[#3E2723] flex items-center justify-center text-white">
+                    <div className="w-6 h-6 rounded-full bg-[#3E2723] flex items-center justify-center text-brand-text">
                       <span className="material-symbols-outlined text-sm font-bold">check</span>
                     </div>
                     <span className="text-[#271310]/80 font-medium">QR Payment (UPI)</span>
@@ -229,7 +229,7 @@ export default function TerminalPage() {
                   <span className="text-[#271310]/80 font-medium">Digital (Bank)</span>
                 </label>
                 <label className="flex items-center gap-4 group cursor-pointer">
-                  <div className="w-6 h-6 rounded-full bg-[#3E2723] flex items-center justify-center text-white">
+                  <div className="w-6 h-6 rounded-full bg-[#3E2723] flex items-center justify-center text-brand-text">
                     <span className="material-symbols-outlined text-sm font-bold">check</span>
                   </div>
                   <span className="text-[#271310]/80 font-medium">Digital (Card)</span>

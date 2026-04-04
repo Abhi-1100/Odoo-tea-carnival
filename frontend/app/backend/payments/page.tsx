@@ -99,11 +99,11 @@ export default function BackendPaymentsPage() {
       <div className="card overflow-hidden border border-brand-border/70">
         <div className="border-b border-brand-border px-5 py-3 flex items-center justify-between text-sm text-brand-muted">
           <div className="flex items-center gap-6">
-            <span className="hover:text-white">Orders</span>
-            <span className="hover:text-white">Products</span>
-            <span className="text-white">Reporting</span>
+            <span className="hover:text-brand-text">Orders</span>
+            <span className="hover:text-brand-text">Products</span>
+            <span className="text-brand-text">Reporting</span>
           </div>
-          <button className="text-brand-muted hover:text-white">
+          <button className="text-brand-muted hover:text-brand-text">
             <Menu size={16} />
           </button>
         </div>
@@ -111,7 +111,7 @@ export default function BackendPaymentsPage() {
         <div className="px-5 py-4 border-b border-brand-border/60">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h1 className="text-3xl font-bold text-white">Payments</h1>
+              <h1 className="text-3xl font-bold text-brand-text">Payments</h1>
               <p className="text-brand-muted text-sm mt-1">Group by payment method</p>
             </div>
             <div className="relative w-full max-w-xs">
@@ -147,7 +147,7 @@ export default function BackendPaymentsPage() {
                     onClick={() => toggleExpanded(group.method)}
                     className="w-full px-5 py-2.5 grid grid-cols-12 items-center hover:bg-brand-bg/40 transition-colors"
                   >
-                    <div className="col-span-5 flex items-center gap-2 text-left text-white font-medium">
+                    <div className="col-span-5 flex items-center gap-2 text-left text-brand-text font-medium">
                       <ChevronDown
                         size={14}
                         className={clsx("text-brand-muted transition-transform", isOpen ? "rotate-0" : "-rotate-90")}
@@ -155,7 +155,7 @@ export default function BackendPaymentsPage() {
                       {methodLabel(group.method)}
                     </div>
                     <div className="col-span-3 text-left text-brand-muted">&nbsp;</div>
-                    <div className="col-span-4 text-right text-white font-semibold">${Math.round(group.total).toLocaleString()}</div>
+                    <div className="col-span-4 text-right text-brand-text font-semibold">${Math.round(group.total).toLocaleString()}</div>
                   </button>
 
                   {isOpen && (
@@ -168,7 +168,7 @@ export default function BackendPaymentsPage() {
                               ? new Date(payment.paidAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "2-digit" })
                               : "-"}
                           </div>
-                          <div className="col-span-4 text-right text-white">${Math.round(payment.amountPaid).toLocaleString()}</div>
+                          <div className="col-span-4 text-right text-brand-text">${Math.round(payment.amountPaid).toLocaleString()}</div>
                         </div>
                       ))}
                     </div>

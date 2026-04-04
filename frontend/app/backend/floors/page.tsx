@@ -187,7 +187,7 @@ export default function FloorsPage() {
     <div className="p-8 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Floor Plan</h1>
+          <h1 className="text-2xl font-bold text-brand-text">Floor Plan</h1>
           <p className="text-brand-muted text-sm mt-1">Manage your dining floors and tables</p>
         </div>
         <div className="flex gap-3">
@@ -217,8 +217,8 @@ export default function FloorsPage() {
                   onClick={() => setActiveFloorId(f.id)}
                   className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-all -mb-px border-b-2 ${
                     f.id === activeFloorId
-                      ? "border-brand-primary text-white"
-                      : "border-transparent text-brand-muted hover:text-white"
+                      ? "border-brand-primary text-brand-text"
+                      : "border-transparent text-brand-muted hover:text-brand-text"
                   }`}
                 >
                   {f.name}
@@ -238,7 +238,7 @@ export default function FloorsPage() {
             {activeFloor?.tables.map((t) => (
               <div key={t.id} className={`card p-4 border ${statusColor[t.status]} transition-all ${!t.isActive ? "opacity-50" : ""}`}>
                 <div className="flex items-start justify-between mb-3">
-                  <div className="text-2xl font-bold text-white">T{t.tableNumber}</div>
+                  <div className="text-2xl font-bold text-brand-text">T{t.tableNumber}</div>
                   <Badge variant={t.status} dot />
                 </div>
                 <div className="flex items-center gap-1.5 text-brand-muted text-xs mb-4">
@@ -250,7 +250,7 @@ export default function FloorsPage() {
                       key={s}
                       onClick={() => updateTableStatus(t.id, s)}
                       className={`flex-1 py-1 rounded text-xs transition-all ${
-                        t.status === s ? "bg-brand-primary text-white" : "bg-brand-border text-brand-muted hover:text-white"
+                        t.status === s ? "bg-brand-primary text-brand-text" : "bg-brand-border text-brand-muted hover:text-brand-text"
                       }`}
                       title={s.charAt(0).toUpperCase() + s.slice(1)}
                     >
@@ -333,9 +333,9 @@ export default function FloorsPage() {
               }`}
               onClick={() => setForm((p) => ({ ...p, isActive: !p.isActive }))}
             >
-              {form.isActive && <Check size={12} className="text-white" />}
+              {form.isActive && <Check size={12} className="text-brand-text" />}
             </span>
-            <span className="text-sm text-white">Active table</span>
+            <span className="text-sm text-brand-text">Active table</span>
           </label>
           <div className="flex gap-3 justify-end pt-2">
             <Button variant="ghost" onClick={() => setModal(false)}>

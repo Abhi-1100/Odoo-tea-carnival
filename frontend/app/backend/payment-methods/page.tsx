@@ -202,22 +202,22 @@ export default function PaymentMethodsPage() {
   return (
     <div className="p-8 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-white">POS Settings</h1>
+        <h1 className="text-3xl font-bold text-brand-text">POS Settings</h1>
         <p className="text-brand-muted text-sm mt-1">Manage payment methods and terminal-level payment behavior</p>
       </div>
 
       <div className="card p-0 overflow-hidden border border-brand-border/60">
         <div className="relative overflow-hidden border-b border-brand-border bg-gradient-to-r from-[#2f2b14] via-[#3a3418] to-[#2a2420] px-6 py-5">
           <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_20%_20%,#f97316_0%,transparent_45%),radial-gradient(circle_at_80%_10%,#22d3ee_0%,transparent_35%)]" />
-          <div className="relative flex flex-wrap items-center gap-4 text-white">
-            <span className="text-base uppercase tracking-wider text-white/80">Point of Sale</span>
+          <div className="relative flex flex-wrap items-center gap-4 text-brand-text">
+            <span className="text-base uppercase tracking-wider text-brand-text/80">Point of Sale</span>
             <select
               value={pointOfSale}
               onChange={(e) => setPointOfSale(e.target.value)}
               className="bg-transparent border-b border-white/50 px-2 py-1 text-2xl font-semibold outline-none"
             >
               {posNames.map((name) => (
-                <option key={name} value={name} className="bg-[#1d1f2d] text-white">
+                <option key={name} value={name} className="bg-[#1d1f2d] text-brand-text">
                   {name}
                 </option>
               ))}
@@ -232,7 +232,7 @@ export default function PaymentMethodsPage() {
         </div>
 
         <div className="px-6 py-4 border-b border-brand-border bg-brand-bg/30 flex items-center justify-between">
-          <h2 className="text-2xl font-semibold text-white">Payment Methods</h2>
+          <h2 className="text-2xl font-semibold text-brand-text">Payment Methods</h2>
           <span className="text-xs text-brand-muted">Changes are applied to this POS config</span>
         </div>
 
@@ -244,7 +244,7 @@ export default function PaymentMethodsPage() {
                   <Landmark size={18} />
                 </div>
                 <div>
-                  <div className="text-white font-semibold">Cash</div>
+                  <div className="text-brand-text font-semibold">Cash</div>
                   <div className="text-xs text-brand-muted">Accept cash payments</div>
                 </div>
               </div>
@@ -255,11 +255,11 @@ export default function PaymentMethodsPage() {
           <div className="rounded-xl border border-brand-border bg-brand-bg/40 p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-sky-500/15 text-sky-300 flex items-center justify-center">
+                <div className="h-10 w-10 rounded-lg bg-sky-500/15 text-brand-primary flex items-center justify-center">
                   <CreditCard size={18} />
                 </div>
                 <div>
-                  <div className="text-white font-semibold">Digital (Bank, Card)</div>
+                  <div className="text-brand-text font-semibold">Digital (Bank, Card)</div>
                   <div className="text-xs text-brand-muted">Cards and digital wallets</div>
                 </div>
               </div>
@@ -274,7 +274,7 @@ export default function PaymentMethodsPage() {
                   <QrCode size={18} />
                 </div>
                 <div>
-                  <div className="text-white font-semibold">QR Payment (UPI)</div>
+                  <div className="text-brand-text font-semibold">QR Payment (UPI)</div>
                   <div className="text-xs text-brand-muted">Generate QR at checkout</div>
                 </div>
               </div>
@@ -286,7 +286,7 @@ export default function PaymentMethodsPage() {
         <div className="px-6 pb-6">
           <div className="rounded-xl border border-brand-border bg-brand-bg/30 p-5 space-y-4">
             <div className="flex flex-wrap items-center gap-3">
-              <label className="text-sm text-white font-medium">UPI ID</label>
+              <label className="text-sm text-brand-text font-medium">UPI ID</label>
               <input
                 value={upiInput}
                 onChange={(e) => setUpiInput(e.target.value)}
@@ -300,7 +300,7 @@ export default function PaymentMethodsPage() {
             </div>
 
             <div className="rounded-xl border border-brand-border/70 bg-[#161a29] p-4">
-              <div className="text-sm text-white font-semibold mb-3">Generated UPI QR</div>
+              <div className="text-sm text-brand-text font-semibold mb-3">Generated UPI QR</div>
               {loadingQr ? (
                 <div className="flex items-center gap-2 text-brand-muted text-sm">
                   <Loader2 size={14} className="animate-spin" />
@@ -311,7 +311,7 @@ export default function PaymentMethodsPage() {
                   <img src={qrBase64} alt="UPI QR" className="h-32 w-32 rounded-md border border-brand-border bg-white p-1" />
                   <div>
                     <div className="text-xs text-brand-muted">UPI ID</div>
-                    <div className="text-sm text-white font-medium">{savedUpiId}</div>
+                    <div className="text-sm text-brand-text font-medium">{savedUpiId}</div>
                     <div className="text-xs text-green-400 mt-1">Ready for customer scan</div>
                   </div>
                 </div>

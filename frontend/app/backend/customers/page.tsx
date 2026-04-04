@@ -170,11 +170,11 @@ export default function BackendCustomersPage() {
       <div className="card overflow-hidden border border-brand-border/70">
         <div className="border-b border-brand-border px-5 py-3 flex items-center justify-between text-sm text-brand-muted">
           <div className="flex items-center gap-6">
-            <span className="hover:text-white">Orders</span>
-            <span className="hover:text-white">Products</span>
-            <span className="hover:text-white">Reporting</span>
+            <span className="hover:text-brand-text">Orders</span>
+            <span className="hover:text-brand-text">Products</span>
+            <span className="hover:text-brand-text">Reporting</span>
           </div>
-          <button className="text-brand-muted hover:text-white">
+          <button className="text-brand-muted hover:text-brand-text">
             <Menu size={16} />
           </button>
         </div>
@@ -183,8 +183,8 @@ export default function BackendCustomersPage() {
           <div className="p-4">
             <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
               <div className="inline-flex items-center gap-2">
-                <button onClick={handleNew} className="px-3 py-1.5 rounded-md bg-fuchsia-300/30 text-fuchsia-100 text-sm">New</button>
-                <h1 className="text-3xl font-bold text-white">Customer</h1>
+                <button onClick={handleNew} className="px-3 py-1.5 rounded-md bg-brand-primary/10 border border-brand-primary/20 text-brand-primary text-sm">New</button>
+                <h1 className="text-3xl font-bold text-brand-text">Customer</h1>
               </div>
               <div className="flex items-center gap-2">
                 <div className="relative w-72">
@@ -196,7 +196,7 @@ export default function BackendCustomersPage() {
                     className="input-dark pl-9"
                   />
                 </div>
-                <button className="h-9 w-9 rounded border border-brand-border bg-brand-bg text-brand-muted hover:text-white inline-flex items-center justify-center">
+                <button className="h-9 w-9 rounded border border-brand-border bg-brand-bg text-brand-muted hover:text-brand-text inline-flex items-center justify-center">
                   <List size={14} />
                 </button>
               </div>
@@ -219,7 +219,7 @@ export default function BackendCustomersPage() {
               ) : (
                 filteredCustomers.map((customer) => (
                   <div key={customer.id} className="grid grid-cols-12 px-3 py-3 border-b border-brand-border/50 last:border-b-0 text-sm items-start">
-                    <div className="col-span-4 text-white">[] {customer.name}</div>
+                    <div className="col-span-4 text-brand-text">[] {customer.name}</div>
                     <div className="col-span-5 space-y-1">
                       <div className="flex items-center gap-2 text-brand-muted">
                         <Mail size={13} /> {customer.email || "-"}
@@ -228,12 +228,12 @@ export default function BackendCustomersPage() {
                         <Phone size={13} /> {customer.phone}
                       </div>
                     </div>
-                    <div className="col-span-2 text-white font-semibold">${Math.round(Number(customer.totalSales || 0)).toLocaleString()}</div>
+                    <div className="col-span-2 text-brand-text font-semibold">${Math.round(Number(customer.totalSales || 0)).toLocaleString()}</div>
                     <div className="col-span-1 flex justify-end gap-1">
-                      <button onClick={() => handleEdit(customer)} className="h-7 w-7 rounded border border-brand-border text-brand-muted hover:text-white inline-flex items-center justify-center">
+                      <button onClick={() => handleEdit(customer)} className="h-7 w-7 rounded border border-brand-border text-brand-muted hover:text-brand-text inline-flex items-center justify-center">
                         <Pencil size={12} />
                       </button>
-                      <button onClick={() => handleDelete(customer.id)} className="h-7 w-7 rounded border border-brand-border text-red-300 hover:text-red-100 inline-flex items-center justify-center">
+                      <button onClick={() => handleDelete(customer.id)} className="h-7 w-7 rounded border border-brand-border text-red-500 hover:text-red-700 inline-flex items-center justify-center">
                         <Trash2 size={12} />
                       </button>
                     </div>
@@ -246,15 +246,15 @@ export default function BackendCustomersPage() {
           <div className="p-4">
             <div className="flex items-center justify-between mb-4">
               <div className="inline-flex items-center gap-2">
-                <button className="px-3 py-1.5 rounded-md bg-fuchsia-300/30 text-fuchsia-100 text-sm">New</button>
-                <h1 className="text-3xl font-bold text-white">Customer</h1>
+                <button className="px-3 py-1.5 rounded-md bg-brand-primary/10 border border-brand-primary/20 text-brand-primary text-sm">New</button>
+                <h1 className="text-3xl font-bold text-brand-text">Customer</h1>
               </div>
               <button
                 onClick={() => {
                   setShowForm(false);
                   resetForm();
                 }}
-                className="h-9 px-3 rounded border border-brand-border text-brand-muted hover:text-white"
+                className="h-9 px-3 rounded border border-brand-border text-brand-muted hover:text-brand-text"
               >
                 List View
               </button>
@@ -310,7 +310,7 @@ export default function BackendCustomersPage() {
                 <button
                   disabled={saving}
                   onClick={saveCustomer}
-                  className="px-4 py-2 rounded-md bg-brand-primary text-white hover:opacity-90 disabled:opacity-60"
+                  className="px-4 py-2 rounded-md bg-brand-primary text-brand-text hover:opacity-90 disabled:opacity-60"
                 >
                   {saving ? "Saving..." : editingId ? "Update Customer" : "Create Customer"}
                 </button>
@@ -319,7 +319,7 @@ export default function BackendCustomersPage() {
                     setShowForm(false);
                     resetForm();
                   }}
-                  className="px-4 py-2 rounded-md border border-brand-border text-brand-muted hover:text-white"
+                  className="px-4 py-2 rounded-md border border-brand-border text-brand-muted hover:text-brand-text"
                 >
                   Cancel
                 </button>

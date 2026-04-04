@@ -15,15 +15,16 @@ module.exports = {
       },
       colors: {
         brand: {
-          bg: "#1a1a2e",
-          card: "#2a2a3e",
-          border: "#3a3a5e",
-          primary: "#e84393",
+          bg: "#fdf9f1",
+          card: "#ffffff",
+          border: "#e6e2da",
+          primary: "#A07154",
           teal: "#00c9a7",
           success: "#22c55e",
           warning: "#f97316",
           danger: "#ef4444",
-          muted: "#94a3b8",
+          muted: "#837563",
+          text: "#1c1c17",
         },
         coffee: {
           dark: "#38251C",

@@ -189,24 +189,24 @@ export default function CategoriesPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-slate-900">
-        <div className="text-white">Loading...</div>
+      <div className="flex items-center justify-center h-screen bg-brand-bg">
+        <div className="text-brand-text">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-900">
+    <div className="min-h-screen bg-brand-bg">
       {/* Navigation Strip */}
-      <div className="bg-slate-800 border-b border-slate-700 sticky top-0 z-10">
+      <div className="bg-brand-card border-b border-brand-border sticky top-0 z-10">
         <div className="min-h-12 flex items-center px-4 gap-6">
-          <button className="text-sm font-medium text-slate-400 hover:text-white transition">
+          <button className="text-sm font-medium text-brand-muted hover:text-brand-text transition">
             Orders
           </button>
-          <button className="text-sm font-medium text-blue-400 hover:text-blue-300 transition">
+          <button className="text-sm font-medium text-brand-primary hover:text-brand-primary/80 transition">
             Products
           </button>
-          <button className="text-sm font-medium text-slate-400 hover:text-white transition">
+          <button className="text-sm font-medium text-brand-muted hover:text-brand-text transition">
             Reporting
           </button>
         </div>
@@ -215,13 +215,13 @@ export default function CategoriesPage() {
       <div className="p-6">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-white mb-4">Product Category</h1>
+          <h1 className="text-3xl font-bold text-brand-text mb-4">Product Category</h1>
           
           {/* New Button */}
           <div className="flex items-center gap-3 mb-4">
             <Button
               onClick={handleAddNew}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2"
+              className="bg-brand-primary hover:bg-brand-primary/90 text-brand-text px-4 py-2 rounded flex items-center gap-2"
             >
               <Plus size={18} />
               New
@@ -235,22 +235,22 @@ export default function CategoriesPage() {
               placeholder="Search categories..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none"
+              className="input-dark w-full"
             />
           </div>
         </div>
 
         {/* Create/Edit Form */}
         {showForm && (
-          <div className="bg-slate-800 border border-slate-700 rounded-lg p-6 mb-6">
-            <h2 className="text-lg font-semibold text-white mb-4">
+          <div className="bg-brand-card border border-brand-border rounded-lg p-6 mb-6">
+            <h2 className="text-lg font-semibold text-brand-text mb-4">
               {editingId ? "Edit Category" : "New Category"}
             </h2>
 
             <div className="space-y-4">
               {/* Name */}
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-brand-text mb-2">
                   Name
                 </label>
                 <input
@@ -258,13 +258,13 @@ export default function CategoriesPage() {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="Category name"
-                  className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none"
+                  className="input-dark w-full"
                 />
               </div>
 
               {/* Description */}
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-brand-text mb-2">
                   Description
                 </label>
                 <textarea
@@ -272,13 +272,13 @@ export default function CategoriesPage() {
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Optional description"
                   rows={3}
-                  className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none"
+                  className="input-dark w-full"
                 />
               </div>
 
               {/* Color Picker */}
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-3">
+                <label className="block text-sm font-medium text-brand-text mb-3">
                   Color
                 </label>
                 <div className="flex gap-3 items-center">
@@ -290,7 +290,7 @@ export default function CategoriesPage() {
                         className={`w-8 h-8 rounded-full border-2 transition ${
                           formData.color === color
                             ? "border-white shadow-lg scale-110"
-                            : "border-slate-600 hover:border-slate-500"
+                            : "border-brand-border hover:border-brand-border/80"
                         }`}
                         style={{ backgroundColor: color }}
                         title={color}
@@ -306,7 +306,7 @@ export default function CategoriesPage() {
                       onChange={(e) => handleColorChange(e.target.value)}
                       className="w-12 h-10 rounded cursor-pointer"
                     />
-                    <span className="text-sm text-slate-400">{formData.color}</span>
+                    <span className="text-sm text-brand-muted">{formData.color}</span>
                   </div>
                 </div>
               </div>
@@ -315,13 +315,13 @@ export default function CategoriesPage() {
               <div className="flex gap-2 pt-4">
                 <Button
                   onClick={handleSave}
-                  className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+                  className="bg-brand-primary hover:bg-brand-primary/90 text-brand-text px-4 py-2 rounded"
                 >
                   {editingId ? "Update" : "Create"}
                 </Button>
                 <Button
                   onClick={handleCancel}
-                  className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded"
+                  className="bg-brand-bg hover:bg-slate-600 text-brand-text px-4 py-2 rounded"
                 >
                   Cancel
                 </Button>
@@ -331,24 +331,24 @@ export default function CategoriesPage() {
         )}
 
         {/* Categories Table */}
-        <div className="bg-slate-800 border border-slate-700 rounded-lg overflow-hidden">
+        <div className="bg-brand-card border border-brand-border rounded-lg overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-slate-700 bg-slate-800">
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300 w-12">
+                <tr className="border-b border-brand-border bg-brand-card">
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-brand-text w-12">
                     •••
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-brand-text">
                     Product Category
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-brand-text">
                     Color
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-brand-text">
                     Products
                   </th>
-                  <th className="px-4 py-3 text-center text-sm font-semibold text-slate-300 w-12">
+                  <th className="px-4 py-3 text-center text-sm font-semibold text-brand-text w-12">
                     Action
                   </th>
                 </tr>
@@ -356,7 +356,7 @@ export default function CategoriesPage() {
               <tbody>
                 {filteredCategories.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-4 py-6 text-center text-slate-400">
+                    <td colSpan={5} className="px-4 py-6 text-center text-brand-muted">
                       No categories found
                     </td>
                   </tr>
@@ -368,20 +368,20 @@ export default function CategoriesPage() {
                       onDragStart={(e) => handleDragStart(e, category.id)}
                       onDragOver={handleDragOver}
                       onDrop={(e) => handleDrop(e, category.id)}
-                      className={`border-b border-slate-700 hover:bg-slate-700 transition ${
-                        draggedItem === category.id ? "bg-slate-700 opacity-50" : ""
+                      className={`border-b border-brand-border hover:bg-brand-bg transition ${
+                        draggedItem === category.id ? "bg-brand-bg opacity-50" : ""
                       }`}
                     >
                       <td className="px-4 py-3 text-center cursor-move">
                         <GripVertical
                           size={16}
-                          className="text-slate-500 hover:text-slate-300"
+                          className="text-brand-muted/70 hover:text-brand-text"
                         />
                       </td>
                       <td className="px-4 py-3">
                         <button
                           onClick={() => handleEdit(category)}
-                          className="text-blue-400 hover:text-blue-300 font-medium transition"
+                          className="text-brand-primary hover:text-brand-primary/80 font-medium transition"
                         >
                           {category.name}
                         </button>
@@ -389,15 +389,15 @@ export default function CategoriesPage() {
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           <div
-                            className="w-6 h-6 rounded-full border border-slate-600"
+                            className="w-6 h-6 rounded-full border border-brand-border"
                             style={{ backgroundColor: category.color }}
                             title={category.color}
                           />
-                          <span className="text-xs text-slate-400">{category.color}</span>
+                          <span className="text-xs text-brand-muted">{category.color}</span>
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <span className="inline-block bg-slate-700 text-slate-300 px-2 py-1 rounded text-sm">
+                        <span className="inline-block bg-brand-bg text-brand-text px-2 py-1 rounded text-sm">
                           {category._count?.products || 0} products
                         </span>
                       </td>
@@ -419,7 +419,7 @@ export default function CategoriesPage() {
         </div>
 
         {/* Info Text */}
-        <div className="mt-6 text-sm text-slate-400">
+        <div className="mt-6 text-sm text-brand-muted">
           <p>💡 Click on a category name to edit it. Drag rows to reorder categories.</p>
         </div>
       </div>
