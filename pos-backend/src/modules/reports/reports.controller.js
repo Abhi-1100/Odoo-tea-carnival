@@ -172,8 +172,19 @@ const getProductsReport = async (req, res, next) => {
     const productSales = await prisma.orderItem.groupBy({
       by: ['productId'],
       where: { order: orderWhere },
-      _sum: { quantity: true, lineTotal: true },
-      orderBy: { _sum: { lineTotal: 'desc' } },
+      _sum: { quantity: true },
+      orderBy: { _sum: { quantity: 'desc' } },
+    });
+
+    // Calculate revenue per product from individual items
+    const productRevenueMap = {};
+    const allItems = await prisma.orderItem.findMany({
+      where: { order: orderWhere },
+      select: { productId: true, quantity: true, unitPrice: true },
+    });
+    allItems.forEach((item) => {
+      const revenue = Number(item.quantity) * Number(item.unitPrice);
+      productRevenueMap[item.productId] = (productRevenueMap[item.productId] || 0) + revenue;
     });
 
     // Enrich with product names
@@ -191,7 +202,7 @@ const getProductsReport = async (req, res, next) => {
       productName: productMap[ps.productId]?.name || 'Unknown',
       category: productMap[ps.productId]?.category?.name || 'Uncategorized',
       totalQuantity: ps._sum.quantity || 0,
-      totalRevenue: Math.round((Number(ps._sum.lineTotal) || 0) * 100) / 100,
+      totalRevenue: Math.round((productRevenueMap[ps.productId] || 0) * 100) / 100,
     }));
 
     res.json({ success: true, data: report });

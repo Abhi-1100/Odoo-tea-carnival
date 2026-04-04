@@ -1,0 +1,14 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/self-order/[token]/page": "app/self-order/[token]/page.js",
+  "/page": "app/page.js",
+  "/login/page": "app/login/page.js",
+  "/signup/page": "app/signup/page.js",
+  "/backend/self-order/page": "app/backend/self-order/page.js",
+  "/backend/kitchen-settings/page": "app/backend/kitchen-settings/page.js",
+  "/backend/reports/page": "app/backend/reports/page.js",
+  "/backend/page": "app/backend/page.js",
+  "/backend/products/page": "app/backend/products/page.js",
+  "/backend/floors/page": "app/backend/floors/page.js",
+  "/pos/page": "app/pos/page.js"
+}
