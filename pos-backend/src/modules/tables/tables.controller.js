@@ -93,4 +93,71 @@ const updateStatus = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-module.exports = { getAll, getByFloor, getById, create, update, remove, updateStatus };
+/** POST /api/tables/bulk-action */
+const bulkAction = async (req, res, next) => {
+  try {
+    const { action, ids, floorId } = req.body;
+
+    if (action === 'delete') {
+      const deleted = await prisma.table.deleteMany({
+        where: { id: { in: ids } },
+      });
+      return res.json({
+        success: true,
+        message: `Deleted ${deleted.count} table(s)`,
+        data: { count: deleted.count },
+      });
+    }
+
+    if (action === 'duplicate') {
+      const sourceTables = await prisma.table.findMany({
+        where: { id: { in: ids } },
+        orderBy: { id: 'asc' },
+      });
+
+      if (sourceTables.length === 0) {
+        throw new AppError('No tables found to duplicate', 404);
+      }
+
+      const targetFloorId = floorId || sourceTables[0].floorId;
+      const existingTables = await prisma.table.findMany({
+        where: { floorId: targetFloorId },
+        select: { tableNumber: true },
+      });
+      const usedNumbers = new Set(existingTables.map((t) => t.tableNumber));
+
+      const duplicateData = sourceTables.map((table) => {
+        let suffix = 1;
+        let candidate = `${table.tableNumber}-copy`;
+        while (usedNumbers.has(candidate)) {
+          suffix += 1;
+          candidate = `${table.tableNumber}-copy-${suffix}`;
+        }
+        usedNumbers.add(candidate);
+
+        return {
+          floorId: targetFloorId,
+          tableNumber: candidate,
+          seats: table.seats,
+          status: 'available',
+          appointmentResource: table.appointmentResource,
+          isActive: table.isActive,
+        };
+      });
+
+      const created = await prisma.$transaction(
+        duplicateData.map((data) => prisma.table.create({ data }))
+      );
+
+      return res.status(201).json({
+        success: true,
+        message: `Duplicated ${created.length} table(s)`,
+        data: created,
+      });
+    }
+
+    throw new AppError('Unsupported bulk action', 400);
+  } catch (error) { next(error); }
+};
+
+module.exports = { getAll, getByFloor, getById, create, update, remove, updateStatus, bulkAction };

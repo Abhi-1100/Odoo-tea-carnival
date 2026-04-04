@@ -20,4 +20,10 @@ const updateStatusSchema = z.object({
   status: z.enum(['available', 'occupied', 'reserved']),
 });
 
-module.exports = { createTableSchema, updateTableSchema, updateStatusSchema };
+const bulkActionSchema = z.object({
+  action: z.enum(['duplicate', 'delete']),
+  ids: z.array(z.number().int().positive()).min(1, 'Select at least one table'),
+  floorId: z.number().int().positive().optional(),
+});
+
+module.exports = { createTableSchema, updateTableSchema, updateStatusSchema, bulkActionSchema };

@@ -77,7 +77,7 @@ export const api = {
   floors: {
     getAll: (token: string) =>
       apiFetch<{ success: boolean; data: { id: number; name: string; tables: unknown[] }[] }>('/floors', { token }),
-    create: (data: unknown, token: string) =>
+    create: (data: { name: string; isActive?: boolean; createDefaultTables?: boolean }, token: string) =>
       apiFetch<{ success: boolean; data: unknown }>('/floors', { method: 'POST', body: data, token }),
     update: (id: number, data: unknown, token: string) =>
       apiFetch<{ success: boolean; data: unknown }>(`/floors/${id}`, { method: 'PUT', body: data, token }),
@@ -98,6 +98,8 @@ export const api = {
       apiFetch<{ success: boolean; data: unknown }>(`/tables/${id}`, { method: 'PUT', body: data, token }),
     updateStatus: (id: number, status: string, token: string) =>
       apiFetch<{ success: boolean; data: unknown }>(`/tables/${id}/status`, { method: 'PUT', body: { status }, token }),
+    bulkAction: (data: { action: 'duplicate' | 'delete'; ids: number[]; floorId?: number }, token: string) =>
+      apiFetch<{ success: boolean; data: unknown; message?: string }>(`/tables/bulk-action`, { method: 'POST', body: data, token }),
     delete: (id: number, token: string) =>
       apiFetch<{ success: boolean }>(`/tables/${id}`, { method: 'DELETE', token }),
   },

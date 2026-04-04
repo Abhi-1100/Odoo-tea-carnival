@@ -19,7 +19,28 @@ const getAll = async (req, res, next) => {
 /** POST /api/floors */
 const create = async (req, res, next) => {
   try {
-    const floor = await prisma.floor.create({ data: req.body });
+    const { name, isActive, createDefaultTables = true } = req.body;
+    const floor = await prisma.floor.create({
+      data: {
+        name,
+        isActive,
+        tables: createDefaultTables
+          ? {
+              create: [101, 102, 103, 104, 105].map((tableNo) => ({
+                tableNumber: String(tableNo),
+                seats: 5,
+                appointmentResource: `Table ${tableNo} (Seating 5)`,
+                isActive: true,
+              })),
+            }
+          : undefined,
+      },
+      include: {
+        tables: {
+          orderBy: { tableNumber: 'asc' },
+        },
+      },
+    });
     res.status(201).json({ success: true, data: floor });
   } catch (error) { next(error); }
 };
