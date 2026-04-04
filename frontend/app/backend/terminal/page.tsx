@@ -150,82 +150,97 @@ export default function TerminalPage() {
           </button>
 
           {showTopMenu && (
-            <div className="absolute right-4 top-14 z-20 w-[min(1080px,calc(100vw-3rem))] rounded-2xl border border-[#2c365c] bg-gradient-to-br from-[#161d39] via-[#141a34] to-[#0f1427] p-6 shadow-[0_28px_64px_rgba(4,9,30,.65)]">
-              <div className="mb-6 flex items-center justify-between">
+            <div className="absolute right-4 top-14 z-20 w-[min(880px,calc(100vw-3rem))] rounded-2xl border border-brand-border/70 bg-gradient-to-br from-[#181f34] via-[#171d31] to-[#121827] p-5 shadow-[0_20px_60px_rgba(3,8,23,.55)]">
+              <div className="mb-4 flex items-center justify-between">
                 <div>
-                  <h3 className="text-white text-5xl font-bold leading-none">Menu</h3>
-                  <p className="mt-2 text-2xl text-[#9cb0d5]">Jump to core POS modules</p>
+                  <h3 className="text-white text-3xl font-semibold leading-none">Menu</h3>
+                  <p className="mt-1 text-xs text-brand-muted">Jump to core POS modules</p>
                 </div>
                 <button
                   onClick={() => setShowTopMenu(false)}
-                  className="rounded-xl border border-[#3a456d] px-4 py-2 text-3xl text-[#9cb0d5] hover:text-white hover:border-[#5a6da1]"
+                  className="rounded-md border border-brand-border px-2.5 py-1 text-xs text-brand-muted hover:text-white"
                 >
                   Close
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-5 text-base">
-                <div className="rounded-2xl border border-[#31406b] bg-[#171f3f]/80 p-5">
-                  <div className="mb-4 flex items-center gap-3 text-white text-3xl font-semibold">
-                    <ClipboardList size={20} className="text-[#f652a0]" />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div className="rounded-xl border border-brand-border/70 bg-brand-bg/30 p-3">
+                  <div className="mb-3 flex items-center gap-2 text-white font-semibold">
+                    <ClipboardList size={14} className="text-brand-primary" />
                     Orders
                   </div>
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     <button
                       onClick={() => navigateTo("/backend/orders")}
-                      className="w-full rounded-xl border border-transparent bg-[#121834] px-4 py-3 text-left text-3xl text-[#a8b7d8] hover:text-white hover:border-[#5f6ea7]"
+                      className="w-full rounded-lg border border-transparent bg-brand-bg px-3 py-2 text-left text-brand-muted hover:text-white hover:border-brand-primary/40"
                     >
                       Orders
                     </button>
                     <button
                       onClick={() => navigateTo("/backend/payments")}
-                      className="w-full rounded-xl border border-transparent px-4 py-3 text-left text-3xl text-[#a8b7d8] hover:text-white hover:border-[#5f6ea7] hover:bg-[#121834]"
+                      className="w-full rounded-lg border border-transparent px-3 py-2 text-left text-brand-muted hover:text-white hover:border-brand-primary/40 hover:bg-brand-bg/60"
                     >
                       Payment
                     </button>
                     <button
                       onClick={() => navigateTo("/backend/customers")}
-                      className="w-full rounded-xl border border-transparent px-4 py-3 text-left text-3xl text-[#a8b7d8] hover:text-white hover:border-[#5f6ea7] hover:bg-[#121834]"
+                      className="w-full rounded-lg border border-transparent px-3 py-2 text-left text-brand-muted hover:text-white hover:border-brand-primary/40 hover:bg-brand-bg/60"
                     >
                       Customer
                     </button>
                   </div>
                 </div>
 
-                <div className="rounded-2xl border border-[#31406b] bg-[#171f3f]/80 p-5">
-                  <div className="mb-4 flex items-center gap-3 text-white text-3xl font-semibold">
-                    <Box size={20} className="text-[#f652a0]" />
+                <div className="rounded-xl border border-brand-border/70 bg-brand-bg/30 p-3">
+                  <div className="mb-3 flex items-center gap-2 text-white font-semibold">
+                    <Box size={14} className="text-brand-primary" />
                     Products
                   </div>
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     <button
                       onClick={() => navigateTo("/backend/products")}
-                      className="w-full rounded-xl border border-transparent bg-[#121834] px-4 py-3 text-left text-3xl text-[#a8b7d8] hover:text-white hover:border-[#5f6ea7]"
+                      className="w-full rounded-lg border border-transparent bg-brand-bg px-3 py-2 text-left text-brand-muted hover:text-white hover:border-brand-primary/40"
                     >
                       Products
                     </button>
                     <button
                       onClick={() => navigateTo("/backend/categories")}
-                      className="w-full rounded-xl border border-transparent px-4 py-3 text-left text-3xl text-[#a8b7d8] hover:text-white hover:border-[#5f6ea7] hover:bg-[#121834]"
+                      className="w-full rounded-lg border border-transparent px-3 py-2 text-left text-brand-muted hover:text-white hover:border-brand-primary/40 hover:bg-brand-bg/60"
                     >
                       Category
                     </button>
                   </div>
                 </div>
 
-                <div className="rounded-2xl border border-[#31406b] bg-[#171f3f]/80 p-5">
-                  <div className="mb-4 flex items-center gap-3 text-white text-3xl font-semibold">
-                    <BarChart3 size={20} className="text-[#f652a0]" />
+                <div className="rounded-xl border border-brand-border/70 bg-brand-bg/30 p-3">
+                  <div className="mb-3 flex items-center gap-2 text-white font-semibold">
+                    <BarChart3 size={14} className="text-brand-primary" />
                     Reporting
                   </div>
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     <button
                       onClick={() => navigateTo("/backend/reports")}
-                      className="w-full rounded-xl border border-transparent bg-[#121834] px-4 py-3 text-left text-3xl text-[#a8b7d8] hover:text-white hover:border-[#5f6ea7]"
+                      className="w-full rounded-lg border border-transparent bg-brand-bg px-3 py-2 text-left text-brand-muted hover:text-white hover:border-brand-primary/40"
                     >
                       Dashboard
                     </button>
                   </div>
+                </div>
+              </div>
+
+              <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 text-xs text-brand-muted">
+                <div className="rounded-lg bg-brand-bg/40 px-3 py-2 inline-flex items-center gap-2">
+                  <Wallet size={13} />
+                  Billing and payments
+                </div>
+                <div className="rounded-lg bg-brand-bg/40 px-3 py-2 inline-flex items-center gap-2">
+                  <Tags size={13} />
+                  Product and category setup
+                </div>
+                <div className="rounded-lg bg-brand-bg/40 px-3 py-2 inline-flex items-center gap-2">
+                  <Users size={13} />
+                  Staff and customer visibility
                 </div>
               </div>
             </div>
