@@ -4,4 +4,8 @@ const updateStageSchema = z.object({
   stage: z.enum(['to_cook', 'preparing', 'completed']),
 });
 
-module.exports = { updateStageSchema };
+const markItemPreparedSchema = z.object({
+  isPrepared: z.boolean().optional().default(true),
+});
+
+module.exports = { updateStageSchema, markItemPreparedSchema };

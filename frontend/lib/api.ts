@@ -180,16 +180,59 @@ export const api = {
   },
   
   kitchen: {
-    getTickets: (token: string, stage?: string) => {
-      const query = stage ? `?stage=${stage}` : '';
-      return apiFetch<{ success: boolean; data: unknown[] }>(`/kitchen/tickets${query}`, { token });
+    getTickets: (
+      token: string,
+      params?: { stage?: string; product?: string; category?: string; search?: string; page?: number; limit?: number }
+    ) => {
+      const query = new URLSearchParams();
+      if (params?.stage) query.set('stage', params.stage);
+      if (params?.product) query.set('product', params.product);
+      if (params?.category) query.set('category', params.category);
+      if (params?.search) query.set('search', params.search);
+      if (params?.page) query.set('page', String(params.page));
+      if (params?.limit) query.set('limit', String(params.limit));
+      const suffix = query.toString() ? `?${query.toString()}` : '';
+      return apiFetch<{ success: boolean; data: unknown }>(`/kitchen/tickets${suffix}`, { token });
     },
+    getFilters: (token: string) =>
+      apiFetch<{ success: boolean; data: { products: string[]; categories: string[] } }>(`/kitchen/filters`, { token }),
+    getCounts: (token: string) =>
+      apiFetch<{ success: boolean; data: { all: number; to_cook: number; preparing: number; completed: number } }>(`/kitchen/tickets/counts`, { token }),
     getTicketById: (id: number, token: string) =>
       apiFetch<{ success: boolean; data: unknown }>(`/kitchen/tickets/${id}`, { token }),
     updateStage: (id: number, stage: string, token: string) =>
       apiFetch<{ success: boolean; data: unknown }>(`/kitchen/tickets/${id}/stage`, { method: 'PUT', body: { stage }, token }),
-    markItemPrepared: (ticketId: number, itemId: number, token: string) =>
-      apiFetch<{ success: boolean; data: unknown }>(`/kitchen/tickets/${ticketId}/items/${itemId}/prepared`, { method: 'PUT', token }),
+    markItemPrepared: (ticketId: number, itemId: number, isPrepared: boolean, token: string) =>
+      apiFetch<{ success: boolean; data: unknown }>(`/kitchen/tickets/${ticketId}/items/${itemId}/prepared`, { method: 'PUT', body: { isPrepared }, token }),
+  },
+
+  customerDisplay: {
+    getActive: () =>
+      apiFetch<{
+        success: boolean;
+        data: {
+          mode: 'idle' | 'order' | 'qr' | 'thankyou';
+          storeName: string;
+          message: string;
+          order: null | {
+            id: number;
+            orderNumber: string;
+            status: string;
+            subtotal?: number;
+            taxAmount?: number;
+            totalAmount?: number;
+            completedAt?: string;
+            table?: { id: number; tableNumber: string };
+            items?: { id: number; quantity: number; lineTotal: number; product: { name: string } }[];
+          };
+          payment?: null | {
+            id: number;
+            status: string;
+            amountPaid: number;
+            paymentMethod: { name: string; type: string };
+          };
+        };
+      }>(`/customer-display/active`),
   },
   
   reports: {

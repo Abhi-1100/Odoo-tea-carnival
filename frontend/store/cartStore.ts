@@ -8,6 +8,7 @@ export interface CartItem {
   name: string;
   price: number;
   qty: number;
+  emoji?: string;
   notes?: string;
 }
 
@@ -45,6 +46,7 @@ interface CartState {
   removeItem: (productId: number) => void;
   clearCart: () => void;
   getSubtotal: () => number;
+  getTax: () => number;
   getTotal: () => number;
   createOrder: (token: string) => Promise<{ id: number; orderNumber: string }>;
   sendToKitchen: (orderId: number, token: string) => Promise<void>;
@@ -76,7 +78,7 @@ export const useCartStore = create<CartState>((set, get) => ({
   addItem: (item) => {
     const existing = get().items.find((i) => i.productId === item.productId);
     if (existing) {
-      set({ items: get().items.map((i) => i.productId === item.productId ? { ...i, qty: i.qty + 1 } : i) });
+      set({ items: get().items.map((i) => i.productId === item.productId ? { ...i, qty: i.qty + 1, emoji: i.emoji || item.emoji } : i) });
     } else {
       set({ items: [...get().items, { ...item, qty: item.qty || 1 }] });
     }
@@ -96,7 +98,12 @@ export const useCartStore = create<CartState>((set, get) => ({
   
   getSubtotal: () => get().items.reduce((sum, i) => sum + i.price * i.qty, 0),
   
-  getTotal: () => get().getSubtotal(), // Tax calculated on backend
+  getTax: () => {
+    const subtotal = get().getSubtotal();
+    return Math.round(subtotal * 0.05);
+  },
+
+  getTotal: () => get().getSubtotal() + get().getTax(),
   
   createOrder: async (token) => {
     const { tableId, sessionId, items } = get();

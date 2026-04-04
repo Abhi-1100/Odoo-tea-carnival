@@ -343,6 +343,7 @@ model KitchenTicketItem {
   ticketId    Int      @map("ticket_id")
   orderItemId Int      @map("order_item_id")
   productName String   @map("product_name") @db.VarChar(150)
+  categoryName String? @map("category_name") @db.VarChar(100)
   variantInfo String?  @map("variant_info") @db.VarChar(150)
   quantity    Int
   notes       String?

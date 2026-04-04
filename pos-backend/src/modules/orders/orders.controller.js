@@ -184,6 +184,16 @@ const create = async (req, res, next) => {
       },
     });
 
+    try {
+      const io = getIO();
+      io.of('/customer').emit('display_updated', {
+        reason: 'order_created',
+        orderId: finalOrder.id,
+      });
+    } catch (e) {
+      // Socket may be unavailable in tests.
+    }
+
     res.status(201).json({ success: true, data: finalOrder });
   } catch (error) { next(error); }
 };
@@ -217,7 +227,14 @@ const sendToKitchen = async (req, res, next) => {
       include: {
         items: {
           include: {
-            product: { select: { id: true, name: true, sendToKitchen: true } },
+            product: {
+              select: {
+                id: true,
+                name: true,
+                sendToKitchen: true,
+                category: { select: { name: true } },
+              },
+            },
             variant: { select: { id: true, attribute: true, value: true } },
           },
         },
@@ -254,6 +271,7 @@ const sendToKitchen = async (req, res, next) => {
           create: kitchenItems.map((item) => ({
             orderItemId: item.id,
             productName: item.product.name,
+            categoryName: item.product.category?.name || null,
             variantInfo: item.variant
               ? `${item.variant.attribute}: ${item.variant.value}`
               : null,
@@ -288,7 +306,14 @@ const sendToKitchen = async (req, res, next) => {
       console.warn('Socket.io not available for kitchen emit');
     }
 
-    res.json({ success: true, data: ticket });
+    res.json({
+      success: true,
+      data: {
+        ...ticket,
+        itemCount: ticket.items.length,
+        totalQty: ticket.items.reduce((sum, i) => sum + i.quantity, 0),
+      },
+    });
   } catch (error) { next(error); }
 };
 
