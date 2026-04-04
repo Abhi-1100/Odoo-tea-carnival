@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { Clock, ChevronRight, Search, ChevronLeft } from "lucide-react";
 import { useKitchenStore } from "@/store/kitchenStore";
 import { useAuthStore } from "@/store/authStore";
@@ -52,6 +53,7 @@ function getCategoryFromProductName(name: string) {
 }
 
 export default function KitchenPage() {
+  const router = useRouter();
   const tickets = useKitchenStore((s) => s.tickets) as unknown as KitchenTicketView[];
   const fetchTickets = useKitchenStore((s) => s.fetchTickets);
   const moveTicket = useKitchenStore((s) => s.moveTicket);
@@ -158,7 +160,13 @@ export default function KitchenPage() {
     <div className="min-h-screen bg-brand-bg flex flex-col">
       {/* Header */}
       <header className="bg-brand-card border-b border-brand-border px-6 py-4 flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <button
+            onClick={() => router.push("/backend/terminal")}
+            className="h-9 px-3 rounded-lg bg-brand-bg border border-brand-border text-white text-sm hover:border-brand-primary/50 hover:bg-brand-bg/80 transition-colors"
+          >
+            Back
+          </button>
           <div className="text-2xl">👨‍🍳</div>
           <div>
             <h1 className="text-white font-bold text-lg">Kitchen Display</h1>

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Coffee, Eye, EyeOff, Lock, Mail, User } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import toast from "react-hot-toast";
+import { api } from "@/lib/api";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -28,9 +29,21 @@ export default function SignupPage() {
   const handleSignup = async () => {
     if (!validate()) return;
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1200));
-    toast.success("Account created! Please sign in.");
-    router.push("/login");
+
+    try {
+      await api.auth.signup({
+        name: form.name.trim(),
+        email: form.email.trim(),
+        password: form.password,
+      });
+
+      toast.success("Account created! Please sign in.");
+      router.push("/login");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Signup failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const f = (k: string) => ({ value: form[k as keyof typeof form], onChange: (e: React.ChangeEvent<HTMLInputElement>) => { setForm((p) => ({ ...p, [k]: e.target.value })); setErrors((p) => ({ ...p, [k]: "" })); } });
