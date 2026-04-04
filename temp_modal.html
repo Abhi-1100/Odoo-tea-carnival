@@ -1,0 +1,362 @@
+<html class="light" lang="en"><head></head><body class="bg-surface text-on-surface font-body selection:bg-primary-fixed selection:text-on-primary-fixed relative overflow-hidden">```html
+
+
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;family=Plus+Jakarta+Sans:wght@200..800&amp;family=Sora:wght@100..800&amp;family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-primary-fixed-variant": "#614000",
+            "tertiary-fixed": "#ffdcc3",
+            "on-surface": "#1c1c17",
+            "on-secondary-container": "#596468",
+            "tertiary-container": "#d9aa87",
+            "secondary": "#556064",
+            "surface-variant": "#e6e2da",
+            "secondary-container": "#d6e2e6",
+            "primary-fixed-dim": "#fdba49",
+            "inverse-surface": "#31302b",
+            "tertiary-fixed-dim": "#edbd99",
+            "on-tertiary-fixed": "#2e1501",
+            "primary": "#805600",
+            "on-background": "#1c1c17",
+            "surface-container-high": "#ece8e0",
+            "outline-variant": "#d5c4af",
+            "surface-container-highest": "#e6e2da",
+            "on-error-container": "#93000a",
+            "on-primary-container": "#5f3f00",
+            "on-tertiary-container": "#5f3e23",
+            "on-primary-fixed": "#281800",
+            "secondary-fixed": "#d9e4e9",
+            "surface-dim": "#dddad2",
+            "on-error": "#ffffff",
+            "surface-container-lowest": "#ffffff",
+            "on-secondary-fixed-variant": "#3e484c",
+            "background": "#fdf9f1",
+            "on-secondary-fixed": "#131d21",
+            "inverse-primary": "#fdba49",
+            "on-secondary": "#ffffff",
+            "error": "#ba1a1a",
+            "on-tertiary": "#ffffff",
+            "on-tertiary-fixed-variant": "#613f24",
+            "inverse-on-surface": "#f4f0e8",
+            "surface-container": "#f1ede5",
+            "surface": "#fdf9f1",
+            "surface-bright": "#fdf9f1",
+            "primary-container": "#e8a838",
+            "on-primary": "#ffffff",
+            "surface-tint": "#805600",
+            "surface-container-low": "#f7f3eb",
+            "error-container": "#ffdad6",
+            "tertiary": "#7b5639",
+            "secondary-fixed-dim": "#bdc8cd",
+            "outline": "#837563",
+            "primary-fixed": "#ffddaf",
+            "on-surface-variant": "#504535"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "fontFamily": {
+            "headline": ["Cormorant Garamond", "serif"],
+            "body": ["Plus Jakarta Sans", "sans-serif"],
+            "label": ["Sora", "sans-serif"],
+            "mono": ["IBM Plex Mono", "monospace"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+    }
+    .amber-gradient {
+      background: linear-gradient(135deg, #805600 0%, #e8a838 100%);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #e6e2da;
+      border-radius: 10px;
+    }
+  </style>
+<!-- Selection Modal Overlay -->
+<div class="fixed inset-0 z-[200] flex items-center justify-center p-4">
+<div class="absolute inset-0 bg-on-surface/40 backdrop-blur-[20px]"></div>
+<div class="relative w-full max-w-lg bg-white/95 backdrop-blur-md rounded-[16px] shadow-2xl overflow-hidden border-t-2 border-primary-container/30 flex flex-col max-h-[90vh]">
+<!-- Close Button -->
+<button class="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-white/50 backdrop-blur flex items-center justify-center hover:bg-white transition-colors">
+<span class="material-symbols-outlined text-on-surface text-xl">close</span>
+</button>
+<!-- Item Image -->
+<div class="relative h-64 w-full shrink-0">
+<img alt="Amber Solstice Reserve" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBwIovOqeVM510QP1TxZIb8MstzzWKA9ulm2BkWpx_zHFAEcjEhIOq8dygcGUu1SB0zIuXYJICTC9xIfgM5xzn764H6-r1xQ0iJpH48YFz4HitcZeYQ0EX6HfCuqwNc67SawLqw24W53xC6IPnOq5OMFNKVIFy2X26LqEiMCwya5Gs2z8NjQnLEtkjh3nuc8FBE7DqWv2exKseCCFIheHHeYhdpoWOG4P-RcysprjXcETCd65WcI6Gr_Zioy8zb4X0hmiwdaH-jR30"/>
+<div class="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white/95 to-transparent"></div>
+</div>
+<!-- Modal Content (Scrollable) -->
+<div class="px-8 pb-32 pt-2 overflow-y-auto custom-scrollbar">
+<div class="mb-8">
+<h2 class="text-4xl font-headline italic text-on-surface mb-2">Amber Solstice Reserve</h2>
+<p class="text-on-surface-variant font-label text-xs leading-relaxed uppercase tracking-wider">A curated blend of high-altitude Ethiopian beans with notes of toasted honeycomb and wild jasmine.</p>
+</div>
+<!-- Options: Select Type -->
+<div class="mb-8">
+<h4 class="font-label text-[10px] uppercase tracking-[0.2em] text-primary font-bold mb-4">Select Type</h4>
+<div class="space-y-3">
+<label class="flex items-center group cursor-pointer">
+<input checked="" class="w-4 h-4 text-primary focus:ring-primary border-outline-variant/50" name="coffee-type" type="radio"/>
+<span class="ml-3 font-label text-xs uppercase tracking-widest text-on-surface-variant group-hover:text-on-surface transition-colors">Regular</span>
+</label>
+<label class="flex items-center group cursor-pointer">
+<input class="w-4 h-4 text-primary focus:ring-primary border-outline-variant/50" name="coffee-type" type="radio"/>
+<span class="ml-3 font-label text-xs uppercase tracking-widest text-on-surface-variant group-hover:text-on-surface transition-colors">Decaf</span>
+</label>
+<label class="flex items-center group cursor-pointer">
+<input class="w-4 h-4 text-primary focus:ring-primary border-outline-variant/50" name="coffee-type" type="radio"/>
+<span class="ml-3 font-label text-xs uppercase tracking-widest text-on-surface-variant group-hover:text-on-surface transition-colors">Oat Milk</span>
+</label>
+</div>
+</div>
+<!-- Options: Add Extras -->
+<div class="mb-4">
+<h4 class="font-label text-[10px] uppercase tracking-[0.2em] text-primary font-bold mb-4">Add Extras</h4>
+<div class="space-y-3">
+<label class="flex items-center group cursor-pointer">
+<input class="w-4 h-4 rounded text-primary focus:ring-primary border-outline-variant/50" type="checkbox"/>
+<span class="ml-3 font-label text-xs uppercase tracking-widest text-on-surface-variant group-hover:text-on-surface transition-colors">Extra Shot (+$1.50)</span>
+</label>
+<label class="flex items-center group cursor-pointer">
+<input class="w-4 h-4 rounded text-primary focus:ring-primary border-outline-variant/50" type="checkbox"/>
+<span class="ml-3 font-label text-xs uppercase tracking-widest text-on-surface-variant group-hover:text-on-surface transition-colors">Caramel Drizzle (+$0.50)</span>
+</label>
+<label class="flex items-center group cursor-pointer">
+<input class="w-4 h-4 rounded text-primary focus:ring-primary border-outline-variant/50" type="checkbox"/>
+<span class="ml-3 font-label text-xs uppercase tracking-widest text-on-surface-variant group-hover:text-on-surface transition-colors">Whipped Cream (+$0.75)</span>
+</label>
+</div>
+</div>
+</div>
+<!-- Sticky Bottom Bar -->
+<div class="absolute bottom-0 left-0 right-0 p-6 bg-white/95 backdrop-blur border-t border-outline-variant/10 flex items-center gap-4">
+<!-- Quantity Stepper -->
+<div class="flex items-center bg-surface-container-low rounded-full px-2 py-1 border border-outline-variant/10">
+<button class="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg">remove</span>
+</button>
+<span class="w-10 text-center font-mono font-medium text-on-surface">1</span>
+<button class="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg">add</span>
+</button>
+</div>
+<!-- Add to Basket Button -->
+<button class="flex-1 bg-[#E8A838] hover:bg-[#D69627] text-on-primary h-12 rounded-full font-label text-[12px] uppercase tracking-[0.2em] flex items-center justify-center gap-2 shadow-lg shadow-[#E8A838]/20 transition-all active:scale-[0.98]">
+        Add to Basket — $12.50
+      </button>
+</div>
+</div>
+</div>
+<!-- SideNavBar: Hidden-on-hover specialty implementation -->
+<aside class="fixed left-0 top-0 h-full w-[280px] -translate-x-[268px] hover:translate-x-0 transition-transform duration-500 ease-in-out z-[100] bg-surface-container-lowest/80 backdrop-blur-[20px] shadow-[40px_0_80px_rgba(80,69,53,0.04)] group border-r border-outline-variant/15">
+<div class="flex flex-col py-12 pr-4 h-full">
+<!-- Handle indicator -->
+<div class="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-12 bg-primary-container rounded-l-full opacity-60 group-hover:opacity-0 transition-opacity"></div>
+<div class="px-8 mb-12">
+<h2 class="font-headline text-xl italic text-on-surface">The Curator</h2>
+<p class="font-label uppercase tracking-[0.1em] text-[10px] text-on-surface-variant opacity-60">Select your craft</p>
+</div>
+<nav class="flex-1 space-y-2">
+<!-- Tab: Signature (Active) -->
+<a class="flex items-center gap-4 px-8 py-4 text-primary font-bold bg-surface-container-low rounded-r-full transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label uppercase tracking-[0.1em] text-[12px]">Signature</span>
+</a>
+<!-- Tab: Espresso -->
+<a class="flex items-center gap-4 px-8 py-4 text-on-surface/50 hover:bg-surface-container-low hover:text-primary transition-all group/item" href="#">
+<span class="material-symbols-outlined" data-icon="coffee">coffee</span>
+<span class="font-label uppercase tracking-[0.1em] text-[12px]">Espresso</span>
+</a>
+<!-- Tab: Pourover -->
+<a class="flex items-center gap-4 px-8 py-4 text-on-surface/50 hover:bg-surface-container-low hover:text-primary transition-all group/item" href="#">
+<span class="material-symbols-outlined" data-icon="coffee_maker">coffee_maker</span>
+<span class="font-label uppercase tracking-[0.1em] text-[12px]">Pourover</span>
+</a>
+<!-- Tab: Pastries -->
+<a class="flex items-center gap-4 px-8 py-4 text-on-surface/50 hover:bg-surface-container-low hover:text-primary transition-all group/item" href="#">
+<span class="material-symbols-outlined" data-icon="bakery_dining">bakery_dining</span>
+<span class="font-label uppercase tracking-[0.1em] text-[12px]">Pastries</span>
+</a>
+<!-- Tab: Merch -->
+<a class="flex items-center gap-4 px-8 py-4 text-on-surface/50 hover:bg-surface-container-low hover:text-primary transition-all group/item" href="#">
+<span class="material-symbols-outlined" data-icon="local_mall">local_mall</span>
+<span class="font-label uppercase tracking-[0.1em] text-[12px]">Merch</span>
+</a>
+</nav>
+<div class="px-8 mt-auto pt-8">
+<div class="p-4 rounded-xl bg-surface-container-low/50">
+<p class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant mb-2">Current Loyalty</p>
+<div class="flex items-baseline gap-1">
+<span class="text-2xl font-headline italic text-primary">1,240</span>
+<span class="font-label text-[10px] text-on-surface-variant">PTS</span>
+</div>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-3 min-h-screen pt-24 pb-32 px-6 md:px-16 lg:px-24">
+<!-- TopAppBar Fragment (Integrated into Canvas) -->
+<header class="mb-16 flex justify-between items-end">
+<div class="space-y-2">
+<span class="font-label uppercase tracking-[0.2em] text-[12px] text-primary font-semibold">Limited Series</span>
+<h1 class="text-6xl md:text-8xl font-headline italic tracking-tighter text-on-surface">Signature Blends</h1>
+</div>
+<div class="hidden lg:flex items-center gap-8 pb-4">
+<div class="text-right">
+<p class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant">Filter by Profile</p>
+<div class="flex gap-4 mt-2">
+<button class="text-primary border-b border-primary/20 pb-1 text-sm font-medium">All</button>
+<button class="text-on-surface/40 hover:text-primary transition-colors text-sm font-medium">Bright</button>
+<button class="text-on-surface/40 hover:text-primary transition-colors text-sm font-medium">Earthy</button>
+</div>
+</div>
+</div>
+</header>
+<!-- Product Grid: Asymmetric Bento-inspired layout -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-12 opacity-50">
+<!-- Primary Featured Card -->
+<div class="lg:col-span-8 group relative overflow-hidden bg-surface-container-lowest rounded-xl shadow-[0_20px_40px_rgba(80,69,53,0.06)] hover:shadow-[0_30px_60px_rgba(80,69,53,0.1)] transition-all duration-500">
+<div class="flex flex-col md:flex-row h-full">
+<div class="md:w-3/5 relative h-80 md:h-auto overflow-hidden">
+<img alt="Featured Coffee" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="close-up of premium coffee beans in a glass jar on a sunlit marble counter with soft morning light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBwIovOqeVM510QP1TxZIb8MstzzWKA9ulm2BkWpx_zHFAEcjEhIOq8dygcGUu1SB0zIuXYJICTC9xIfgM5xzn764H6-r1xQ0iJpH48YFz4HitcZeYQ0EX6HfCuqwNc67SawLqw24W53xC6IPnOq5OMFNKVIFy2X26LqEiMCwya5Gs2z8NjQnLEtkjh3nuc8FBE7DqWv2exKseCCFIheHHeYhdpoWOG4P-RcysprjXcETCd65WcI6Gr_Zioy8zb4X0hmiwdaH-jR30"/>
+<div class="absolute top-6 left-6 amber-gradient px-4 py-1 rounded-full">
+<span class="text-[10px] font-label text-on-primary uppercase tracking-[0.2em]">Seasonal Peak</span>
+</div>
+</div>
+<div class="md:w-2/5 p-8 lg:p-12 flex flex-col justify-between">
+<div>
+<h3 class="text-4xl font-headline italic mb-4 leading-tight">Amber Solstice Reserve</h3>
+<p class="text-on-surface-variant text-sm leading-relaxed mb-6">A curated blend of high-altitude Ethiopian beans with notes of toasted honeycomb and wild jasmine.</p>
+<div class="flex items-center gap-2 mb-8">
+<span class="material-symbols-outlined text-primary text-sm" data-icon="notes">notes</span>
+<span class="text-[10px] font-label uppercase tracking-widest text-on-surface-variant">Honey • Jasmine • Citrus</span>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<span class="font-label text-xl text-on-surface">$12.50</span>
+<button class="amber-gradient w-12 h-12 rounded-full flex items-center justify-center text-on-primary shadow-lg shadow-primary/20 hover:scale-105 transition-transform">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Secondary Card -->
+<div class="lg:col-span-4 group bg-surface-container-lowest rounded-xl p-8 shadow-[0_20px_40px_rgba(80,69,53,0.04)] flex flex-col justify-between border border-outline-variant/10">
+<div class="relative h-48 mb-8 overflow-hidden rounded-lg">
+<img alt="Velvet Espresso" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="shot of espresso with rich crema being poured into a white ceramic cup with steam rising" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnsdqFEHEuTaEJzizSzsZMBwW2z_CCWJ11gG8Sh41AygkEbWBRFn_gLNTboc7puLkTuVjqFuhWBgtXH0fF8diacwlAQt3fBRRfVrek8mW2J_WHhyXtouC3Q799IFu-dtRzkGvfXuhC9kmQask6kxEVV34ltzov3m4Yc10riHXV_1iqucwrH1Sf1gLB2Bqr5ZY2HRCjYYCblklCbd8kwqiSnqQilzrTrAOD9egx4mKHAWeNvNeAWOT8n5IcwxINL4ciGJ8DleHLzew"/>
+</div>
+<div>
+<div class="flex justify-between items-start mb-2">
+<h3 class="text-2xl font-headline italic">Velvet Espresso</h3>
+<span class="font-label text-sm">$6.00</span>
+</div>
+<p class="text-on-surface-variant text-xs mb-6">Concentrated luxury. Dark cocoa finish with a velvety mouthfeel.</p>
+</div>
+<button class="w-full py-3 border border-outline-variant/30 font-label text-[10px] uppercase tracking-widest hover:bg-surface-container-low hover:border-primary transition-all">
+          Customize &amp; Add
+        </button>
+</div>
+<!-- Grid Items (Smaller Cards) -->
+<div class="lg:col-span-4 group bg-surface-container-lowest rounded-xl p-6 shadow-[0_20px_40px_rgba(80,69,53,0.04)] border border-outline-variant/10">
+<div class="aspect-square mb-6 overflow-hidden rounded-lg bg-surface-container-low">
+<img alt="Cloud Pourover" class="w-full h-full object-cover mix-blend-multiply opacity-90 group-hover:scale-110 transition-transform duration-500" data-alt="aesthetic minimalist pour over coffee setup with clean lines and glass carafe on light wood surface" src="https://lh3.googleusercontent.com/aida-public/AB6AXuADMOuk1ICg6bH-Y44jFmX3pOman_6MpP6CyUNXmeWbRS0KDTbL3keSnk5tfGNCI2bSJE1YbZEJw4aPgPHdJn2lpKWundKUr0Y3BUPhBqm9C33nMhd7enDUrbgKiMBFqMPt-7G4A9P6EnuWBdbptEEFtoadsRQR_ea1kBN-sOtS4luotuWoaCpOWRSBa2uYutLYK9vvVuIoaq1HNMSA43FdXeHAmu2c6CToGptZHcJp4UW87o8YnKgnyygrwZU_ph6Vxnt1Q2eX7IM"/>
+</div>
+<h3 class="text-xl font-headline italic mb-1">Cloud Pourover</h3>
+<p class="text-on-surface-variant text-xs mb-4">Clean, tea-like clarity with floral aromas.</p>
+<div class="flex justify-between items-center">
+<span class="font-label text-sm text-on-surface">$8.50</span>
+<button class="text-primary hover:text-primary-container transition-colors">
+<span class="material-symbols-outlined" data-icon="add_circle">add_circle</span>
+</button>
+</div>
+</div>
+<div class="lg:col-span-4 group bg-surface-container-lowest rounded-xl p-6 shadow-[0_20px_40px_rgba(80,69,53,0.04)] border border-outline-variant/10">
+<div class="aspect-square mb-6 overflow-hidden rounded-lg bg-surface-container-low">
+<img alt="Golden Croissant" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="flaky golden brown french croissant on a white artisanal plate with soft crumbs visible" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8y-PV3S-4CJKGM0i8PWO6Tu21llE0CE7kHBKyssw_Z2sgJcXIM5PtdBHe72TifUFaySbvdfz6AxW-Fta2Weh9mphdLBp7l7yVOC_a1YfyXPrpJOvQ88e1FvhtkPs2E7XipzszI63tBKrQKTO89ncBjK_elOBNWcQI7COPDroDG-d_X85TrRPLfS36B5glOc97c2PWwFJR3qmiHs-uWFmcY5Q---9rOmbiI6ph3CwL7B_GLpq38odEA3PZy5iVRdKbDZicZ9UW_7g"/>
+</div>
+<h3 class="text-xl font-headline italic mb-1">Golden Croissant</h3>
+<p class="text-on-surface-variant text-xs mb-4">Double-laminated with Isigny Sainte-Mère butter.</p>
+<div class="flex justify-between items-center">
+<span class="font-label text-sm text-on-surface">$5.25</span>
+<button class="text-primary hover:text-primary-container transition-colors">
+<span class="material-symbols-outlined" data-icon="add_circle">add_circle</span>
+</button>
+</div>
+</div>
+<div class="lg:col-span-4 group bg-surface-container-lowest rounded-xl p-6 shadow-[0_20px_40px_rgba(80,69,53,0.04)] border border-outline-variant/10">
+<div class="aspect-square mb-6 overflow-hidden rounded-lg bg-surface-container-low">
+<img alt="Nocturne Cold Brew" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="tall glass of cold brew coffee with swirling milk and large ice cubes in cinematic moody lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC1ySCF8XtWbp5jSFpEdzGaNSq3fpk9wUcHvSqf1epTC6qeRjbMYl3ZFJ1YrdVRLUbWQMNzZz8JjLrrTAMDFoOZ_Y8nh2Lc5wLn30ETamNbBw898zuhoJeZysteVLLXofP6sMA6NJbq7pjBU43KVJyxY2g_KDRB6taOmOj6K7rUS42d6pHt6BZW5eXzSLHLqJtCmbSwZlstdBCPrAkzsC4xySGgSymJoGL5qPpIS_VsFS_7XfE9rmINqeBKDmxSODD3QXYuzcdx1BA"/>
+</div>
+<h3 class="text-xl font-headline italic mb-1">Nocturne Cold Brew</h3>
+<p class="text-on-surface-variant text-xs mb-4">24-hour slow steep for ultimate smoothness.</p>
+<div class="flex justify-between items-center">
+<span class="font-label text-sm text-on-surface">$7.00</span>
+<button class="text-primary hover:text-primary-container transition-colors">
+<span class="material-symbols-outlined" data-icon="add_circle">add_circle</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Additional Editorial Section -->
+<section class="mt-32 border-t border-outline-variant/20 pt-16 grid grid-cols-1 md:grid-cols-2 gap-12 items-center opacity-50">
+<div>
+<h2 class="text-4xl font-headline italic mb-6">Our Roasting Philosophy</h2>
+<p class="text-on-surface-variant leading-relaxed mb-8 max-w-md">Every bean is traced to its origin, honoring the hands that harvested it. We roast in small batches to preserve the volatile aromatics that define a truly superior cup.</p>
+<a class="inline-flex items-center gap-2 font-label text-[10px] uppercase tracking-[0.2em] text-primary group" href="#">
+          Read Our Story 
+          <span class="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform" data-icon="arrow_forward">arrow_forward</span>
+</a>
+</div>
+<div class="relative h-64 overflow-hidden rounded-xl">
+<img alt="Roastery" class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-1000" data-alt="interior of a modern clean industrial roastery with stainless steel equipment and warm wood accents" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDFiJeKEF16VBRIidAPXZB4XCQ_1PEkTNJZMQVxLVULLeHutoPeIh3etPjPAOdGXsrVnHT9Oafl1V_Ye-KEDuf77Ez6NkNvvVwi-DK_6Qr_Yq6gt5YeJ1c_KQlND0r3zBdBAb2YGx3H_A5a3AfmeSl78ePldoFpy2EtyqfP5396hL1yabKf5fnBbHcPGpLi46CwKO-J9qIg2KN0DdGKNIjsOs7VYC3JOpEDxuRqKhDi3SaWQdTcAUReuySV8eVXrcOwVhGeGzECa78"/>
+</div>
+</section>
+</main>
+<!-- Floating Cart: Pill-style bottom-docked summary -->
+<div class="fixed bottom-8 left-1/2 -translate-x-1/2 w-[90%] max-w-2xl z-[150] opacity-50">
+<div class="bg-surface-container-lowest/90 backdrop-blur-xl rounded-full py-3 pl-8 pr-3 flex items-center justify-between shadow-[0_20px_50px_rgba(80,69,53,0.15)] border border-outline-variant/10">
+<div class="flex items-center gap-6">
+<div class="flex -space-x-3">
+<div class="w-10 h-10 rounded-full border-2 border-surface-container-lowest overflow-hidden">
+<img alt="Item" class="w-full h-full object-cover" data-alt="small thumbnail of a coffee cup" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCRdfpvyoqLgM0VZc6LS9xd6cNGXKBmICRX49Dg2X5dXJjPdIxPu3NBSzgOoEMsEdDcFAB_Q2TmKyVo6JD6wg-DQ2_9kr0WIfNcqzOcic2jaO9zPy_UAdm87FNPXCYvS4MFKWOjLf_2709VgTTmNKBXboNW1LdsgsQZyQybd66LhWjfr1RbL1aUF7DsOLAD3Nx-SjZfFqysDctRyVvNiVBNG5n80lLKhVpQySu65aNADEQDN2aTCfmKbvP2MBUxI0UBdJnQ426PXQg"/>
+</div>
+<div class="w-10 h-10 rounded-full border-2 border-surface-container-lowest overflow-hidden bg-primary-container flex items-center justify-center">
+<span class="text-[10px] font-bold text-on-primary-container">+2</span>
+</div>
+</div>
+<div class="hidden sm:block">
+<p class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant">Your Basket</p>
+<p class="font-headline italic text-lg text-on-surface">3 items • $18.50</p>
+</div>
+</div>
+<button class="amber-gradient text-on-primary font-label text-[12px] uppercase tracking-widest py-4 px-10 rounded-full flex items-center gap-3 hover:scale-[1.02] transition-transform active:scale-95 shadow-lg shadow-primary/20">
+        Review Order
+        <span class="material-symbols-outlined text-sm" data-icon="shopping_cart_checkout">shopping_cart_checkout</span>
+</button>
+</div>
+</div>
+```</body></html>

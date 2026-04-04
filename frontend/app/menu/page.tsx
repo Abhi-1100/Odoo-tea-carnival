@@ -1,4 +1,25 @@
+"use client";
+import { useState } from 'react';
+import AllTabContent from './AllTabContent';
+
+import Link from 'next/link';
+import ItemDetailModal, { CoffeeItem } from './ItemDetailModal';
+
 export default function MenuPage() {
+  const [activeTab, setActiveTab] = useState('Top Choice');
+  const [selectedItem, setSelectedItem] = useState<CoffeeItem | null>(null);
+  const [cartVisible, setCartVisible] = useState(false);
+  const [cartItems, setCartItems] = useState(0);
+  const [cartViewerOpen, setCartViewerOpen] = useState(false);
+
+  const handleAddToCart = () => {
+    setCartItems(prev => prev + 1);
+    setCartVisible(true);
+    setTimeout(() => {
+      setCartVisible(false);
+    }, 4000);
+  };
+
   return (
     <>
       <div className="bg-surface text-on-surface font-body selection:bg-primary-fixed selection:text-on-primary-fixed relative overflow-hidden min-h-screen">
@@ -60,21 +81,33 @@ export default function MenuPage() {
               <h1 className="text-6xl md:text-8xl font-headline italic tracking-tighter text-on-surface">Signature Blends</h1>
             </div>
             <div className="hidden lg:flex items-center gap-8 pb-4">
+              {/* Top Navigation Basket Link */}
+              <Link href="/cart" className="relative p-3 bg-surface-container-lowest/60 backdrop-blur-sm rounded-full hover:shadow-md border border-outline-variant/20 transition-all cursor-pointer group">
+                 <span className="material-symbols-outlined text-primary text-2xl group-hover:scale-110 transition-transform tracking-normal leading-none" style={{ fontVariationSettings: "'FILL' 0" }}>shopping_bag</span>
+                 {cartItems > 0 && (
+                   <span className="absolute -top-1 -right-1 flex h-[22px] w-[22px] items-center justify-center rounded-full bg-primary text-[10px] font-bold text-on-primary shadow-sm border-2 border-surface">{cartItems}</span>
+                 )}
+              </Link>
+
               <div className="text-right">
-                <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant">Filter by Profile</p>
-                <div className="flex gap-4 mt-2">
-                  <button className="text-primary border-b border-primary/20 pb-1 text-sm font-medium">All</button>
-                  <button className="text-on-surface/40 hover:text-primary transition-colors text-sm font-medium">Bright</button>
-                  <button className="text-on-surface/40 hover:text-primary transition-colors text-sm font-medium">Earthy</button>
+                <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant mb-2">Filter by Profile</p>
+                <div className="inline-flex items-center gap-3 px-6 py-2.5 rounded-full border border-outline-variant/20 bg-surface-container-lowest/60 backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow">
+                  <button onClick={() => setActiveTab('Top Choice')} className={`font-label text-[11px] uppercase tracking-widest transition-all ${activeTab === 'Top Choice' ? 'text-primary font-bold' : 'text-on-surface/50 hover:text-primary'}`}>Top Choice</button>
+                  <span className="text-on-surface-variant/30 text-[10px]">•</span>
+                  <button onClick={() => setActiveTab('All')} className={`font-label text-[11px] uppercase tracking-widest transition-all ${activeTab === 'All' ? 'text-primary font-bold' : 'text-on-surface/50 hover:text-primary'}`}>All</button>
+                  <span className="text-on-surface-variant/30 text-[10px]">•</span>
+                  <button onClick={() => setActiveTab('Combos')} className={`font-label text-[11px] uppercase tracking-widest transition-all ${activeTab === 'Combos' ? 'text-primary font-bold' : 'text-on-surface/50 hover:text-primary'}`}>Combos</button>
                 </div>
               </div>
             </div>
           </header>
 
-          {/* Product Grid: Asymmetric Bento-inspired layout */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-12">
+          {activeTab === 'Top Choice' && (
+            <>
+              {/* Product Grid: Asymmetric Bento-inspired layout */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-12">
             {/* Primary Featured Card */}
-            <div className="lg:col-span-8 group relative overflow-hidden bg-surface-container-lowest rounded-xl shadow-[0_20px_40px_rgba(80,69,53,0.06)] hover:shadow-[0_30px_60px_rgba(80,69,53,0.1)] transition-all duration-500">
+            <div onClick={() => setSelectedItem({title: "Amber Solstice Reserve", description: "A curated blend of high-altitude Ethiopian beans with notes of toasted honeycomb and wild jasmine.", price: "$12.50", imageUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuBwIovOqeVM510QP1TxZIb8MstzzWKA9ulm2BkWpx_zHFAEcjEhIOq8dygcGUu1SB0zIuXYJICTC9xIfgM5xzn764H6-r1xQ0iJpH48YFz4HitcZeYQ0EX6HfCuqwNc67SawLqw24W53xC6IPnOq5OMFNKVIFy2X26LqEiMCwya5Gs2z8NjQnLEtkjh3nuc8FBE7DqWv2exKseCCFIheHHeYhdpoWOG4P-RcysprjXcETCd65WcI6Gr_Zioy8zb4X0hmiwdaH-jR30"})} className="lg:col-span-8 group relative overflow-hidden bg-surface-container-lowest rounded-xl shadow-[0_20px_40px_rgba(80,69,53,0.06)] hover:shadow-[0_30px_60px_rgba(80,69,53,0.1)] transition-all duration-500 cursor-pointer border border-outline-variant/10">
               <div className="flex flex-col md:flex-row h-full">
                 <div className="md:w-3/5 relative h-80 md:h-auto overflow-hidden">
                   <img alt="Featured Coffee" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBwIovOqeVM510QP1TxZIb8MstzzWKA9ulm2BkWpx_zHFAEcjEhIOq8dygcGUu1SB0zIuXYJICTC9xIfgM5xzn764H6-r1xQ0iJpH48YFz4HitcZeYQ0EX6HfCuqwNc67SawLqw24W53xC6IPnOq5OMFNKVIFy2X26LqEiMCwya5Gs2z8NjQnLEtkjh3nuc8FBE7DqWv2exKseCCFIheHHeYhdpoWOG4P-RcysprjXcETCd65WcI6Gr_Zioy8zb4X0hmiwdaH-jR30"/>
@@ -93,7 +126,7 @@ export default function MenuPage() {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="font-label text-xl text-on-surface">$12.50</span>
-                    <button className="amber-gradient w-12 h-12 rounded-full flex items-center justify-center text-on-primary shadow-lg shadow-primary/20 hover:scale-105 transition-transform">
+                    <button onClick={handleAddToCart} className="amber-gradient w-12 h-12 rounded-full flex items-center justify-center text-on-primary shadow-lg shadow-primary/20 hover:scale-105 transition-transform">
                       <span className="material-symbols-outlined">add</span>
                     </button>
                   </div>
@@ -102,7 +135,7 @@ export default function MenuPage() {
             </div>
 
             {/* Secondary Card */}
-            <div className="lg:col-span-4 group bg-surface-container-lowest rounded-xl p-8 shadow-[0_20px_40px_rgba(80,69,53,0.04)] flex flex-col justify-between border border-outline-variant/10">
+            <div onClick={() => setSelectedItem({title: "Velvet Espresso", description: "Concentrated luxury. Dark cocoa finish with a velvety mouthfeel.", price: "$6.00", imageUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuCnsdqFEHEuTaEJzizSzsZMBwW2z_CCWJ11gG8Sh41AygkEbWBRFn_gLNTboc7puLkTuVjqFuhWBgtXH0fF8diacwlAQt3fBRRfVrek8mW2J_WHhyXtouC3Q799IFu-dtRzkGvfXuhC9kmQask6kxEVV34ltzov3m4Yc10riHXV_1iqucwrH1Sf1gLB2Bqr5ZY2HRCjYYCblklCbd8kwqiSnqQilzrTrAOD9egx4mKHAWeNvNeAWOT8n5IcwxINL4ciGJ8DleHLzew"})} className="lg:col-span-4 group bg-surface-container-lowest rounded-xl p-8 shadow-[0_20px_40px_rgba(80,69,53,0.04)] flex flex-col justify-between border border-outline-variant/10 cursor-pointer">
               <div className="relative h-48 mb-8 overflow-hidden rounded-lg">
                 <img alt="Velvet Espresso" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnsdqFEHEuTaEJzizSzsZMBwW2z_CCWJ11gG8Sh41AygkEbWBRFn_gLNTboc7puLkTuVjqFuhWBgtXH0fF8diacwlAQt3fBRRfVrek8mW2J_WHhyXtouC3Q799IFu-dtRzkGvfXuhC9kmQask6kxEVV34ltzov3m4Yc10riHXV_1iqucwrH1Sf1gLB2Bqr5ZY2HRCjYYCblklCbd8kwqiSnqQilzrTrAOD9egx4mKHAWeNvNeAWOT8n5IcwxINL4ciGJ8DleHLzew"/>
               </div>
@@ -113,13 +146,13 @@ export default function MenuPage() {
                 </div>
                 <p className="text-on-surface-variant text-xs mb-6">Concentrated luxury. Dark cocoa finish with a velvety mouthfeel.</p>
               </div>
-              <button className="w-full py-3 border border-outline-variant/30 font-label text-[10px] uppercase tracking-widest hover:bg-surface-container-low hover:border-primary transition-all">
+              <button onClick={handleAddToCart} className="w-full py-3 border border-outline-variant/30 font-label text-[10px] uppercase tracking-widest hover:bg-surface-container-low hover:border-primary transition-all">
                 Customize &amp; Add
               </button>
             </div>
 
             {/* Grid Items (Smaller Cards) */}
-            <div className="lg:col-span-4 group bg-surface-container-lowest rounded-xl p-6 shadow-[0_20px_40px_rgba(80,69,53,0.04)] border border-outline-variant/10">
+            <div onClick={() => setSelectedItem({title: "Cloud Pourover", description: "Clean, tea-like clarity with floral aromas.", price: "$8.50", imageUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuADMOuk1ICg6bH-Y44jFmX3pOman_6MpP6CyUNXmeWbRS0KDTbL3keSnk5tfGNCI2bSJE1YbZEJw4aPgPHdJn2lpKWundKUr0Y3BUPhBqm9C33nMhd7enDUrbgKiMBFqMPt-7G4A9P6EnuWBdbptEEFtoadsRQR_ea1kBN-sOtS4luotuWoaCpOWRSBa2uYutLYK9vvVuIoaq1HNMSA43FdXeHAmu2c6CToGptZHcJp4UW87o8YnKgnyygrwZU_ph6Vxnt1Q2eX7IM"})} className="lg:col-span-4 group bg-surface-container-lowest rounded-xl p-6 shadow-[0_20px_40px_rgba(80,69,53,0.04)] border border-outline-variant/10 cursor-pointer">
               <div className="aspect-square mb-6 overflow-hidden rounded-lg bg-surface-container-low">
                 <img alt="Cloud Pourover" className="w-full h-full object-cover mix-blend-multiply opacity-90 group-hover:scale-110 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuADMOuk1ICg6bH-Y44jFmX3pOman_6MpP6CyUNXmeWbRS0KDTbL3keSnk5tfGNCI2bSJE1YbZEJw4aPgPHdJn2lpKWundKUr0Y3BUPhBqm9C33nMhd7enDUrbgKiMBFqMPt-7G4A9P6EnuWBdbptEEFtoadsRQR_ea1kBN-sOtS4luotuWoaCpOWRSBa2uYutLYK9vvVuIoaq1HNMSA43FdXeHAmu2c6CToGptZHcJp4UW87o8YnKgnyygrwZU_ph6Vxnt1Q2eX7IM"/>
               </div>
@@ -147,7 +180,7 @@ export default function MenuPage() {
               </div>
             </div>
 
-            <div className="lg:col-span-4 group bg-surface-container-lowest rounded-xl p-6 shadow-[0_20px_40px_rgba(80,69,53,0.04)] border border-outline-variant/10">
+            <div onClick={() => setSelectedItem({title: "Nocturne Cold Brew", description: "24-hour slow steep for ultimate smoothness.", price: "$7.00", imageUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuC1ySCF8XtWbp5jSFpEdzGaNSq3fpk9wUcHvSqf1epTC6qeRjbMYl3ZFJ1YrdVRLUbWQMNzZz8JjLrrTAMDFoOZ_Y8nh2Lc5wLn30ETamNbBw898zuhoJeZysteVLLXofP6sMA6NJbq7pjBU43KVJyxY2g_KDRB6taOmOj6K7rUS42d6pHt6BZW5eXzSLHLqJtCmbSwZlstdBCPrAkzsC4xySGgSymJoGL5qPpIS_VsFS_7XfE9rmINqeBKDmxSODD3QXYuzcdx1BA"})} className="lg:col-span-4 group bg-surface-container-lowest rounded-xl p-6 shadow-[0_20px_40px_rgba(80,69,53,0.04)] border border-outline-variant/10 cursor-pointer">
               <div className="aspect-square mb-6 overflow-hidden rounded-lg bg-surface-container-low">
                 <img alt="Nocturne Cold Brew" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC1ySCF8XtWbp5jSFpEdzGaNSq3fpk9wUcHvSqf1epTC6qeRjbMYl3ZFJ1YrdVRLUbWQMNzZz8JjLrrTAMDFoOZ_Y8nh2Lc5wLn30ETamNbBw898zuhoJeZysteVLLXofP6sMA6NJbq7pjBU43KVJyxY2g_KDRB6taOmOj6K7rUS42d6pHt6BZW5eXzSLHLqJtCmbSwZlstdBCPrAkzsC4xySGgSymJoGL5qPpIS_VsFS_7XfE9rmINqeBKDmxSODD3QXYuzcdx1BA"/>
               </div>
@@ -155,7 +188,7 @@ export default function MenuPage() {
               <p className="text-on-surface-variant text-xs mb-4">24-hour slow steep for ultimate smoothness.</p>
               <div className="flex justify-between items-center">
                 <span className="font-label text-sm text-on-surface">$7.00</span>
-                <button className="text-primary hover:text-primary-container transition-colors">
+                <button onClick={handleAddToCart} className="text-primary hover:text-primary-container transition-colors">
                   <span className="material-symbols-outlined">add_circle</span>
                 </button>
               </div>
@@ -176,31 +209,84 @@ export default function MenuPage() {
               <img alt="Roastery" className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-1000" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDFiJeKEF16VBRIidAPXZB4XCQ_1PEkTNJZMQVxLVULLeHutoPeIh3etPjPAOdGXsrVnHT9Oafl1V_Ye-KEDuf77Ez6NkNvvVwi-DK_6Qr_Yq6gt5YeJ1c_KQlND0r3zBdBAb2YGx3H_A5a3AfmeSl78ePldoFpy2EtyqfP5396hL1yabKf5fnBbHcPGpLi46CwKO-J9qIg2KN0DdGKNIjsOs7VYC3JOpEDxuRqKhDi3SaWQdTcAUReuySV8eVXrcOwVhGeGzECa78"/>
             </div>
           </section>
+            </>
+          )}
+
+          {activeTab === 'All' && (
+            <AllTabContent handleAddToCart={handleAddToCart} openItemModal={(item) => setSelectedItem(item)} />
+          )}
+
+          {activeTab === 'Combos' && (
+            <div className="py-24 text-center text-on-surface-variant font-label">Combo selection coming soon...</div>
+          )}
         </main>
 
+        <ItemDetailModal 
+          isOpen={!!selectedItem} 
+          onClose={() => setSelectedItem(null)} 
+          item={selectedItem} 
+          onAddToCart={handleAddToCart} 
+        />
+
         {/* Floating Cart: Pill-style bottom-docked summary */}
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 w-[90%] max-w-2xl z-50">
-          <div className="bg-surface-container-lowest/90 backdrop-blur-xl rounded-full py-3 pl-8 pr-3 flex items-center justify-between shadow-[0_20px_50px_rgba(80,69,53,0.15)] border border-outline-variant/10">
-            <div className="flex items-center gap-6">
-              <div className="flex -space-x-3">
-                <div className="w-10 h-10 rounded-full border-2 border-surface-container-lowest overflow-hidden">
-                  <img alt="Item" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCRdfpvyoqLgM0VZc6LS9xd6cNGXKBmICRX49Dg2X5dXJjPdIxPu3NBSzgOoEMsEdDcFAB_Q2TmKyVo6JD6wg-DQ2_9kr0WIfNcqzOcic2jaO9zPy_UAdm87FNPXCYvS4MFKWOjLf_2709VgTTmNKBXboNW1LdsgsQZyQybd66LhWjfr1RbL1aUF7DsOLAD3Nx-SjZfFqysDctRyVvNiVBNG5n80lLKhVpQySu65aNADEQDN2aTCfmKbvP2MBUxI0UBdJnQ426PXQg"/>
+        {cartVisible && (
+          <div 
+            className="fixed bottom-8 left-1/2 -translate-x-1/2 w-[90%] max-w-2xl z-50 cursor-pointer animate-[bounce_1s_ease-in-out_infinite]"
+            onClick={() => setCartViewerOpen(true)}
+          >
+            <div className="bg-surface-container-lowest/90 backdrop-blur-xl rounded-full py-3 pl-8 pr-3 flex items-center justify-between shadow-[0_20px_50px_rgba(80,69,53,0.15)] border border-outline-variant/10">
+              <div className="flex items-center gap-6">
+                <div className="flex -space-x-3">
+                  <div className="w-10 h-10 rounded-full border-2 border-surface-container-lowest overflow-hidden">
+                    <img alt="Item" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCRdfpvyoqLgM0VZc6LS9xd6cNGXKBmICRX49Dg2X5dXJjPdIxPu3NBSzgOoEMsEdDcFAB_Q2TmKyVo6JD6wg-DQ2_9kr0WIfNcqzOcic2jaO9zPy_UAdm87FNPXCYvS4MFKWOjLf_2709VgTTmNKBXboNW1LdsgsQZyQybd66LhWjfr1RbL1aUF7DsOLAD3Nx-SjZfFqysDctRyVvNiVBNG5n80lLKhVpQySu65aNADEQDN2aTCfmKbvP2MBUxI0UBdJnQ426PXQg"/>
+                  </div>
+                  <div className="w-10 h-10 rounded-full border-2 border-surface-container-lowest overflow-hidden bg-primary-container flex items-center justify-center">
+                    <span className="text-[10px] font-bold text-on-primary-container">+{cartItems}</span>
+                  </div>
                 </div>
-                <div className="w-10 h-10 rounded-full border-2 border-surface-container-lowest overflow-hidden bg-primary-container flex items-center justify-center">
-                  <span className="text-[10px] font-bold text-on-primary-container">+2</span>
+                <div className="hidden sm:block">
+                  <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant">Your Basket</p>
+                  <p className="font-headline italic text-lg text-on-surface">{cartItems} items • ${(cartItems * 6.50).toFixed(2)}</p>
                 </div>
               </div>
-              <div className="hidden sm:block">
-                <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant">Your Basket</p>
-                <p className="font-headline italic text-lg text-on-surface">3 items • $18.50</p>
-              </div>
+              <button 
+                onClick={(e) => { e.stopPropagation(); setCartViewerOpen(true); }}
+                className="amber-gradient text-on-primary font-label text-[12px] uppercase tracking-widest py-4 px-10 rounded-full flex items-center gap-3 hover:scale-[1.02] transition-transform active:scale-95 shadow-lg shadow-primary/20"
+              >
+                Review Order
+                <span className="material-symbols-outlined text-sm">shopping_cart_checkout</span>
+              </button>
             </div>
-            <button className="amber-gradient text-on-primary font-label text-[12px] uppercase tracking-widest py-4 px-10 rounded-full flex items-center gap-3 hover:scale-[1.02] transition-transform active:scale-95 shadow-lg shadow-primary/20">
-              Review Order
-              <span className="material-symbols-outlined text-sm">shopping_cart_checkout</span>
-            </button>
           </div>
-        </div>
+        )}
+
+        {/* Modal Overlay */}
+        {cartViewerOpen && (
+          <div className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setCartViewerOpen(false)}>
+            <div className="bg-surface-container-lowest rounded-xl max-w-md w-full p-8 shadow-2xl relative" onClick={e => e.stopPropagation()}>
+              <button onClick={() => setCartViewerOpen(false)} className="absolute top-4 right-4 text-on-surface-variant hover:text-primary">
+                <span className="material-symbols-outlined">close</span>
+              </button>
+              <h2 className="text-3xl font-headline italic mb-6">Your Basket</h2>
+              {cartItems === 0 ? (
+                <p className="text-on-surface-variant text-sm text-center py-8">Your basket is empty.</p>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center border-b border-outline-variant/10 pb-4">
+                    <div>
+                      <h4 className="font-bold text-lg">Delicious Coffees</h4>
+                      <p className="text-sm text-on-surface-variant">Quantity: {cartItems}</p>
+                    </div>
+                    <span className="font-label text-xl">${(cartItems * 6.50).toFixed(2)}</span>
+                  </div>
+                  <button className="w-full mt-6 amber-gradient text-on-primary py-4 rounded-full uppercase tracking-widest text-sm font-label font-bold shadow-lg hover:opacity-90 transition-opacity">
+                    Checkout Now
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
