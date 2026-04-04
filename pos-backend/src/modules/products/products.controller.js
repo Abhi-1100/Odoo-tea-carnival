@@ -100,7 +100,24 @@ const update = async (req, res, next) => {
 /** DELETE /api/products/:id */
 const remove = async (req, res, next) => {
   try {
-    await prisma.product.delete({ where: { id: parseInt(req.params.id) } });
+    const id = parseInt(req.params.id);
+
+    // If a product has order history, keep referential integrity by soft-archiving.
+    const linkedOrderItems = await prisma.orderItem.count({ where: { productId: id } });
+
+    if (linkedOrderItems > 0) {
+      await prisma.product.update({
+        where: { id },
+        data: { isActive: false },
+      });
+
+      return res.json({
+        success: true,
+        message: 'Product has order history and was archived instead of deleted',
+      });
+    }
+
+    await prisma.product.delete({ where: { id } });
     res.json({ success: true, message: 'Product deleted successfully' });
   } catch (error) { next(error); }
 };

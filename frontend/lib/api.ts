@@ -162,6 +162,21 @@ export const api = {
       apiFetch<{ success: boolean; qrBase64: string; upiId: string }>(`/payment-methods/${id}/qr`, { token }),
   },
 
+  customers: {
+    getAll: (token: string, params?: Record<string, string>) => {
+      const query = params ? '?' + new URLSearchParams(params).toString() : '';
+      return apiFetch<{ success: boolean; data: unknown[] }>(`/customers${query}`, { token });
+    },
+    getById: (id: number, token: string) =>
+      apiFetch<{ success: boolean; data: unknown }>(`/customers/${id}`, { token }),
+    create: (data: unknown, token: string) =>
+      apiFetch<{ success: boolean; data: unknown }>(`/customers`, { method: 'POST', body: data, token }),
+    update: (id: number, data: unknown, token: string) =>
+      apiFetch<{ success: boolean; data: unknown }>(`/customers/${id}`, { method: 'PUT', body: data, token }),
+    delete: (id: number, token: string) =>
+      apiFetch<{ success: boolean }>(`/customers/${id}`, { method: 'DELETE', token }),
+  },
+
   kitchen: {
     getTickets: (token: string, stage?: string) => {
       const query = stage ? `?stage=${stage}` : '';
