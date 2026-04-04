@@ -1,9 +1,8 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { Plus, Search, Pencil, Trash2, X, Loader2 } from "lucide-react";
+import { Plus, Search, Trash2, X, Loader2, Menu } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
-import { Badge } from "@/components/ui/Badge";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/store/authStore";
 import toast from "react-hot-toast";
@@ -40,13 +39,23 @@ const emptyProduct = {
   name: "",
   categoryId: null as number | null,
   price: 0,
-  unit: "piece",
-  taxPercent: 0,
+  unit: "Unit",
+  taxPercent: 5,
   description: "",
   sendToKitchen: true,
   isActive: true,
   variants: [] as ProductVariant[],
 };
+
+const unitOptions = ["KG", "Unit", "Liter"];
+const taxOptions = [5, 18, 28];
+const categoryColorClasses = [
+  "bg-sky-500/20 text-sky-300",
+  "bg-amber-500/20 text-amber-300",
+  "bg-emerald-500/20 text-emerald-300",
+  "bg-violet-500/20 text-violet-300",
+  "bg-rose-500/20 text-rose-300",
+];
 
 export default function ProductsPage() {
   const { token } = useAuthStore();
@@ -54,12 +63,13 @@ export default function ProductsPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [search, setSearch] = useState("");
   const [catFilter, setCatFilter] = useState("All");
-  const [modal, setModal] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
   const [form, setForm] = useState<typeof emptyProduct>(emptyProduct);
   const [tab, setTab] = useState<"general" | "variants">("general");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [actionOpen, setActionOpen] = useState(false);
   const [categoryModal, setCategoryModal] = useState(false);
   const [categoryName, setCategoryName] = useState("");
   const [categoryDescription, setCategoryDescription] = useState("");
@@ -101,11 +111,10 @@ export default function ProductsPage() {
 
   const categoryNames = ["All", ...categories.map((c) => c.name)];
 
-  const openAdd = () => {
+  const handleNew = () => {
     setForm(emptyProduct);
     setEditing(null);
     setTab("general");
-    setModal(true);
   };
 
   const openEdit = (p: Product) => {
@@ -126,7 +135,7 @@ export default function ProductsPage() {
     });
     setEditing(p);
     setTab("general");
-    setModal(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleSave = async () => {
@@ -145,7 +154,7 @@ export default function ProductsPage() {
         await api.products.create(form, token);
         toast.success("Product added!");
       }
-      setModal(false);
+      handleNew();
       fetchProducts();
     } catch (error: unknown) {
       toast.error(error instanceof Error ? error.message : "Failed to save product");
@@ -164,6 +173,58 @@ export default function ProductsPage() {
       fetchProducts();
     } catch (error: unknown) {
       toast.error(error instanceof Error ? error.message : "Failed to delete product");
+    }
+  };
+
+  const toggleSelect = (id: number) => {
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]));
+  };
+
+  const deleteSelected = async () => {
+    if (!token || selectedIds.length === 0) return;
+    if (!confirm(`Delete ${selectedIds.length} selected product(s)?`)) return;
+
+    try {
+      await Promise.all(selectedIds.map((id) => api.products.delete(id, token)));
+      toast.success("Selected products deleted");
+      setSelectedIds([]);
+      setActionOpen(false);
+      fetchProducts();
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Failed to delete selected products");
+    }
+  };
+
+  const archiveSelected = async () => {
+    if (!token || selectedIds.length === 0) return;
+
+    try {
+      const selectedProducts = items.filter((item) => selectedIds.includes(item.id));
+      await Promise.all(
+        selectedProducts.map((item) =>
+          api.products.update(
+            item.id,
+            {
+              name: item.name,
+              categoryId: item.category?.id || null,
+              price: item.price,
+              unit: item.unit,
+              taxPercent: item.taxPercent,
+              description: item.description,
+              sendToKitchen: item.sendToKitchen,
+              isActive: false,
+              variants: item.variants,
+            },
+            token,
+          ),
+        ),
+      );
+      toast.success("Selected products archived");
+      setSelectedIds([]);
+      setActionOpen(false);
+      fetchProducts();
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Failed to archive selected products");
     }
   };
 
@@ -205,27 +266,231 @@ export default function ProductsPage() {
     }
   };
 
-  const fld = (key: keyof typeof form) => ({
-    value: form[key] as string | number | boolean,
-    onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-      const value = e.target.type === "checkbox" ? (e.target as HTMLInputElement).checked : e.target.value;
-      setForm((p) => ({ ...p, [key]: value }));
-    },
-  });
+  const categoryLabel = categories.find((c) => c.id === form.categoryId)?.name;
+
+  const categoryBadgeClass = (name: string | undefined) => {
+    if (!name) return "bg-brand-border text-brand-muted";
+    const seed = name.charCodeAt(0) + name.length;
+    return categoryColorClasses[seed % categoryColorClasses.length];
+  };
 
   return (
     <div className="p-8 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-white">Products</h1>
-          <p className="text-brand-muted text-sm mt-1">{items.length} products total</p>
+      <div className="card overflow-hidden border border-brand-border/70">
+        <div className="border-b border-brand-border px-5 py-3 flex items-center justify-between text-sm text-brand-muted">
+          <div className="flex items-center gap-6">
+            <span className="hover:text-white">Orders</span>
+            <span className="text-white">Products</span>
+            <span className="hover:text-white">Reporting</span>
+          </div>
+          <button className="text-brand-muted hover:text-white">
+            <Menu size={16} />
+          </button>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" icon={<Plus size={16} />} onClick={() => setCategoryModal(true)}>
-            Add Category
-          </Button>
-          <Button icon={<Plus size={16} />} onClick={openAdd}>
-            Add Product
+
+        <div className="px-5 py-4 border-b border-brand-border">
+          <div className="inline-flex items-center gap-2 mb-2">
+            <button
+              onClick={handleNew}
+              className="px-3 py-1.5 rounded-md bg-fuchsia-300/30 text-fuchsia-100 text-sm"
+            >
+              New
+            </button>
+            <h1 className="text-3xl font-bold text-sky-300">Products</h1>
+            {editing ? <span className="text-xs text-brand-muted">Editing #{editing.id}</span> : null}
+          </div>
+          <p className="text-brand-muted text-sm">{items.length} products total</p>
+        </div>
+
+        <div className="px-5 py-3 border-b border-brand-border">
+          <div className="text-sm text-brand-muted mb-1">Product</div>
+          <input
+            value={form.name}
+            onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
+            placeholder="e.g Eric Smith"
+            className="input-dark max-w-md"
+          />
+        </div>
+
+        <div className="px-5 pt-3 flex gap-2 border-b border-brand-border">
+          <button
+            onClick={() => setTab("general")}
+            className={`px-4 py-2 text-sm border border-brand-border border-b-0 rounded-t-md ${
+              tab === "general" ? "bg-brand-bg text-white" : "text-brand-muted"
+            }`}
+          >
+            General Info
+          </button>
+          <button
+            onClick={() => setTab("variants")}
+            className={`px-4 py-2 text-sm border border-brand-border border-b-0 rounded-t-md ${
+              tab === "variants" ? "bg-brand-bg text-white" : "text-brand-muted"
+            }`}
+          >
+            Varint
+          </button>
+        </div>
+
+        {tab === "general" ? (
+          <div className="px-5 py-5 grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="space-y-5">
+              <div>
+                <label className="text-white text-2xl sr-only">Category</label>
+                <div className="text-white text-3xl hidden">Category</div>
+                <div className="text-white text-sm mb-2">Category</div>
+                <div className="flex items-center gap-2">
+                  {categoryLabel ? (
+                    <span className={"inline-flex items-center gap-1 rounded-md px-3 py-1 text-sm " + categoryBadgeClass(categoryLabel)}>
+                      {categoryLabel}
+                      <button
+                        type="button"
+                        onClick={() => setForm((p) => ({ ...p, categoryId: null }))}
+                        className="text-inherit/80 hover:text-white"
+                      >
+                        <X size={12} />
+                      </button>
+                    </span>
+                  ) : null}
+                  <select
+                    value={form.categoryId?.toString() || ""}
+                    onChange={(e) => setForm((p) => ({ ...p, categoryId: e.target.value ? Number(e.target.value) : null }))}
+                    className="input-dark max-w-xs"
+                  >
+                    <option value="">Select category</option>
+                    {categories.map((c) => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+                  <Button variant="ghost" size="sm" onClick={() => setCategoryModal(true)}>
+                    New
+                  </Button>
+                </div>
+              </div>
+
+              <div>
+                <div className="text-white text-sm mb-2">Product Description</div>
+                <input
+                  value={form.description}
+                  onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
+                  placeholder="e.g Burger with chees"
+                  className="input-dark"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-5">
+              <div className="grid grid-cols-[1fr_140px] gap-3 items-end">
+                <div>
+                  <div className="text-white text-sm mb-2">Prices</div>
+                  <input
+                    type="number"
+                    value={form.price}
+                    onChange={(e) => setForm((p) => ({ ...p, price: parseFloat(e.target.value) || 0 }))}
+                    className="input-dark"
+                  />
+                </div>
+                <div>
+                  <div className="text-white text-sm mb-2">UOM</div>
+                  <select
+                    value={form.unit}
+                    onChange={(e) => setForm((p) => ({ ...p, unit: e.target.value }))}
+                    className="input-dark"
+                  >
+                    {unitOptions.map((u) => (
+                      <option key={u} value={u}>{u}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-[1fr_140px] gap-3 items-end">
+                <div>
+                  <div className="text-white text-sm mb-2">Tax</div>
+                  <select
+                    value={form.taxPercent}
+                    onChange={(e) => setForm((p) => ({ ...p, taxPercent: Number(e.target.value) }))}
+                    className="input-dark"
+                  >
+                    {taxOptions.map((tax) => (
+                      <option key={tax} value={tax}>{tax}%</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="px-5 py-5">
+            <div className="overflow-hidden border border-brand-border rounded-md">
+              <div className="grid grid-cols-12 px-3 py-2 text-xs uppercase text-brand-muted bg-brand-bg/40 border-b border-brand-border">
+                <div className="col-span-3">Attributes</div>
+                <div className="col-span-3">Value</div>
+                <div className="col-span-3">Unit</div>
+                <div className="col-span-2">Extra Prices</div>
+                <div className="col-span-1"></div>
+              </div>
+
+              {form.variants.map((v, i) => (
+                <div key={i} className="grid grid-cols-12 px-3 py-2 gap-2 border-b border-brand-border/50 items-center">
+                  <input
+                    value={v.attribute}
+                    onChange={(e) => {
+                      const next = [...form.variants];
+                      next[i].attribute = e.target.value;
+                      setForm((p) => ({ ...p, variants: next }));
+                    }}
+                    className="input-dark col-span-3"
+                    placeholder="Pack"
+                  />
+                  <input
+                    value={v.value}
+                    onChange={(e) => {
+                      const next = [...form.variants];
+                      next[i].value = e.target.value;
+                      setForm((p) => ({ ...p, variants: next }));
+                    }}
+                    className="input-dark col-span-3"
+                    placeholder="6"
+                  />
+                  <select className="input-dark col-span-3" value={form.unit} onChange={(e) => setForm((p) => ({ ...p, unit: e.target.value }))}>
+                    {unitOptions.map((u) => (
+                      <option key={u} value={u}>{u}</option>
+                    ))}
+                  </select>
+                  <input
+                    type="number"
+                    value={v.extraPrice}
+                    onChange={(e) => {
+                      const next = [...form.variants];
+                      next[i].extraPrice = parseFloat(e.target.value) || 0;
+                      setForm((p) => ({ ...p, variants: next }));
+                    }}
+                    className="input-dark col-span-2"
+                    placeholder="20"
+                  />
+                  <button
+                    onClick={() => setForm((p) => ({ ...p, variants: p.variants.filter((_, idx) => idx !== i) }))}
+                    className="col-span-1 h-9 w-9 rounded border border-brand-border text-red-300 hover:text-red-100 inline-flex items-center justify-center"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              ))}
+
+              <button
+                onClick={() => setForm((p) => ({ ...p, variants: [...p.variants, { attribute: "", value: "", extraPrice: 0 }] }))}
+                className="w-full py-2 text-left px-3 text-sky-300 hover:bg-brand-bg/30"
+              >
+                New
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div className="px-5 py-4 border-t border-brand-border flex items-center gap-3 justify-end">
+          <Button variant="ghost" onClick={handleNew}>Reset</Button>
+          <Button onClick={handleSave} disabled={saving} icon={saving ? <Loader2 className="animate-spin" size={14} /> : <Plus size={14} />}>
+            {editing ? "Update Product" : "Save Product"}
           </Button>
         </div>
       </div>
@@ -258,6 +523,29 @@ export default function ProductsPage() {
       </div>
 
       <div className="card overflow-hidden">
+        <div className="px-4 py-2 border-b border-brand-border flex items-center justify-end gap-2 relative">
+          {selectedIds.length > 0 && (
+            <span className="px-3 py-1.5 rounded bg-sky-500/20 text-sky-300 text-xs">x {selectedIds.length} Selected</span>
+          )}
+          <button
+            onClick={() => setActionOpen((v) => !v)}
+            className="px-3 py-1.5 text-xs border border-brand-border bg-brand-bg text-white rounded"
+          >
+            * Action
+          </button>
+
+          {actionOpen && (
+            <div className="absolute right-4 top-11 z-10 min-w-28 border border-brand-border bg-[#151a28] rounded shadow-xl overflow-hidden">
+              <button onClick={archiveSelected} className="block w-full text-left px-3 py-2 text-xs text-brand-muted hover:text-white hover:bg-brand-bg">
+                ^ Archived
+              </button>
+              <button onClick={deleteSelected} className="block w-full text-left px-3 py-2 text-xs text-red-300 hover:text-white hover:bg-brand-bg">
+                Delete
+              </button>
+            </div>
+          )}
+        </div>
+
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="animate-spin text-brand-primary" size={32} />
@@ -266,7 +554,7 @@ export default function ProductsPage() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-brand-border">
-                {["Product", "Category", "Price", "Unit", "Tax", "Status", "Actions"].map((h) => (
+                {["Product", "Sale Prices", "Tax", "UOM", "Category"].map((h) => (
                   <th key={h} className="text-left px-4 py-3 text-xs font-medium text-brand-muted uppercase tracking-wider">
                     {h}
                   </th>
@@ -277,30 +565,33 @@ export default function ProductsPage() {
               {filtered.map((p) => (
                 <tr key={p.id} className="border-b border-brand-border/50 hover:bg-brand-bg/40 transition-colors">
                   <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <span className="text-white text-sm font-medium">{p.name}</span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => toggleSelect(p.id)}
+                        className="h-4 w-4 rounded-sm border border-brand-border inline-flex items-center justify-center text-xs text-brand-muted"
+                      >
+                        {selectedIds.includes(p.id) ? "x" : ""}
+                      </button>
+                      <button onClick={() => openEdit(p)} className="text-white text-sm font-medium hover:text-sky-300">
+                        {p.name}
+                      </button>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-brand-muted text-sm">{p.category?.name || "Uncategorized"}</td>
-                  <td className="px-4 py-3 text-white text-sm font-semibold">₹{p.price}</td>
-                  <td className="px-4 py-3 text-brand-muted text-sm">{p.unit}</td>
+                  <td className="px-4 py-3 text-white text-sm font-semibold">${p.price}</td>
                   <td className="px-4 py-3 text-brand-muted text-sm">{p.taxPercent}%</td>
+                  <td className="px-4 py-3 text-brand-muted text-sm">{p.unit}</td>
                   <td className="px-4 py-3">
-                    <Badge variant={p.isActive ? "active" : "inactive"} />
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => openEdit(p)}
-                        className="p-1.5 rounded-lg bg-brand-border hover:bg-brand-primary/20 hover:text-brand-primary text-brand-muted transition-all"
-                      >
-                        <Pencil size={14} />
-                      </button>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={"px-3 py-1 rounded-md text-sm " + categoryBadgeClass(p.category?.name)}>
+                        {p.category?.name || "Uncategorized"}
+                      </span>
+                      {!p.isActive ? <span className="px-2 py-1 rounded text-xs bg-slate-500/20 text-slate-300">Archived</span> : null}
                       <button
                         onClick={() => handleDelete(p.id)}
-                        className="p-1.5 rounded-lg bg-brand-border hover:bg-red-500/20 hover:text-red-400 text-brand-muted transition-all"
+                        className="h-7 w-7 rounded border border-brand-border text-red-300 hover:text-red-100 inline-flex items-center justify-center"
+                        title="Delete"
                       >
-                        <Trash2 size={14} />
+                        <Trash2 size={13} />
                       </button>
                     </div>
                   </td>
@@ -308,7 +599,7 @@ export default function ProductsPage() {
               ))}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="text-center py-12 text-brand-muted">
+                  <td colSpan={5} className="text-center py-12 text-brand-muted">
                     No products found.
                   </td>
                 </tr>
@@ -317,161 +608,6 @@ export default function ProductsPage() {
           </table>
         )}
       </div>
-
-      <Modal open={modal} onClose={() => setModal(false)} title={editing ? "Edit Product" : "Add Product"} size="lg">
-        <div className="flex gap-1 mb-6 border-b border-brand-border">
-          {(["general", "variants"] as const).map((t) => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`px-4 py-2 text-sm font-medium capitalize transition-all -mb-px border-b-2 ${
-                tab === t ? "border-brand-primary text-white" : "border-transparent text-brand-muted hover:text-white"
-              }`}
-            >
-              {t}
-            </button>
-          ))}
-        </div>
-
-        {tab === "general" && (
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2">
-              <label className="block text-xs text-brand-muted mb-1.5">Product Name *</label>
-              <input {...fld("name")} placeholder="e.g. Margherita Pizza" className="input-dark" />
-            </div>
-            <div>
-              <label className="block text-xs text-brand-muted mb-1.5">Category</label>
-              <div className="flex gap-2">
-                <select {...fld("categoryId")} className="input-dark flex-1">
-                  <option value="">Select category</option>
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
-                <Button type="button" variant="ghost" onClick={() => setCategoryModal(true)}>
-                  New
-                </Button>
-              </div>
-            </div>
-            <div>
-              <label className="block text-xs text-brand-muted mb-1.5">Price (₹)</label>
-              <input type="number" {...fld("price")} className="input-dark" />
-            </div>
-            <div>
-              <label className="block text-xs text-brand-muted mb-1.5">Unit</label>
-              <input {...fld("unit")} className="input-dark" />
-            </div>
-            <div>
-              <label className="block text-xs text-brand-muted mb-1.5">Tax (%)</label>
-              <input type="number" {...fld("taxPercent")} className="input-dark" />
-            </div>
-            <div>
-              <label className="block text-xs text-brand-muted mb-1.5">Status</label>
-              <select
-                value={form.isActive ? "true" : "false"}
-                onChange={(e) => setForm((p) => ({ ...p, isActive: e.target.value === "true" }))}
-                className="input-dark"
-              >
-                <option value="true">Active</option>
-                <option value="false">Inactive</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs text-brand-muted mb-1.5 flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={form.sendToKitchen}
-                  onChange={(e) => setForm((p) => ({ ...p, sendToKitchen: e.target.checked }))}
-                  className="rounded"
-                />
-                Send to Kitchen
-              </label>
-            </div>
-            <div className="col-span-2">
-              <label className="block text-xs text-brand-muted mb-1.5">Description</label>
-              <textarea
-                {...fld("description")}
-                rows={3}
-                placeholder="Optional description..."
-                className="input-dark resize-none"
-              />
-            </div>
-          </div>
-        )}
-
-        {tab === "variants" && (
-          <div className="space-y-4">
-            <p className="text-brand-muted text-sm">Add product variants like size or pack options with extra pricing.</p>
-            {form.variants.map((v, i) => (
-              <div key={i} className="flex gap-3 items-end">
-                <div className="flex-1">
-                  <label className="block text-xs text-brand-muted mb-1.5">Attribute</label>
-                  <input
-                    value={v.attribute}
-                    onChange={(e) => {
-                      const newVariants = [...form.variants];
-                      newVariants[i].attribute = e.target.value;
-                      setForm((p) => ({ ...p, variants: newVariants }));
-                    }}
-                    placeholder="e.g. Size"
-                    className="input-dark"
-                  />
-                </div>
-                <div className="flex-1">
-                  <label className="block text-xs text-brand-muted mb-1.5">Value</label>
-                  <input
-                    value={v.value}
-                    onChange={(e) => {
-                      const newVariants = [...form.variants];
-                      newVariants[i].value = e.target.value;
-                      setForm((p) => ({ ...p, variants: newVariants }));
-                    }}
-                    placeholder="e.g. Large"
-                    className="input-dark"
-                  />
-                </div>
-                <div className="flex-1">
-                  <label className="block text-xs text-brand-muted mb-1.5">Extra Price</label>
-                  <input
-                    type="number"
-                    value={v.extraPrice}
-                    onChange={(e) => {
-                      const newVariants = [...form.variants];
-                      newVariants[i].extraPrice = parseFloat(e.target.value) || 0;
-                      setForm((p) => ({ ...p, variants: newVariants }));
-                    }}
-                    className="input-dark"
-                  />
-                </div>
-                <button
-                  onClick={() => setForm((p) => ({ ...p, variants: p.variants.filter((_, idx) => idx !== i) }))}
-                  className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg"
-                >
-                  <X size={16} />
-                </button>
-              </div>
-            ))}
-            <button
-              onClick={() => setForm((p) => ({ ...p, variants: [...p.variants, { attribute: "", value: "", extraPrice: 0 }] }))}
-              className="w-full p-3 border-2 border-dashed border-brand-border rounded-lg text-brand-muted hover:text-white hover:border-brand-primary transition-all"
-            >
-              + Add Variant
-            </button>
-          </div>
-        )}
-
-        <div className="flex gap-3 mt-6 justify-end">
-          <Button variant="ghost" onClick={() => setModal(false)}>
-            Cancel
-          </Button>
-          <Button onClick={handleSave} disabled={saving}>
-            {saving ? <Loader2 className="animate-spin mr-2" size={16} /> : null}
-            {editing ? "Save Changes" : "Add Product"}
-          </Button>
-        </div>
-      </Modal>
 
       <Modal open={categoryModal} onClose={() => setCategoryModal(false)} title="Add Category" size="sm">
         <div className="space-y-4">

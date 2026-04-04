@@ -16,6 +16,7 @@ const orderItemRoutes = require('./modules/orderItems/orderItems.routes');
 const paymentRoutes = require('./modules/payments/payments.routes');
 const kitchenRoutes = require('./modules/kitchen/kitchen.routes');
 const customerDisplayRoutes = require('./modules/customerDisplay/customerDisplay.routes');
+const customerRoutes = require('./modules/customers/customers.routes');
 const selfOrderRoutes = require('./modules/selfOrder/selfOrder.routes');
 const reportRoutes = require('./modules/reports/reports.routes');
 
@@ -60,6 +61,7 @@ app.use('/api/order-items', orderItemRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/kitchen', kitchenRoutes);
 app.use('/api/customer-display', customerDisplayRoutes);
+app.use('/api/customers', customerRoutes);
 app.use('/api/self-order', selfOrderRoutes);
 app.use('/api/reports', reportRoutes);
 

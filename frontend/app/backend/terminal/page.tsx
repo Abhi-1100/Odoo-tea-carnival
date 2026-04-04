@@ -184,7 +184,7 @@ export default function TerminalPage() {
                       Payment
                     </button>
                     <button
-                      onClick={() => navigateTo("/pos/customer-display")}
+                      onClick={() => navigateTo("/backend/customers")}
                       className="w-full rounded-lg border border-transparent px-3 py-2 text-left text-brand-muted hover:text-white hover:border-brand-primary/40 hover:bg-brand-bg/60"
                     >
                       Customer
@@ -205,7 +205,7 @@ export default function TerminalPage() {
                       Products
                     </button>
                     <button
-                      onClick={() => navigateTo("/backend/products")}
+                      onClick={() => navigateTo("/backend/categories")}
                       className="w-full rounded-lg border border-transparent px-3 py-2 text-left text-brand-muted hover:text-white hover:border-brand-primary/40 hover:bg-brand-bg/60"
                     >
                       Category
