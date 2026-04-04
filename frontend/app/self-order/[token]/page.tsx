@@ -44,6 +44,12 @@ interface MobileProduct {
   addons: { id: number; name: string; price: number }[];
 }
 
+declare global {
+  interface Window {
+    Razorpay?: new (options: Record<string, unknown>) => { open: () => void };
+  }
+}
+
 export default function SelfOrderPage({ params }: { params: { token: string } }) {
   const [screen, setScreen] = useState<ScreenStep>("splash");
   const [cat, setCat] = useState<number | "all">("all");
@@ -61,6 +67,7 @@ export default function SelfOrderPage({ params }: { params: { token: string } })
   const [currentOrderId, setCurrentOrderId] = useState<number | null>(null);
   const [historyOrders, setHistoryOrders] = useState<Array<{ orderId: number; orderNumber: string; kitchenStage: string }>>([]);
   const [splashIndex, setSplashIndex] = useState(0);
+  const [processingPayment, setProcessingPayment] = useState(false);
 
   const isViewOnly = mode === "qr_menu";
 
@@ -213,7 +220,7 @@ export default function SelfOrderPage({ params }: { params: { token: string } })
     setScreen("payment");
   };
 
-  const placeOrder = async () => {
+  const placeOrder = async (payment?: { method?: 'cash' | 'digital' | 'upi'; amountPaid: number; reference?: string; status?: 'pending' | 'confirmed' | 'failed' | 'refunded' }) => {
     if (isViewOnly) {
       toast.error("Ordering is disabled in QR Menu mode");
       return;
@@ -226,6 +233,7 @@ export default function SelfOrderPage({ params }: { params: { token: string } })
       const res = await api.selfOrder.placeOrderByToken(params.token, {
         customerName: 'AK',
         totalAmount: total,
+        payment,
         items: cart.map((item) => {
           const variant = item.product.variants.find((v) => v.id === item.variantId);
           const addonsTotal = item.addonIds.reduce(
@@ -249,6 +257,83 @@ export default function SelfOrderPage({ params }: { params: { token: string } })
       setScreen("confirmed");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to place order');
+    }
+  };
+
+  const loadRazorpayScript = async () => {
+    if (window.Razorpay) return true;
+    return await new Promise<boolean>((resolve) => {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.async = true;
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+  const payAndPlaceOrder = async () => {
+    if (isViewOnly) {
+      toast.error('Ordering is disabled in QR Menu mode');
+      return;
+    }
+    if (!cart.length) {
+      toast.error('Your cart is empty!');
+      return;
+    }
+
+    try {
+      setProcessingPayment(true);
+      const scriptReady = await loadRazorpayScript();
+      if (!scriptReady || !window.Razorpay) {
+        toast.error('Failed to load Razorpay SDK');
+        return;
+      }
+
+      const createOrderRes = await api.selfOrder.createRazorpayOrderByToken(params.token, {
+        amount: total,
+        currency: 'INR',
+      });
+
+      const { keyId, order } = createOrderRes.data;
+
+      const rz = new window.Razorpay({
+        key: keyId,
+        amount: order.amount,
+        currency: order.currency,
+        name: pageSettings?.restaurantName || 'Odoo POS Cafe',
+        description: `Self order payment - ${tableLabel}`,
+        order_id: order.id,
+        handler: async (response: Record<string, string>) => {
+          try {
+            await api.selfOrder.verifyRazorpayPaymentByToken(params.token, {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            });
+
+            await placeOrder({
+              method: 'digital',
+              amountPaid: total,
+              reference: response.razorpay_payment_id,
+              status: 'confirmed',
+            });
+          } catch (error) {
+            toast.error(error instanceof Error ? error.message : 'Payment verification failed');
+          } finally {
+            setProcessingPayment(false);
+          }
+        },
+        theme: { color: '#95416a' },
+        modal: {
+          ondismiss: () => setProcessingPayment(false),
+        },
+      });
+
+      rz.open();
+    } catch (error) {
+      setProcessingPayment(false);
+      toast.error(error instanceof Error ? error.message : 'Unable to start payment');
     }
   };
 
@@ -561,7 +646,13 @@ export default function SelfOrderPage({ params }: { params: { token: string } })
 
           <div className="border-t border-brand-border p-3 bg-[#c8adc7] text-black flex items-center justify-between">
             <div className="text-sm">Total: ₹{total}</div>
-            <button onClick={placeOrder} className="px-4 py-1.5 bg-black text-white rounded-md text-sm">Confirmed</button>
+            <button
+              onClick={payAndPlaceOrder}
+              disabled={processingPayment}
+              className="px-4 py-1.5 bg-black text-white rounded-md text-sm disabled:opacity-60"
+            >
+              {processingPayment ? 'Opening...' : 'Confirmed'}
+            </button>
           </div>
         </div>
       </div>
@@ -616,30 +707,33 @@ export default function SelfOrderPage({ params }: { params: { token: string } })
 
   return (
     <div className="min-h-screen bg-brand-bg flex items-center justify-center p-4" style={backgroundStyle}>
-      <div className="w-[360px] max-w-full h-[660px] border border-brand-border bg-brand-card flex flex-col">
-        <div className="p-3 flex items-center gap-2">
-          <button className="px-3 py-1 text-xs bg-brand-bg rounded inline-flex items-center gap-1" onClick={() => setScreen("splash")}>
-            <ArrowLeft size={12} /> Back
+      <div className="w-[360px] max-w-full h-[660px] border border-[#7d3f72] bg-[#20223a] flex flex-col rounded-md overflow-hidden">
+        <div className="p-3 flex items-center gap-2 border-b border-brand-border/50">
+          <button
+            className="h-9 px-4 text-sm bg-[#2a2f45] text-white rounded-lg inline-flex items-center gap-1.5"
+            onClick={() => setScreen("splash")}
+          >
+            <ArrowLeft size={14} /> Back
           </button>
-          <div className="relative flex-1">
-            <Search size={12} className="absolute left-2 top-2.5 text-brand-muted" />
+          <div className="relative flex-1 h-9">
+            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-muted" />
             <input
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search product"
-              className="w-full pl-7 pr-2 py-1.5 text-xs bg-brand-bg border border-brand-border rounded text-white"
+              className="w-full h-full pl-9 pr-3 text-sm bg-[#181c31] border border-brand-border rounded-md text-white placeholder:text-brand-muted"
             />
           </div>
         </div>
 
-        <div className="flex gap-2 px-3 pb-2 overflow-x-auto">
+        <div className="flex gap-2 px-3 py-2 overflow-x-auto">
           {categories.map((c) => (
             <button
               key={c.id}
               onClick={() => setCat(c.id)}
               className={clsx(
-                "px-3 py-1 text-[11px] rounded border",
-                cat === c.id ? "text-white" : "bg-brand-bg border-brand-border text-brand-muted",
+                "px-3 py-1.5 text-[12px] rounded-md border whitespace-nowrap",
+                cat === c.id ? "text-white" : "bg-[#1b1f34] border-brand-border text-[#c7cae0]",
               )}
               style={cat === c.id ? { backgroundColor: c.color, borderColor: c.color } : undefined}
             >
@@ -648,54 +742,63 @@ export default function SelfOrderPage({ params }: { params: { token: string } })
           ))}
         </div>
 
-        <div className="px-3 grid grid-cols-3 gap-2 flex-1 overflow-y-auto pb-2">
+        <div className="px-3 grid grid-cols-3 gap-3 flex-1 overflow-y-auto pb-3 content-start">
           {filtered.slice(0, 12).map((p) => {
             const inCart = cart.find((i) => i.product.id === p.id);
             return (
-              <button
+              <div
                 key={p.id}
-                onClick={() => {
-                  setSelectedProduct(p);
-                  setScreen("detail");
-                }}
-                className="border border-brand-border bg-brand-bg/50 min-h-[88px] p-2 text-left"
+                className="border border-[#343955] bg-[#232842] min-h-[150px] rounded-sm overflow-hidden flex flex-col"
               >
-                <div className="text-lg">{p.emoji || "🍽️"}</div>
-                <div className="text-[11px] text-white leading-tight mt-1">{p.name.split(" ")[0]}</div>
-                <div className="text-[10px] text-brand-muted mt-1">₹{p.price}</div>
-                {!isViewOnly && (
-                  <div className="mt-1 flex items-center gap-1">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        updateQty(p.id, -1);
-                      }}
-                      className="w-4 h-4 border border-brand-border text-[10px]"
-                    >
-                      <Minus size={10} />
-                    </button>
-                    <span className="text-[10px] text-white">{inCart?.qty || 0}</span>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        addToCart(p);
-                      }}
-                      className="w-4 h-4 border border-brand-border text-[10px]"
-                    >
-                      <Plus size={10} />
-                    </button>
+                <button
+                  onClick={() => {
+                    setSelectedProduct(p);
+                    setScreen("detail");
+                  }}
+                  className="flex-1 w-full flex items-center justify-center text-4xl text-white/80"
+                >
+                  {p.emoji || "🍽️"}
+                </button>
+
+                <div className="px-2 py-1.5 border-t border-[#4b3ea1] bg-[#1f2438]">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="text-[11px] text-white leading-tight truncate">{p.name}</div>
+                    <div className="text-[11px] text-white font-semibold">₹{p.price}</div>
                   </div>
-                )}
-              </button>
+                  {!isViewOnly && (
+                    <div className="mt-1.5 flex items-center gap-1.5">
+                      <button
+                        onClick={() => updateQty(p.id, -1)}
+                        className="w-5 h-5 border border-brand-border rounded-sm text-[10px] inline-flex items-center justify-center text-white"
+                      >
+                        <Minus size={10} />
+                      </button>
+                      <span className="text-[11px] text-white min-w-3 text-center">{inCart?.qty || 0}</span>
+                      <button
+                        onClick={() => addToCart(p)}
+                        className="w-5 h-5 border border-brand-border rounded-sm text-[10px] inline-flex items-center justify-center text-white"
+                      >
+                        <Plus size={10} />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
             );
           })}
+          {filtered.length === 0 && (
+            <div className="col-span-3 text-center py-10 text-sm text-brand-muted">No products found</div>
+          )}
         </div>
 
         <div className="border-t border-brand-border p-3 bg-[#c8adc7] text-black flex items-center justify-between">
-          <div className="text-xs">{itemCount} QTY<br />Total: ₹{total}</div>
+          <div className="text-[13px] leading-tight">
+            <div>{itemCount} QTY</div>
+            <div className="mt-1 font-medium">Total: ₹{total}</div>
+          </div>
           <button
             onClick={goNextFromMenu}
-            className="px-4 py-1.5 bg-black text-white rounded-md text-sm disabled:opacity-60"
+            className="px-5 py-2 bg-black text-white rounded-xl text-sm disabled:opacity-60"
             disabled={isViewOnly}
           >
             {isViewOnly ? "View Only" : "Next"}

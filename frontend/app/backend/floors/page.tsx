@@ -190,6 +190,23 @@ export default function FloorsPage() {
     }
   };
 
+  const deleteFloor = async () => {
+    if (!token || !activeFloorId) return;
+
+    const targetFloor = floors.find((f) => f.id === activeFloorId);
+    if (!targetFloor) return;
+
+    if (!confirm(`Delete floor \"${targetFloor.name}\"?`)) return;
+
+    try {
+      const res = await api.floors.delete(activeFloorId, token) as { success: boolean; message?: string };
+      toast.success(res.message || "Floor removed");
+      await loadData();
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Failed to remove floor");
+    }
+  };
+
   const addRow = () => {
     setDraftTables((prev) => [...prev, newDraft(prev.length + 1)]);
   };
@@ -397,6 +414,11 @@ export default function FloorsPage() {
                     </option>
                   ))}
                 </select>
+                <div className="mt-2">
+                  <Button size="sm" variant="danger" icon={<Trash2 size={14} />} onClick={deleteFloor} disabled={!activeFloorId}>
+                    Delete Floor
+                  </Button>
+                </div>
               </div>
             </div>
           </div>

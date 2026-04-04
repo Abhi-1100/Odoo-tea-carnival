@@ -271,7 +271,7 @@ export default function TerminalPage() {
                 {showQuickMenu && (
                   <div className="absolute right-0 top-11 bg-[#1c2131] border border-brand-border rounded-md min-w-[170px] z-20 shadow-lg">
                     <button onClick={() => router.push("/backend/payment-methods")} className="w-full text-left px-3 py-2 text-brand-muted hover:text-white hover:bg-brand-bg">Setting</button>
-                    <button onClick={() => router.push("/backend/kitchen-settings")} className="w-full text-left px-3 py-2 text-brand-muted hover:text-white hover:bg-brand-bg">Kitchen Display</button>
+                    <button onClick={() => { setShowQuickMenu(false); router.push("/kitchen"); }} className="w-full text-left px-3 py-2 text-brand-muted hover:text-white hover:bg-brand-bg">Kitchen Display</button>
                     <button onClick={() => router.push("/pos/customer-display")} className="w-full text-left px-3 py-2 text-brand-muted hover:text-white hover:bg-brand-bg">Customer Display</button>
                   </div>
                 )}

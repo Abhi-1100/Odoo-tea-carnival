@@ -74,21 +74,29 @@ export default function OrderPage({ params }: { params: { tableId: string } }) {
 
   const sendToKitchen = () => {
     if (!items.length) { toast.error("Add items first!"); return; }
-    const ticket = {
-      id: Date.now(), orderId: Date.now(), ticketNumber: `TK-${Date.now()}`,
-      stage: "to_cook" as const, sentAt: new Date().toISOString(),
-      order: { id: Date.now(), orderNumber: `ORD-${Date.now()}`, orderType: "dine_in", table: { id: tableNumber, tableNumber: String(tableNumber) } },
-      items: items.map((i, index) => ({
-        id: Date.now() + index,
-        orderItemId: Number(i.productId),
-        productName: i.name,
-        quantity: i.qty,
-        isPrepared: false,
-      })),
-    };
-    addTicket(ticket);
-    setSentToKitchen(true);
-    toast.success("Order sent to kitchen! 🍳");
+
+    try {
+      const ticket = {
+        id: Date.now(), orderId: Date.now(), ticketNumber: `TK-${Date.now()}`,
+        stage: "to_cook" as const, sentAt: new Date().toISOString(),
+        order: { id: Date.now(), orderNumber: `ORD-${Date.now()}`, orderType: "dine_in", table: { id: tableNumber, tableNumber: String(tableNumber) } },
+        items: items.map((i, index) => ({
+          id: Date.now() + index,
+          orderItemId: Number(i.productId),
+          productName: i.name,
+          quantity: i.qty,
+          isPrepared: false,
+        })),
+      };
+
+      addTicket(ticket);
+      setSentToKitchen(true);
+      toast.success("Order sent to kitchen! 🍳");
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Failed to send order to kitchen");
+    }
+
+    // Always move the user to kitchen display after pressing Send.
     router.push("/kitchen");
   };
 
@@ -176,7 +184,7 @@ export default function OrderPage({ params }: { params: { tableId: string } }) {
             <div className="flex justify-between text-white font-bold text-base pt-2 border-t border-brand-border"><span>Total</span><span className="text-brand-primary">₹{getTotal()}</span></div>
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <Button variant="teal" icon={<SendHorizonal size={15} />} onClick={sendToKitchen} className={sentToKitchen ? "opacity-70" : ""}>{sentToKitchen ? "Resend" : "Kitchen"}</Button>
+            <Button variant="teal" icon={<SendHorizonal size={15} />} onClick={sendToKitchen} className={sentToKitchen ? "opacity-70" : ""}>{sentToKitchen ? "Resend" : "Send"}</Button>
             <Button variant="primary" icon={<CreditCard size={15} />} onClick={goPayment}>Payment</Button>
           </div>
         </div>

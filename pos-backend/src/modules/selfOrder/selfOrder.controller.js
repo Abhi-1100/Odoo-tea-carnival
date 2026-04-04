@@ -3,6 +3,8 @@ const QRCode = require('qrcode');
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
+const Razorpay = require('razorpay');
 const prisma = require('../../config/db');
 const { AppError } = require('../../middleware/errorHandler');
 const { getIO } = require('../../config/socket');
@@ -28,6 +30,21 @@ function getFrontendBaseUrl(req) {
 
 function buildSelfOrderUrl(req, token) {
   return `${getFrontendBaseUrl(req).replace(/\/$/, '')}/s/${token}`;
+}
+
+function getRazorpayClient() {
+  const keyId = process.env.RAZORPAY_KEY_ID;
+  const keySecret = process.env.RAZORPAY_KEY_SECRET;
+
+  if (!keyId || !keySecret) {
+    throw new AppError('Razorpay is not configured. Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET', 500);
+  }
+
+  return {
+    client: new Razorpay({ key_id: keyId, key_secret: keySecret }),
+    keyId,
+    keySecret,
+  };
 }
 
 function normalizePageSettings(req, tokenRecord, settings) {
@@ -90,10 +107,17 @@ async function mapPermanentTokens(req) {
     include: {
       table: { select: { id: true, tableNumber: true } },
     },
-    orderBy: { table: { tableNumber: 'asc' } },
+    orderBy: [{ table: { tableNumber: 'asc' } }, { createdAt: 'desc' }],
   });
 
-  return records.map((record) => ({
+  const latestByTable = new Map();
+  for (const record of records) {
+    if (!latestByTable.has(record.tableId)) {
+      latestByTable.set(record.tableId, record);
+    }
+  }
+
+  return Array.from(latestByTable.values()).map((record) => ({
     tableId: record.tableId,
     tableName: `Table ${record.table.tableNumber}`,
     token: record.token,
@@ -116,6 +140,24 @@ async function generateOrderNumber() {
   let sequence = 1;
   if (lastOrder) {
     const lastSeq = parseInt(lastOrder.orderNumber.split('-').pop());
+    sequence = lastSeq + 1;
+  }
+
+  return `${prefix}${String(sequence).padStart(4, '0')}`;
+}
+
+async function generateReceiptNumber() {
+  const year = new Date().getFullYear();
+  const prefix = `RCP-${year}-`;
+
+  const lastPayment = await prisma.payment.findFirst({
+    where: { receiptNumber: { startsWith: prefix } },
+    orderBy: { receiptNumber: 'desc' },
+  });
+
+  let sequence = 1;
+  if (lastPayment) {
+    const lastSeq = parseInt(lastPayment.receiptNumber.split('-').pop(), 10);
     sequence = lastSeq + 1;
   }
 
@@ -623,7 +665,7 @@ const placeOrder = async (req, res, next) => {
       throw new AppError('No active POS session found', 400);
     }
 
-    const { items, customerName } = req.body;
+    const { items, customerName, payment } = req.body;
 
     // Fetch product details for pricing
     const productIds = items.map((i) => i.productId);
@@ -735,6 +777,32 @@ const placeOrder = async (req, res, next) => {
       });
     }
 
+    // Persist payment for online self-order so reports/payment breakdown include it.
+    if (payment?.amountPaid) {
+      const methodType = payment.method || 'digital';
+      const paymentMethod = await prisma.paymentMethod.findFirst({
+        where: { type: methodType, isEnabled: true },
+      });
+
+      if (paymentMethod) {
+        const receiptNumber = await generateReceiptNumber();
+        const amountPaid = Number(payment.amountPaid);
+        const roundedTotal = Math.round(totalAmount * 100) / 100;
+
+        await prisma.payment.create({
+          data: {
+            orderId: order.id,
+            paymentMethodId: paymentMethod.id,
+            amountPaid,
+            changeAmount: Math.max(0, amountPaid - roundedTotal),
+            upiRef: payment.reference || null,
+            receiptNumber,
+            status: payment.status || 'confirmed',
+          },
+        });
+      }
+    }
+
     res.status(201).json({
       success: true,
       orderNumber: `#${order.orderNumber}`,
@@ -819,6 +887,53 @@ const getOrderHistory = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
+const createRazorpayOrderForSelfOrder = async (req, res, next) => {
+  try {
+    await validateToken(req.params.token);
+
+    const { amount, currency = 'INR' } = req.body;
+    const safeAmount = Number(amount);
+    if (!Number.isFinite(safeAmount) || safeAmount <= 0) {
+      throw new AppError('Amount must be greater than 0', 400);
+    }
+
+    const { client, keyId } = getRazorpayClient();
+    const order = await client.orders.create({
+      amount: Math.round(safeAmount * 100),
+      currency,
+      receipt: `self_${Date.now()}`,
+      payment_capture: 1,
+    });
+
+    res.json({ success: true, data: { keyId, order } });
+  } catch (error) { next(error); }
+};
+
+const verifyRazorpayPaymentForSelfOrder = async (req, res, next) => {
+  try {
+    await validateToken(req.params.token);
+
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+    const { keySecret } = getRazorpayClient();
+
+    const payload = `${razorpay_order_id}|${razorpay_payment_id}`;
+    const expected = crypto.createHmac('sha256', keySecret).update(payload).digest('hex');
+
+    if (expected !== razorpay_signature) {
+      throw new AppError('Payment verification failed', 400);
+    }
+
+    res.json({
+      success: true,
+      data: {
+        verified: true,
+        razorpay_order_id,
+        razorpay_payment_id,
+      },
+    });
+  } catch (error) { next(error); }
+};
+
 module.exports = {
   generateToken,
   getSession,
@@ -836,4 +951,6 @@ module.exports = {
   getPageSettings,
   trackOrder,
   getOrderHistory,
+  createRazorpayOrderForSelfOrder,
+  verifyRazorpayPaymentForSelfOrder,
 };

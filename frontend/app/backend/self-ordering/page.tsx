@@ -274,22 +274,6 @@ export default function SelfOrderingSettingsPage() {
                         <div className="text-xs text-brand-muted max-w-sm">
                           As we have only option enable it by default and read only
                         </div>
-
-                        <div className="text-sm text-brand-muted max-w-md pt-1">
-                          Create a webpage use database URL with append token post URL
-                          <div className="text-sky-300 mt-1">e.g {tokens[0]?.url || "abcd.com/s/asdfghhjkl"}</div>
-                          <div className="grid grid-cols-3 gap-2 mt-2 text-xs">
-                            <div>
-                              <div className="text-green-400">Domain</div>
-                            </div>
-                            <div>
-                              <div className="text-green-400">Self</div>
-                            </div>
-                            <div>
-                              <div className="text-green-400">Unique token</div>
-                            </div>
-                          </div>
-                        </div>
                       </>
                     )}
 

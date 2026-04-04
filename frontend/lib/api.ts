@@ -397,6 +397,12 @@ export const api = {
           notes?: string;
         }[];
         totalAmount?: number;
+        payment?: {
+          method?: 'cash' | 'digital' | 'upi';
+          amountPaid: number;
+          reference?: string;
+          status?: 'pending' | 'confirmed' | 'failed' | 'refunded';
+        };
       },
     ) =>
       apiFetch<{
@@ -409,6 +415,21 @@ export const api = {
         status: string;
         message: string;
       }>(`/self-order/place-order/${token}`, { method: 'POST', body: data }),
+
+    createRazorpayOrderByToken: (token: string, data: { amount: number; currency?: string }) =>
+      apiFetch<{ success: boolean; data: { keyId: string; order: { id: string; amount: number; currency: string } } }>(
+        `/self-order/razorpay/create-order/${token}`,
+        { method: 'POST', body: data },
+      ),
+
+    verifyRazorpayPaymentByToken: (
+      token: string,
+      data: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string },
+    ) =>
+      apiFetch<{ success: boolean; data: { verified: boolean; razorpay_order_id: string; razorpay_payment_id: string } }>(
+        `/self-order/razorpay/verify/${token}`,
+        { method: 'POST', body: data },
+      ),
 
     trackOrder: (orderId: number) =>
       apiFetch<{

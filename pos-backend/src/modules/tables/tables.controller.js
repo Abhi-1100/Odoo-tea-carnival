@@ -77,7 +77,37 @@ const update = async (req, res, next) => {
 /** DELETE /api/tables/:id */
 const remove = async (req, res, next) => {
   try {
-    await prisma.table.delete({ where: { id: parseInt(req.params.id) } });
+    const id = parseInt(req.params.id);
+
+    const linked = await prisma.table.findUnique({
+      where: { id },
+      select: {
+        _count: {
+          select: {
+            orders: true,
+            selfOrderTokens: true,
+          },
+        },
+      },
+    });
+
+    if (!linked) throw new AppError('Table not found', 404);
+
+    const hasLinks = (linked._count.orders || 0) > 0 || (linked._count.selfOrderTokens || 0) > 0;
+
+    if (hasLinks) {
+      await prisma.table.update({
+        where: { id },
+        data: { isActive: false },
+      });
+
+      return res.json({
+        success: true,
+        message: 'Table has linked history and was archived instead of deleted',
+      });
+    }
+
+    await prisma.table.delete({ where: { id } });
     res.json({ success: true, message: 'Table deleted successfully' });
   } catch (error) { next(error); }
 };
@@ -99,13 +129,51 @@ const bulkAction = async (req, res, next) => {
     const { action, ids, floorId } = req.body;
 
     if (action === 'delete') {
-      const deleted = await prisma.table.deleteMany({
+      const tables = await prisma.table.findMany({
         where: { id: { in: ids } },
+        select: {
+          id: true,
+          _count: {
+            select: {
+              orders: true,
+              selfOrderTokens: true,
+            },
+          },
+        },
       });
+
+      const archiveIds = tables
+        .filter((table) => (table._count.orders || 0) > 0 || (table._count.selfOrderTokens || 0) > 0)
+        .map((table) => table.id);
+
+      const deleteIds = tables
+        .filter((table) => (table._count.orders || 0) === 0 && (table._count.selfOrderTokens || 0) === 0)
+        .map((table) => table.id);
+
+      let deletedCount = 0;
+      let archivedCount = 0;
+
+      if (deleteIds.length > 0) {
+        const deleted = await prisma.table.deleteMany({
+          where: { id: { in: deleteIds } },
+        });
+        deletedCount = deleted.count;
+      }
+
+      if (archiveIds.length > 0) {
+        const archived = await prisma.table.updateMany({
+          where: { id: { in: archiveIds } },
+          data: { isActive: false },
+        });
+        archivedCount = archived.count;
+      }
+
       return res.json({
         success: true,
-        message: `Deleted ${deleted.count} table(s)`,
-        data: { count: deleted.count },
+        message: archivedCount > 0
+          ? `Deleted ${deletedCount} table(s), archived ${archivedCount} linked table(s)`
+          : `Deleted ${deletedCount} table(s)`,
+        data: { deletedCount, archivedCount },
       });
     }
 

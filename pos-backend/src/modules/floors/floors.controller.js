@@ -5,8 +5,10 @@ const { AppError } = require('../../middleware/errorHandler');
 const getAll = async (req, res, next) => {
   try {
     const floors = await prisma.floor.findMany({
+      where: { isActive: true },
       include: {
         tables: {
+          where: { isActive: true },
           orderBy: { tableNumber: 'asc' },
         },
       },
@@ -59,7 +61,40 @@ const update = async (req, res, next) => {
 /** DELETE /api/floors/:id */
 const remove = async (req, res, next) => {
   try {
-    await prisma.floor.delete({ where: { id: parseInt(req.params.id) } });
+    const floorId = parseInt(req.params.id);
+
+    const floor = await prisma.floor.findUnique({
+      where: { id: floorId },
+      select: {
+        id: true,
+        tables: { select: { id: true } },
+      },
+    });
+
+    if (!floor) throw new AppError('Floor not found', 404);
+
+    const tableIds = floor.tables.map((t) => t.id);
+
+    if (tableIds.length > 0) {
+      const [orderCount, tokenCount] = await Promise.all([
+        prisma.order.count({ where: { tableId: { in: tableIds } } }),
+        prisma.selfOrderToken.count({ where: { tableId: { in: tableIds } } }),
+      ]);
+
+      if (orderCount > 0 || tokenCount > 0) {
+        await prisma.$transaction([
+          prisma.floor.update({ where: { id: floorId }, data: { isActive: false } }),
+          prisma.table.updateMany({ where: { floorId }, data: { isActive: false } }),
+        ]);
+
+        return res.json({
+          success: true,
+          message: 'Floor has linked history and was archived instead of deleted',
+        });
+      }
+    }
+
+    await prisma.floor.delete({ where: { id: floorId } });
     res.json({ success: true, message: 'Floor deleted successfully' });
   } catch (error) { next(error); }
 };

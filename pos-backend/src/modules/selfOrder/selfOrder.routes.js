@@ -20,10 +20,18 @@ const {
 	getPageSettings,
 	trackOrder,
 	getOrderHistory,
+	createRazorpayOrderForSelfOrder,
+	verifyRazorpayPaymentForSelfOrder,
 } = require('./selfOrder.controller');
 const { authenticate } = require('../../middleware/auth');
 const validate = require('../../middleware/validate');
-const { generateTokenSchema, placeOrderSchema, updateSettingsSchema } = require('./selfOrder.validation');
+const {
+	generateTokenSchema,
+	placeOrderSchema,
+	updateSettingsSchema,
+	createSelfOrderRazorpayOrderSchema,
+	verifySelfOrderRazorpayPaymentSchema,
+} = require('./selfOrder.validation');
 
 const uploadDir = path.join(process.cwd(), 'uploads', 'self-order-backgrounds');
 const storage = multer.diskStorage({
@@ -67,6 +75,8 @@ router.get('/validate/:token', validateTokenAndGetInfo);
 router.get('/session/:token', getSession);
 router.get('/products/:token', getProducts);
 router.post('/place-order/:token', validate(placeOrderSchema), placeOrder);
+router.post('/razorpay/create-order/:token', validate(createSelfOrderRazorpayOrderSchema), createRazorpayOrderForSelfOrder);
+router.post('/razorpay/verify/:token', validate(verifySelfOrderRazorpayPaymentSchema), verifyRazorpayPaymentForSelfOrder);
 router.get('/track/:orderId', trackOrder);
 router.get('/history/:token', getOrderHistory);
 

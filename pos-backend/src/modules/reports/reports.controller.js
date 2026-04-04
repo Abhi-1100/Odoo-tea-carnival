@@ -3,6 +3,8 @@ const { AppError } = require('../../middleware/errorHandler');
 const { exportSalesReportPDF } = require('../../utils/exportPDF');
 const { exportSalesReportXLS } = require('../../utils/exportXLS');
 
+const REPORT_ORDER_STATUSES = ['confirmed', 'sent_to_kitchen', 'completed'];
+
 /**
  * Build date filter from period/custom dates
  */
@@ -44,7 +46,7 @@ const getDashboard = async (req, res, next) => {
 
     // Total sales & orders
     const orders = await prisma.order.findMany({
-      where: { ...where, status: 'completed' },
+      where: { ...where, status: { in: REPORT_ORDER_STATUSES } },
       select: { totalAmount: true, createdAt: true },
     });
 
@@ -55,7 +57,7 @@ const getDashboard = async (req, res, next) => {
     // Top product
     const topProductResult = await prisma.orderItem.groupBy({
       by: ['productId'],
-      where: { order: { ...where, status: 'completed' } },
+      where: { order: { ...where, status: { in: REPORT_ORDER_STATUSES } } },
       _sum: { quantity: true },
       orderBy: { _sum: { quantity: 'desc' } },
       take: 1,
@@ -74,7 +76,7 @@ const getDashboard = async (req, res, next) => {
     const payments = await prisma.payment.findMany({
       where: {
         status: 'confirmed',
-        order: { ...where, status: 'completed' },
+        order: { ...where, status: { in: REPORT_ORDER_STATUSES } },
       },
       include: { paymentMethod: { select: { type: true } } },
     });
@@ -112,7 +114,7 @@ const getDashboard = async (req, res, next) => {
 const getSalesReport = async (req, res, next) => {
   try {
     const dateFilter = buildDateFilter(req.query);
-    const where = { status: 'completed' };
+    const where = { status: { in: REPORT_ORDER_STATUSES } };
     if (dateFilter) where.createdAt = dateFilter;
     if (req.query.sessionId) where.sessionId = parseInt(req.query.sessionId);
 
@@ -166,7 +168,7 @@ const getOrdersReport = async (req, res, next) => {
 const getProductsReport = async (req, res, next) => {
   try {
     const dateFilter = buildDateFilter(req.query);
-    const orderWhere = { status: 'completed' };
+    const orderWhere = { status: { in: REPORT_ORDER_STATUSES } };
     if (dateFilter) orderWhere.createdAt = dateFilter;
 
     const productSales = await prisma.orderItem.groupBy({
@@ -213,7 +215,7 @@ const getProductsReport = async (req, res, next) => {
 const exportPDF = async (req, res, next) => {
   try {
     const dateFilter = buildDateFilter(req.query);
-    const where = { status: 'completed' };
+    const where = { status: { in: REPORT_ORDER_STATUSES } };
     if (dateFilter) where.createdAt = dateFilter;
 
     const orders = await prisma.order.findMany({
@@ -241,7 +243,7 @@ const exportPDF = async (req, res, next) => {
 const exportXLS = async (req, res, next) => {
   try {
     const dateFilter = buildDateFilter(req.query);
-    const where = { status: 'completed' };
+    const where = { status: { in: REPORT_ORDER_STATUSES } };
     if (dateFilter) where.createdAt = dateFilter;
 
     const orders = await prisma.order.findMany({
