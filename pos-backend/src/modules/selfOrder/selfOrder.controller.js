@@ -11,8 +11,11 @@ const DEFAULT_SETTINGS = {
   isEnabled: false,
   mode: 'online_ordering',
   payAtCounter: true,
+  backgroundColor: '#95416a',
   backgroundImages: [],
 };
+
+const DEFAULT_CATEGORY_COLORS = ['#e84393', '#f97316', '#22c55e', '#38bdf8', '#a855f7'];
 
 function toSafeImages(value) {
   if (!Array.isArray(value)) return [];
@@ -25,6 +28,18 @@ function getFrontendBaseUrl(req) {
 
 function buildSelfOrderUrl(req, token) {
   return `${getFrontendBaseUrl(req).replace(/\/$/, '')}/s/${token}`;
+}
+
+function normalizePageSettings(req, tokenRecord, settings) {
+  return {
+    restaurantName: 'Odoo POS Cafe',
+    logo: null,
+    backgroundImages: toSafeImages(settings.backgroundImages),
+    backgroundColor: settings.backgroundColor || '#95416a',
+    tableId: tokenRecord.tableId,
+    tableName: `Table ${tokenRecord.table.tableNumber}`,
+    mode: settings.mode,
+  };
 }
 
 function generateRandomToken(length = 8) {
@@ -145,6 +160,7 @@ const getSettings = async (req, res, next) => {
         isEnabled: settings.isEnabled,
         mode: settings.mode,
         payAtCounter: true,
+        backgroundColor: settings.backgroundColor || '#95416a',
         backgroundImages: toSafeImages(settings.backgroundImages),
       },
     });
@@ -154,7 +170,7 @@ const getSettings = async (req, res, next) => {
 const saveSettings = async (req, res, next) => {
   try {
     const settings = await getOrCreateSettings();
-    const { isEnabled, mode } = req.body;
+    const { isEnabled, mode, backgroundColor } = req.body;
 
     const updated = await prisma.selfOrderSettings.update({
       where: { id: settings.id },
@@ -162,6 +178,7 @@ const saveSettings = async (req, res, next) => {
         isEnabled,
         mode,
         payAtCounter: true,
+        backgroundColor: backgroundColor || settings.backgroundColor || '#95416a',
       },
     });
 
@@ -171,6 +188,7 @@ const saveSettings = async (req, res, next) => {
         isEnabled: updated.isEnabled,
         mode: updated.mode,
         payAtCounter: true,
+        backgroundColor: updated.backgroundColor || '#95416a',
         backgroundImages: toSafeImages(updated.backgroundImages),
       },
     });
@@ -440,6 +458,20 @@ const validateTokenAndGetInfo = async (req, res, next) => {
       sessionId: tokenRecord.sessionId || activeSession?.id || null,
       mode: settings.mode,
       payAtCounter: true,
+      backgroundColor: settings.backgroundColor || '#95416a',
+      backgroundImages: toSafeImages(settings.backgroundImages),
+    });
+  } catch (error) { next(error); }
+};
+
+const getPageSettings = async (req, res, next) => {
+  try {
+    const tokenRecord = await validateToken(req.params.token);
+    const settings = await getOrCreateSettings();
+
+    res.json({
+      success: true,
+      data: normalizePageSettings(req, tokenRecord, settings),
     });
   } catch (error) { next(error); }
 };
@@ -518,6 +550,18 @@ const getProducts = async (req, res, next) => {
     // Validate the token first
     await validateToken(req.params.token);
 
+    const categoriesRaw = await prisma.category.findMany({
+      where: { isActive: true },
+      orderBy: { createdAt: 'asc' },
+      select: { id: true, name: true },
+    });
+
+    const categories = categoriesRaw.map((category, index) => ({
+      id: category.id,
+      name: category.name,
+      color: DEFAULT_CATEGORY_COLORS[index % DEFAULT_CATEGORY_COLORS.length],
+    }));
+
     const products = await prisma.product.findMany({
       where: { isActive: true },
       include: {
@@ -527,7 +571,27 @@ const getProducts = async (req, res, next) => {
       orderBy: { name: 'asc' },
     });
 
-    res.json({ success: true, data: products });
+    const mappedProducts = products.map((product) => ({
+      id: product.id,
+      name: product.name,
+      price: Number(product.price),
+      categoryId: product.categoryId,
+      image: null,
+      emoji: '🍽️',
+      variants: product.variants.map((variant) => ({
+        id: variant.id,
+        attribute: variant.attribute,
+        value: variant.value,
+        extraPrice: Number(variant.extraPrice),
+      })),
+      addons: [
+        { id: 1, name: 'Extra Cheese', price: 1.0 },
+        { id: 2, name: 'Extra Sausage', price: 1.5 },
+        { id: 3, name: 'Wheat Bun', price: 0.5 },
+      ],
+    }));
+
+    res.json({ success: true, categories, products: mappedProducts });
   } catch (error) { next(error); }
 };
 
@@ -559,7 +623,7 @@ const placeOrder = async (req, res, next) => {
       throw new AppError('No active POS session found', 400);
     }
 
-    const { items } = req.body;
+    const { items, customerName } = req.body;
 
     // Fetch product details for pricing
     const productIds = items.map((i) => i.productId);
@@ -576,11 +640,15 @@ const placeOrder = async (req, res, next) => {
       const product = productMap[item.productId];
       if (!product) throw new AppError(`Product ${item.productId} not found or inactive`, 400);
 
+      const variantId = item.variantId || null;
+      const variant = variantId ? product.variants.find((v) => v.id === variantId) : null;
+      const unitPrice = item.unitPrice || (Number(product.price) + Number(variant?.extraPrice || 0));
+
       return {
         productId: item.productId,
-        variantId: null,
+        variantId,
         quantity: item.quantity,
-        unitPrice: Number(product.price),
+        unitPrice: Number(unitPrice),
         notes: item.notes || '',
       };
     });
@@ -608,6 +676,7 @@ const placeOrder = async (req, res, next) => {
         selfOrderTokenId: tokenRecord.id,
         orderType: 'self_order',
         status: 'sent_to_kitchen',
+        notes: customerName ? `Customer: ${customerName}` : null,
         subtotal: Math.round(subtotal * 100) / 100,
         taxAmount: Math.round(taxAmount * 100) / 100,
         totalAmount: Math.round(totalAmount * 100) / 100,
@@ -668,10 +737,84 @@ const placeOrder = async (req, res, next) => {
 
     res.status(201).json({
       success: true,
-      orderNumber: order.orderNumber,
+      orderNumber: `#${order.orderNumber}`,
+      orderId: order.id,
       tableId: tokenRecord.tableId,
+      tableName: `Table ${tokenRecord.table.tableNumber}`,
+      totalAmount: Number(order.totalAmount),
       status: order.status,
       message: 'Your order has been placed successfully!',
+    });
+  } catch (error) { next(error); }
+};
+
+const trackOrder = async (req, res, next) => {
+  try {
+    const orderId = parseInt(req.params.orderId, 10);
+    if (Number.isNaN(orderId)) throw new AppError('Invalid order id', 400);
+
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        kitchenTickets: {
+          include: { items: true },
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+        },
+      },
+    });
+
+    if (!order) throw new AppError('Order not found', 404);
+
+    const ticket = order.kitchenTickets[0] || null;
+    const items = (ticket?.items || []).map((item) => ({
+      id: item.id,
+      productName: item.productName,
+      quantity: item.quantity,
+      status: item.isPrepared ? 'completed' : ticket?.stage || 'to_cook',
+    }));
+
+    res.json({
+      success: true,
+      orderId: order.id,
+      orderNumber: `#${order.orderNumber}`,
+      items,
+      overallStatus: order.status,
+      kitchenStage: ticket?.stage || 'to_cook',
+    });
+  } catch (error) { next(error); }
+};
+
+const getOrderHistory = async (req, res, next) => {
+  try {
+    const tokenRecord = await validateToken(req.params.token);
+
+    const orders = await prisma.order.findMany({
+      where: {
+        tableId: tokenRecord.tableId,
+        orderType: 'self_order',
+      },
+      include: {
+        kitchenTickets: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+          select: { stage: true },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 20,
+    });
+
+    res.json({
+      success: true,
+      orders: orders.map((order) => ({
+        orderId: order.id,
+        orderNumber: `#${order.orderNumber}`,
+        totalAmount: Number(order.totalAmount),
+        status: order.status,
+        kitchenStage: order.kitchenTickets[0]?.stage || 'to_cook',
+        createdAt: order.createdAt,
+      })),
     });
   } catch (error) { next(error); }
 };
@@ -690,4 +833,7 @@ module.exports = {
   regenerateTokenForTable,
   downloadQrPdf,
   validateTokenAndGetInfo,
+  getPageSettings,
+  trackOrder,
+  getOrderHistory,
 };

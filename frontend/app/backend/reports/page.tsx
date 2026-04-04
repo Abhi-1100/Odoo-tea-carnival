@@ -1,27 +1,95 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, PieChart, Pie, Cell, Legend } from "recharts";
-import { TrendingUp, ShoppingCart, DollarSign, Star, Download } from "lucide-react";
+import { TrendingUp, ShoppingCart, DollarSign, Star, Download, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { salesByDay, paymentBreakdown, sessions } from "@/data/sessions";
-import { products } from "@/data/products";
-import { orders } from "@/data/orders";
 import toast from "react-hot-toast";
+import { api } from "@/lib/api";
+import { useAuthStore } from "@/store/authStore";
 
-const periods = ["Today", "This Week", "This Month", "Custom Range"];
+const periods = ["Today", "This Week", "This Month"];
+const periodMap: Record<string, string> = {
+  "Today": "today",
+  "This Week": "week",
+  "This Month": "month",
+};
+
+interface DashboardData {
+  totalSales: number;
+  totalOrders: number;
+  averageOrderValue: number;
+  topProduct: string;
+  paymentBreakdown: Record<string, number>;
+  salesByDay: Array<{ date: string; total: number }>;
+}
+
+interface Order {
+  id: number;
+  totalAmount: number;
+  status: string;
+  table: { tableNumber: number };
+  createdByUser?: { name: string };
+  _count?: { items: number };
+}
 
 export default function ReportsPage() {
+  const { token } = useAuthStore();
   const [period, setPeriod] = useState("This Week");
+  const [loading, setLoading] = useState(true);
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [ordersData, setOrdersData] = useState<Order[]>([]);
 
-  const totalSales = salesByDay.reduce((s, d) => s + d.sales, 0);
-  const orderCount = sessions.filter(s => s.status === "closed").reduce((s, v) => s + v.ordersCount, 0);
-  const avgOrder = Math.round(totalSales / Math.max(orderCount, 1));
+  useEffect(() => {
+    if (!token) return;
+
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        const params = { period: periodMap[period] };
+        const [dashRes, ordersRes] = await Promise.all([
+          api.reports.dashboard(token, params),
+          api.reports.orders(token, params),
+        ]);
+
+        setDashboardData(dashRes.data as DashboardData);
+        setOrdersData((ordersRes.data as Order[]) || []);
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Failed to load reports");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [token, period]);
+
+  if (loading) {
+    return (
+      <div className="p-8 flex items-center justify-center min-h-screen">
+        <Loader2 className="animate-spin text-brand-primary" size={40} />
+      </div>
+    );
+  }
+
+  const totalSales = dashboardData?.totalSales || 0;
+  const orderCount = dashboardData?.totalOrders || 0;
+  const avgOrder = Math.round(dashboardData?.averageOrderValue || 0);
+  const topProduct = dashboardData?.topProduct || "N/A";
+  const paymentBreakdown = dashboardData?.paymentBreakdown || {};
+  const salesByDay = dashboardData?.salesByDay || [];
+
+  // Format payment breakdown for pie chart
+  const paymentChartData = Object.entries(paymentBreakdown).map(([key, value]) => ({
+    name: key.charAt(0).toUpperCase() + key.slice(1),
+    value: Math.round((value / totalSales) * 100) || 0,
+    color: key === "cash" ? "#e84393" : key === "digital" ? "#38bdf8" : "#22c55e",
+  }));
 
   const kpis = [
-    { label: "Total Sales", value: `₹${totalSales.toLocaleString()}`, icon: DollarSign, color: "text-brand-primary bg-brand-primary/20", change: "+18%" },
-    { label: "Orders Count", value: orderCount.toString(), icon: ShoppingCart, color: "text-brand-teal bg-brand-teal/20", change: "+12%" },
-    { label: "Avg Order Value", value: `₹${avgOrder}`, icon: TrendingUp, color: "text-orange-400 bg-orange-400/20", change: "+5%" },
-    { label: "Top Product", value: "Margherita Pizza", icon: Star, color: "text-purple-400 bg-purple-400/20", change: "38 sold" },
+    { label: "Total Sales", value: `₹${totalSales.toLocaleString()}`, icon: DollarSign, color: "text-brand-primary bg-brand-primary/20", change: "This period" },
+    { label: "Orders Count", value: orderCount.toString(), icon: ShoppingCart, color: "text-brand-teal bg-brand-teal/20", change: "completed" },
+    { label: "Avg Order Value", value: `₹${avgOrder}`, icon: TrendingUp, color: "text-orange-400 bg-orange-400/20", change: "per order" },
+    { label: "Top Product", value: topProduct.substring(0, 16), icon: Star, color: "text-purple-400 bg-purple-400/20", change: "best seller" },
   ];
 
   return (
@@ -56,7 +124,7 @@ export default function ReportsPage() {
         <div className="card p-6 xl:col-span-3">
           <h2 className="text-white font-semibold mb-4">Sales Over Time</h2>
           <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={salesByDay} barSize={30}>
+            <BarChart data={salesByDay.map(d => ({ date: new Date(d.date).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' }), sales: d.total }))} barSize={30}>
               <XAxis dataKey="date" tick={{ fill: "#94a3b8", fontSize: 11 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fill: "#94a3b8", fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => `₹${(v/1000).toFixed(0)}k`} />
               <Tooltip contentStyle={{ background: "#2a2a3e", border: "1px solid #3a3a5e", borderRadius: "8px", color: "#fff" }} formatter={(v: number) => [`₹${v.toLocaleString()}`, "Sales"]} />
@@ -70,8 +138,8 @@ export default function ReportsPage() {
           <h2 className="text-white font-semibold mb-4">Payment Breakdown</h2>
           <ResponsiveContainer width="100%" height={220}>
             <PieChart>
-              <Pie data={paymentBreakdown} dataKey="value" cx="50%" cy="50%" outerRadius={75} innerRadius={40}>
-                {paymentBreakdown.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+              <Pie data={paymentChartData} dataKey="value" cx="50%" cy="50%" outerRadius={75} innerRadius={40}>
+                {paymentChartData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
               </Pie>
               <Tooltip formatter={(v: number) => [`${v}%`, ""]} contentStyle={{ background: "#2a2a3e", border: "1px solid #3a3a5e", borderRadius: "8px", color: "#fff" }} />
               <Legend wrapperStyle={{ fontSize: "12px", color: "#94a3b8" }} />
@@ -92,28 +160,33 @@ export default function ReportsPage() {
         <table className="w-full">
           <thead>
             <tr className="border-b border-brand-border">
-              {["Order ID", "Table", "Items", "Subtotal", "Tax", "Total", "Method", "Status"].map(h => (
+              {["Order ID", "Table", "Items", "Total", "Status"].map(h => (
                 <th key={h} className="text-left px-5 py-3 text-xs font-medium text-brand-muted uppercase tracking-wider">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {orders.map(o => (
-              <tr key={o.id} className="border-b border-brand-border/50 hover:bg-brand-bg/40 transition-colors">
-                <td className="px-5 py-3 text-brand-primary font-mono text-sm">#{o.id.toUpperCase()}</td>
-                <td className="px-5 py-3 text-white text-sm">T{o.tableNumber}</td>
-                <td className="px-5 py-3 text-brand-muted text-sm">{o.items.map(i => i.name).join(", ").slice(0, 30)}…</td>
-                <td className="px-5 py-3 text-white text-sm">₹{o.subtotal}</td>
-                <td className="px-5 py-3 text-brand-muted text-sm">₹{o.tax}</td>
-                <td className="px-5 py-3 text-white font-semibold text-sm">₹{o.total}</td>
-                <td className="px-5 py-3 text-brand-muted text-sm capitalize">{o.paymentMethod || "—"}</td>
-                <td className="px-5 py-3">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium border ${o.status === "completed" ? "bg-green-500/20 text-green-400 border-green-500/30" : o.status === "preparing" ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30" : "bg-orange-500/20 text-orange-400 border-orange-500/30"}`}>
-                    {o.status}
-                  </span>
+            {ordersData.length > 0 ? (
+              ordersData.map(o => (
+                <tr key={o.id} className="border-b border-brand-border/50 hover:bg-brand-bg/40 transition-colors">
+                  <td className="px-5 py-3 text-brand-primary font-mono text-sm">#{o.id.toString().padStart(4, '0')}</td>
+                  <td className="px-5 py-3 text-white text-sm">T{o.table?.tableNumber || '-'}</td>
+                  <td className="px-5 py-3 text-brand-muted text-sm">{o._count?.items || 0}</td>
+                  <td className="px-5 py-3 text-white font-semibold text-sm">₹{Math.round(Number(o.totalAmount)).toLocaleString()}</td>
+                  <td className="px-5 py-3">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium border ${o.status === "completed" ? "bg-green-500/20 text-green-400 border-green-500/30" : o.status === "preparing" ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30" : "bg-orange-500/20 text-orange-400 border-orange-500/30"}`}>
+                      {o.status?.charAt(0).toUpperCase() + o.status?.slice(1) || "unknown"}
+                    </span>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={5} className="px-5 py-8 text-center text-brand-muted">
+                  No orders found for this period
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>

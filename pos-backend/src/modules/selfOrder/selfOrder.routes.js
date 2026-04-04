@@ -17,6 +17,9 @@ const {
 	regenerateTokenForTable,
 	downloadQrPdf,
 	validateTokenAndGetInfo,
+	getPageSettings,
+	trackOrder,
+	getOrderHistory,
 } = require('./selfOrder.controller');
 const { authenticate } = require('../../middleware/auth');
 const validate = require('../../middleware/validate');
@@ -59,9 +62,12 @@ router.get('/download-qr-pdf', authenticate, downloadQrPdf);
 router.post('/generate-token', authenticate, validate(generateTokenSchema), generateToken);
 
 // No auth required (token-based)
+router.get('/page-settings/:token', getPageSettings);
 router.get('/validate/:token', validateTokenAndGetInfo);
 router.get('/session/:token', getSession);
 router.get('/products/:token', getProducts);
 router.post('/place-order/:token', validate(placeOrderSchema), placeOrder);
+router.get('/track/:orderId', trackOrder);
+router.get('/history/:token', getOrderHistory);
 
 module.exports = router;

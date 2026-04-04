@@ -45,6 +45,7 @@ async function main() {
         isEnabled: false,
         mode: 'online_ordering',
         payAtCounter: true,
+          backgroundColor: '#95416a',
         backgroundImages: [],
       },
     });

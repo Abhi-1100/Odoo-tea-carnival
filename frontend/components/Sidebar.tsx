@@ -1,13 +1,14 @@
 "use client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
-  LayoutDashboard, Package, CreditCard, Map, Monitor, QrCode, ChefHat, BarChart3, Coffee
+  LayoutDashboard, Package, CreditCard, Map, Monitor, QrCode, ChefHat, BarChart3, Coffee, LogOut
 } from "lucide-react";
 import clsx from "clsx";
+import { useAuthStore } from "@/store/authStore";
 
 const navItems = [
-  { label: "Dashboard", href: "/backend", icon: LayoutDashboard },
+  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Products", href: "/backend/products", icon: Package },
   { label: "Payment Methods", href: "/backend/payment-methods", icon: CreditCard },
   { label: "Floor Plan", href: "/backend/floors", icon: Map },
@@ -19,6 +20,13 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, logout } = useAuthStore();
+
+  const handleLogout = () => {
+    logout();
+    router.replace("/login");
+  };
 
   return (
     <aside className="fixed left-0 top-0 h-full w-60 bg-brand-card border-r border-brand-border flex flex-col z-30">
@@ -36,7 +44,10 @@ export function Sidebar() {
       {/* Nav */}
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         {navItems.map(({ label, href, icon: Icon }) => {
-          const isActive = href === "/backend" ? pathname === "/backend" : pathname.startsWith(href);
+          const isActive =
+            href === "/dashboard"
+              ? pathname === "/dashboard" || pathname === "/backend"
+              : pathname.startsWith(href);
           return (
             <Link
               key={href}
@@ -58,12 +69,21 @@ export function Sidebar() {
       {/* Footer */}
       <div className="px-4 py-4 border-t border-brand-border">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-brand-primary flex items-center justify-center text-white text-xs font-bold">A</div>
+          <div className="w-8 h-8 rounded-full bg-brand-primary flex items-center justify-center text-white text-xs font-bold">
+            {(user?.name?.[0] || "A").toUpperCase()}
+          </div>
           <div>
-            <div className="text-white text-sm font-medium">Admin</div>
-            <div className="text-brand-muted text-xs">admin@cafe.com</div>
+            <div className="text-white text-sm font-medium">{user?.name || "Admin"}</div>
+            <div className="text-brand-muted text-xs">{user?.email || "admin@cafe.com"}</div>
           </div>
         </div>
+        <button
+          onClick={handleLogout}
+          className="mt-3 w-full inline-flex items-center justify-center gap-2 rounded-lg border border-brand-border bg-brand-bg px-3 py-2 text-sm text-brand-muted hover:text-white hover:border-brand-primary/40 transition-all"
+        >
+          <LogOut size={14} />
+          Logout
+        </button>
       </div>
     </aside>
   );

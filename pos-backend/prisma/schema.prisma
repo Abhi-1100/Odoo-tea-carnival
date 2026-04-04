@@ -203,6 +203,7 @@ model SelfOrderSettings {
   isEnabled        Boolean  @default(false) @map("is_enabled")
   mode             String   @default("online_ordering") @db.VarChar(20)
   payAtCounter     Boolean  @default(true) @map("pay_at_counter")
+  backgroundColor  String   @default("#95416a") @map("background_color") @db.VarChar(20)
   backgroundImages Json     @default("[]") @map("background_images")
   updatedAt        DateTime @updatedAt @map("updated_at")
 

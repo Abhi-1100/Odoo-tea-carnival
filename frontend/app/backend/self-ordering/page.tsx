@@ -11,7 +11,6 @@ import {
   Trash2,
   Upload,
 } from "lucide-react";
-import { QRCodeSVG } from "qrcode.react";
 import toast from "react-hot-toast";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/store/authStore";
@@ -23,6 +22,7 @@ interface SelfOrderSettings {
   isEnabled: boolean;
   mode: SelfOrderMode;
   payAtCounter: boolean;
+  backgroundColor: string;
   backgroundImages: string[];
 }
 
@@ -37,6 +37,7 @@ const DEFAULT_SETTINGS: SelfOrderSettings = {
   isEnabled: false,
   mode: "online_ordering",
   payAtCounter: true,
+  backgroundColor: "#95416a",
   backgroundImages: [],
 };
 
@@ -63,6 +64,7 @@ export default function SelfOrderingSettingsPage() {
       ]);
 
       setSettings(settingsRes.data);
+      setThemeColor(settingsRes.data.backgroundColor || "#95416a");
 
       const tokensRes = await api.selfOrder.getTokens(token);
       setTokens(tokensRes.tokens);
@@ -87,10 +89,12 @@ export default function SelfOrderingSettingsPage() {
           isEnabled: settings.isEnabled,
           mode: settings.mode,
           payAtCounter: true,
+          backgroundColor: themeColor,
         },
         token,
       );
       setSettings(response.data);
+      setThemeColor(response.data.backgroundColor || themeColor);
       toast.success("Self ordering settings updated");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to save settings");
@@ -140,6 +144,11 @@ export default function SelfOrderingSettingsPage() {
   const previewWebpage = async () => {
     if (!token) return;
 
+    if (!settings.isEnabled) {
+      toast.error("Enable Self Ordering first");
+      return;
+    }
+
     let tokenToPreview = previewToken;
 
     if (!tokenToPreview) {
@@ -157,6 +166,12 @@ export default function SelfOrderingSettingsPage() {
     if (!tokenToPreview) {
       toast.error("No active table token available for preview");
       return;
+    }
+
+    if (settings.mode === "qr_menu") {
+      toast("📋 Opening QR Menu - view-only digital menu (no ordering)", { duration: 3000 });
+    } else {
+      toast("🛒 Opening Online Ordering mode", { duration: 2000 });
     }
 
     window.open(`/self-order/${tokenToPreview}`, "_blank", "noopener,noreferrer");
@@ -384,45 +399,6 @@ export default function SelfOrderingSettingsPage() {
               </Button>
             )}
           </div>
-
-          {settings.isEnabled && settings.mode === "online_ordering" && (
-            <section className="space-y-6">
-              <h2 className="text-orange-300 text-5xl leading-tight">QR PDF: Generate QR based on the available table</h2>
-
-              <div className="border border-brand-border/80 p-6">
-                <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-6">
-                  {tokens.map((item) => (
-                    <div key={item.tableId} className="text-center">
-                      <p className="text-white text-3xl mb-2">{item.tableName}</p>
-                      <div className="inline-flex bg-white p-2">
-                        <QRCodeSVG value={item.url} size={102} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <p className="text-pink-300 text-4xl mt-8 max-w-4xl">
-                  Each QR has unique token which identify as table e.g. /asdfgh {"->"} Table 1, zxcvbn {"->"} Table 2
-                </p>
-              </div>
-
-              <div className="space-y-3">
-                <p className="text-orange-300 text-5xl leading-tight">
-                  Scan this QR in mobile will open a URL in mobile browser
-                </p>
-                <p className="text-orange-300 text-5xl leading-tight">URL Format e.g {tokens[0]?.url || "abcd.com/s/asdfghhjkl"}</p>
-
-                {tokens[0] && (
-                  <div className="inline-block border border-pink-400 p-3">
-                    <p className="text-white text-4xl mb-2 text-center">{tokens[0].tableName}</p>
-                    <div className="bg-white p-2">
-                      <QRCodeSVG value={tokens[0].url} size={112} />
-                    </div>
-                  </div>
-                )}
-              </div>
-            </section>
-          )}
 
 
         </>

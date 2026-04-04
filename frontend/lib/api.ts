@@ -191,6 +191,36 @@ export const api = {
   },
 
   selfOrder: {
+    getPageSettings: (token: string) =>
+      apiFetch<{
+        success: boolean;
+        data: {
+          restaurantName: string;
+          logo: string | null;
+          backgroundImages: string[];
+          backgroundColor: string;
+          tableId: number;
+          tableName: string;
+          mode: 'online_ordering' | 'qr_menu';
+        };
+      }>(`/self-order/page-settings/${token}`),
+
+    getProductsForPage: (token: string) =>
+      apiFetch<{
+        success: boolean;
+        categories: { id: number; name: string; color: string }[];
+        products: {
+          id: number;
+          name: string;
+          price: number;
+          categoryId: number | null;
+          image: string | null;
+          emoji?: string;
+          variants: { id: number; attribute: string; value: string; extraPrice: number }[];
+          addons: { id: number; name: string; price: number }[];
+        }[];
+      }>(`/self-order/products/${token}`),
+
     getSettings: (token: string) =>
       apiFetch<{
         success: boolean;
@@ -198,14 +228,15 @@ export const api = {
           isEnabled: boolean;
           mode: 'online_ordering' | 'qr_menu';
           payAtCounter: boolean;
+          backgroundColor: string;
           backgroundImages: string[];
         };
       }>('/self-order/settings', { token }),
 
     saveSettings: (
-      data: { isEnabled: boolean; mode: 'online_ordering' | 'qr_menu'; payAtCounter?: boolean },
+      data: { isEnabled: boolean; mode: 'online_ordering' | 'qr_menu'; payAtCounter?: boolean; backgroundColor?: string },
       token: string,
-    ) => apiFetch<{ success: boolean; data: { isEnabled: boolean; mode: 'online_ordering' | 'qr_menu'; payAtCounter: boolean; backgroundImages: string[] } }>(
+    ) => apiFetch<{ success: boolean; data: { isEnabled: boolean; mode: 'online_ordering' | 'qr_menu'; payAtCounter: boolean; backgroundColor: string; backgroundImages: string[] } }>(
       '/self-order/settings',
       { method: 'PUT', body: data, token },
     ),
@@ -282,7 +313,57 @@ export const api = {
         sessionId: number | null;
         mode: 'online_ordering' | 'qr_menu';
         payAtCounter: boolean;
+        backgroundImages: string[];
       }>(`/self-order/validate/${token}`),
+
+    placeOrderByToken: (
+      token: string,
+      data: {
+        customerName?: string;
+        items: {
+          productId: number;
+          variantId?: number | null;
+          addons?: number[];
+          quantity: number;
+          unitPrice?: number;
+          notes?: string;
+        }[];
+        totalAmount?: number;
+      },
+    ) =>
+      apiFetch<{
+        success: boolean;
+        orderNumber: string;
+        orderId: number;
+        tableId: number;
+        tableName: string;
+        totalAmount: number;
+        status: string;
+        message: string;
+      }>(`/self-order/place-order/${token}`, { method: 'POST', body: data }),
+
+    trackOrder: (orderId: number) =>
+      apiFetch<{
+        success: boolean;
+        orderId: number;
+        orderNumber: string;
+        items: { id: number; productName: string; quantity: number; status: string }[];
+        overallStatus: string;
+        kitchenStage: string;
+      }>(`/self-order/track/${orderId}`),
+
+    getOrderHistory: (token: string) =>
+      apiFetch<{
+        success: boolean;
+        orders: {
+          orderId: number;
+          orderNumber: string;
+          totalAmount: number;
+          status: string;
+          kitchenStage: string;
+          createdAt: string;
+        }[];
+      }>(`/self-order/history/${token}`),
   },
 };
 
