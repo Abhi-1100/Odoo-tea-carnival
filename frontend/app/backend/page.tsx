@@ -1,173 +1,271 @@
 "use client";
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { TrendingUp, Package, ShoppingCart, DollarSign, ArrowRight, Coffee, Loader2 } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
 import { useAuthStore } from "@/store/authStore";
-import { api } from "@/lib/api";
 
-interface DashboardData {
-  totalSales: number;
-  totalOrders: number;
-  averageOrderValue: number;
-  topProduct: string;
-  paymentBreakdown: { cash: number; digital: number; upi: number };
-  salesByDay: { date: string; total: number }[];
-}
-
-export default function BackendDashboard() {
+export default function POSHome() {
   const router = useRouter();
   const { token, isAuthenticated, user } = useAuthStore();
-  const [dashboard, setDashboard] = useState<DashboardData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [newTerminalName, setNewTerminalName] = useState("");
 
   useEffect(() => {
     if (!isAuthenticated || !token) {
       router.push("/login");
-      return;
     }
-
-    const fetchDashboard = async () => {
-      try {
-        const response = await api.reports.dashboard(token, { period: "today" });
-        setDashboard(response.data as DashboardData);
-      } catch (error) {
-        console.error("Failed to fetch dashboard:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDashboard();
   }, [isAuthenticated, token, router]);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="animate-spin text-brand-primary" size={40} />
-      </div>
-    );
-  }
-
-  const kpis = [
-    { 
-      label: "Today's Sales", 
-      value: `₹${(dashboard?.totalSales || 0).toLocaleString()}`, 
-      icon: DollarSign, 
-      color: "bg-brand-primary/20 text-brand-primary", 
-      change: dashboard?.totalOrders ? "+12%" : "" 
-    },
-    { 
-      label: "Total Orders", 
-      value: (dashboard?.totalOrders || 0).toString(), 
-      icon: ShoppingCart, 
-      color: "bg-brand-teal/20 text-brand-teal", 
-      change: "+5%" 
-    },
-    { 
-      label: "Avg Order Value", 
-      value: `₹${(dashboard?.averageOrderValue || 0).toFixed(0)}`, 
-      icon: TrendingUp, 
-      color: "bg-orange-500/20 text-orange-400", 
-      change: "+8%" 
-    },
-  ];
-
-  const quickLinks = [
-    { label: "Manage Products", href: "/backend/products", icon: Package },
-    { label: "Floor Plan", href: "/backend/floors", icon: Coffee },
-    { label: "Open POS", href: "/pos", icon: ShoppingCart },
-    { label: "View Reports", href: "/backend/reports", icon: TrendingUp },
-  ];
-
-  const chartData = dashboard?.salesByDay?.map((d) => ({
-    date: new Date(d.date).toLocaleDateString("en-US", { weekday: "short" }),
-    sales: d.total,
-  })) || [];
+  const handleLogout = () => {
+    useAuthStore.getState().clearAuth?.();
+    router.push("/login");
+  };
 
   return (
-    <div className="p-8 space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-        <p className="text-brand-muted text-sm mt-1">
-          Welcome back, {user?.name || "Admin"} — here{"'"}s what{"'"}s happening today.
-        </p>
-      </div>
+    <>
+      <style>{`
+        body {
+          background-color: #FDF9F0;
+          background-image: radial-gradient(circle at 2px 2px, rgba(62, 39, 35, 0.03) 1px, transparent 0);
+          background-size: 32px 32px;
+          font-family: 'Manrope', sans-serif;
+        }
+        .glass-dropdown {
+          background: rgba(255, 255, 255, 0.95);
+          backdrop-filter: blur(10px);
+        }
+        .font-headline, h1, h2, h3, h4 {
+          font-family: 'Newsreader', serif;
+        }
+        .font-data {
+          font-family: 'IBM Plex Mono', monospace;
+        }
+      `}</style>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        {kpis.map((k) => (
-          <div key={k.label} className="card p-5">
-            <div className="flex items-start justify-between">
+      {/* TopNavBar */}
+      <header className="fixed top-0 w-full z-50 bg-[#271310] shadow-lg h-20 flex justify-between items-center px-8">
+        <div className="flex items-center gap-12">
+          <span className="text-2xl font-headline font-bold text-[#FDF9F0]">Odoo POS</span>
+          <nav className="hidden md:flex gap-8 h-full items-center">
+            {/* Orders */}
+            <div className="relative group h-full flex items-center">
+              <button className="text-[#D4A373] border-b-2 border-[#D4A373] font-semibold pb-1 flex items-center gap-1 transition-all duration-300">
+                Orders
+              </button>
+              <div className="absolute top-20 left-0 w-48 glass-dropdown p-4 rounded-b-xl border border-[#271310]/10 shadow-xl hidden group-hover:block">
+                <ul className="space-y-3">
+                  <li><a className="text-[#271310]/70 hover:text-[#271310] font-medium text-sm block" href="#">Orders</a></li>
+                  <li><a className="text-[#271310]/70 hover:text-[#271310] font-medium text-sm block" href="#">Payment</a></li>
+                  <li><a className="text-[#271310]/70 hover:text-[#271310] font-medium text-sm block" href="#">Customer</a></li>
+                </ul>
+              </div>
+            </div>
+            {/* Products */}
+            <div className="relative group h-full flex items-center">
+              <button className="text-[#FDF9F0]/70 hover:text-[#D4A373] hover:border-b-2 hover:border-[#D4A373] transition-all duration-300 pb-1">
+                Products
+              </button>
+              <div className="absolute top-20 left-0 w-48 glass-dropdown p-4 rounded-b-xl border border-[#271310]/10 shadow-xl hidden group-hover:block">
+                <ul className="space-y-3">
+                  <li><a className="text-[#271310]/70 hover:text-[#271310] font-medium text-sm block" href="#">Products</a></li>
+                  <li><a className="text-[#271310]/70 hover:text-[#271310] font-medium text-sm block" href="#">Category</a></li>
+                </ul>
+              </div>
+            </div>
+            {/* Reporting */}
+            <div className="relative group h-full flex items-center">
+              <button className="text-[#FDF9F0]/70 hover:text-[#D4A373] hover:border-b-2 hover:border-[#D4A373] transition-all duration-300 pb-1">
+                Reporting
+              </button>
+              <div className="absolute top-20 left-0 w-48 glass-dropdown p-4 rounded-b-xl border border-[#271310]/10 shadow-xl hidden group-hover:block">
+                <ul className="space-y-3">
+                  <li><a className="text-[#271310]/70 hover:text-[#271310] font-medium text-sm block" href="#">Dashboard</a></li>
+                </ul>
+              </div>
+            </div>
+          </nav>
+        </div>
+        <div className="flex items-center gap-6">
+          <button className="material-symbols-outlined text-[#FDF9F0]/70 hover:text-[#D4A373] transition-all">notifications</button>
+          <button className="material-symbols-outlined text-[#FDF9F0]/70 hover:text-[#D4A373] transition-all">settings</button>
+          <div onClick={handleLogout} className="flex items-center gap-3 bg-[#3E2723] py-1.5 px-4 rounded-full border border-white/10 cursor-pointer hover:bg-[#271310] transition-colors">
+            <span className="text-sm font-medium text-[#FDF9F0]">{user?.name || "Admin"}</span>
+            <span className="material-symbols-outlined text-[#D4A373]" style={{ fontVariationSettings: "'FILL' 1" }}>person</span>
+          </div>
+        </div>
+      </header>
+
+      <main className="pt-32 pb-20 px-8 max-w-7xl mx-auto space-y-16 bg-[#FDF9F0] min-h-screen text-[#271310]">
+
+        {/* Terminal Cards */}
+        <section className="grid grid-cols-1 lg:grid-cols-2 gap-8 relative">
+          {/* Animated presence badges */}
+          <div className="absolute -top-12 left-10 animate-pulse bg-green-100 text-green-800 border border-green-200 px-4 py-1 rounded-full text-xs font-semibold z-10">Agile Ape</div>
+          <div className="absolute top-40 -left-20 animate-pulse bg-blue-100 text-blue-800 border border-blue-200 px-4 py-1 rounded-full text-xs font-semibold z-10">Active Hawk</div>
+          <div className="absolute -bottom-8 left-1/4 animate-pulse bg-red-100 text-red-800 border border-red-200 px-4 py-1 rounded-full text-xs font-semibold z-10">Aditya</div>
+          <div className="absolute top-0 right-1/4 animate-pulse bg-orange-100 text-orange-800 border border-orange-200 px-4 py-1 rounded-full text-xs font-semibold z-10">Celebrated Pigeon</div>
+          <div className="absolute bottom-10 right-10 animate-pulse bg-purple-100 text-purple-800 border border-purple-200 px-4 py-1 rounded-full text-xs font-semibold z-10">Innocent Flamingo</div>
+
+          {/* Terminal Card 1 */}
+          <div className="group bg-white border border-[#271310]/5 rounded-xl p-8 shadow-[0_10px_40px_rgba(39,19,16,0.04)] hover:-translate-y-1 transition-all duration-300 hover:border-[#D4A373]/30 hover:shadow-[0_20px_50px_rgba(39,19,16,0.08)] relative">
+            <div className="flex justify-between items-start mb-12">
               <div>
-                <p className="text-brand-muted text-xs font-medium mb-2">{k.label}</p>
-                <p className="text-2xl font-bold text-white">{k.value}</p>
-                {k.change && <p className="text-green-400 text-xs mt-1 font-medium">{k.change} vs yesterday</p>}
+                <h2 className="text-3xl font-headline font-bold text-[#271310] mb-1">Odoo Cafe - Main</h2>
+                <p className="text-[#271310]/50 text-xs font-label uppercase tracking-widest font-semibold">Atelier Branch</p>
               </div>
-              <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${k.color}`}>
-                <k.icon size={18} />
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        {/* Sales Chart */}
-        <div className="card p-6 xl:col-span-2">
-          <h2 className="text-white font-semibold mb-4">Sales This Week</h2>
-          {chartData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={chartData} barSize={32}>
-                <XAxis dataKey="date" tick={{ fill: "#94a3b8", fontSize: 12 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: "#94a3b8", fontSize: 12 }} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${(v/1000).toFixed(0)}k`} />
-                <Tooltip contentStyle={{ background: "#2a2a3e", border: "1px solid #3a3a5e", borderRadius: "8px", color: "#fff" }} formatter={(v: number) => [`₹${v.toLocaleString()}`, "Sales"]} />
-                <Bar dataKey="sales" fill="#e84393" radius={[6, 6, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="h-[200px] flex items-center justify-center text-brand-muted">
-              No sales data for today
-            </div>
-          )}
-        </div>
-
-        {/* Quick Links */}
-        <div className="card p-6">
-          <h2 className="text-white font-semibold mb-4">Quick Links</h2>
-          <div className="space-y-2">
-            {quickLinks.map((q) => (
-              <Link key={q.href} href={q.href} className="flex items-center justify-between p-3 rounded-lg hover:bg-brand-bg transition-colors group">
-                <div className="flex items-center gap-3">
-                  <q.icon size={16} className="text-brand-primary" />
-                  <span className="text-sm text-white">{q.label}</span>
+              <div className="relative group/menu">
+                <button className="material-symbols-outlined text-[#271310]/30 hover:text-[#3E2723] p-2">more_vert</button>
+                <div className="absolute right-0 top-10 w-48 glass-dropdown rounded-xl border border-[#271310]/10 hidden group-hover/menu:block z-20 py-2 shadow-xl">
+                  <a className="block px-4 py-2 text-sm text-[#271310]/80 hover:bg-[#D4A373]/10 hover:text-[#3E2723]" href="#">Setting</a>
+                  <a className="block px-4 py-2 text-sm text-[#271310]/80 hover:bg-[#D4A373]/10 hover:text-[#3E2723]" href="#">Kitchen Display</a>
+                  <a className="block px-4 py-2 text-sm text-[#271310]/80 hover:bg-[#D4A373]/10 hover:text-[#3E2723]" href="#">Customer Display</a>
                 </div>
-                <ArrowRight size={14} className="text-brand-muted group-hover:text-brand-primary transition-colors" />
-              </Link>
-            ))}
+              </div>
+            </div>
+            <div className="space-y-4 mb-12 font-data text-sm">
+              <div className="flex justify-between border-b border-[#271310]/10 pb-3">
+                <span className="text-[#271310]/50">Last open</span>
+                <span className="text-[#271310] font-medium">01/01/2026</span>
+              </div>
+              <div className="flex justify-between border-b border-[#271310]/10 pb-3">
+                <span className="text-[#271310]/50">Last Sell</span>
+                <span className="text-[#3E2723] font-bold text-lg">$5,240.00</span>
+              </div>
+            </div>
+            <a href="/pos" className="inline-block bg-[#3E2723] text-[#FDF9F0] font-bold px-10 py-3.5 rounded-full hover:bg-[#271310] hover:scale-105 active:scale-95 transition-all shadow-[0_4px_25px_rgba(39,19,16,0.2)]">
+              Open Session
+            </a>
           </div>
-        </div>
+
+          {/* Terminal Card 2 */}
+          <div className="group bg-white border border-[#271310]/5 rounded-xl p-8 shadow-[0_10px_40px_rgba(39,19,16,0.04)] hover:-translate-y-1 transition-all duration-300 hover:border-[#D4A373]/30 hover:shadow-[0_20px_50px_rgba(39,19,16,0.08)] relative">
+            <div className="flex justify-between items-start mb-12">
+              <div>
+                <h2 className="text-3xl font-headline font-bold text-[#271310] mb-1">Odoo Cafe - Express</h2>
+                <p className="text-[#271310]/50 text-xs font-label uppercase tracking-widest font-semibold">Takeaway Point</p>
+              </div>
+              <div className="relative group/menu">
+                <button className="material-symbols-outlined text-[#271310]/30 hover:text-[#3E2723] p-2">more_vert</button>
+                <div className="absolute right-0 top-10 w-48 glass-dropdown rounded-xl border border-[#271310]/10 hidden group-hover/menu:block z-20 py-2 shadow-xl">
+                  <a className="block px-4 py-2 text-sm text-[#271310]/80 hover:bg-[#D4A373]/10 hover:text-[#3E2723]" href="#">Setting</a>
+                  <a className="block px-4 py-2 text-sm text-[#271310]/80 hover:bg-[#D4A373]/10 hover:text-[#3E2723]" href="#">Kitchen Display</a>
+                  <a className="block px-4 py-2 text-sm text-[#271310]/80 hover:bg-[#D4A373]/10 hover:text-[#3E2723]" href="#">Customer Display</a>
+                </div>
+              </div>
+            </div>
+            <div className="space-y-4 mb-12 font-data text-sm">
+              <div className="flex justify-between border-b border-[#271310]/10 pb-3">
+                <span className="text-[#271310]/50">Last open</span>
+                <span className="text-[#271310] font-medium">02/01/2026</span>
+              </div>
+              <div className="flex justify-between border-b border-[#271310]/10 pb-3">
+                <span className="text-[#271310]/50">Last Sell</span>
+                <span className="text-[#3E2723] font-bold text-lg">$2,810.50</span>
+              </div>
+            </div>
+            <a href="/pos" className="inline-block bg-[#3E2723] text-[#FDF9F0] font-bold px-10 py-3.5 rounded-full hover:bg-[#271310] hover:scale-105 active:scale-95 transition-all shadow-[0_4px_25px_rgba(39,19,16,0.2)]">
+              Open Session
+            </a>
+          </div>
+        </section>
+
+        {/* Point of Sale Section */}
+        <section className="space-y-8">
+          <div className="flex justify-between items-center bg-[#271310]/5 p-6 rounded-2xl border border-[#271310]/10">
+            <div className="flex items-center gap-4">
+              <h3 className="text-2xl font-headline font-bold text-[#271310]">Point of Sale</h3>
+              <span className="bg-[#271310]/10 text-[#271310]/60 text-xs px-4 py-1 rounded-full border border-[#271310]/10 font-bold tracking-wide">Main Terminal #01</span>
+            </div>
+            <button
+              onClick={() => setShowModal(true)}
+              className="text-[#3E2723] font-bold flex items-center gap-2 hover:translate-x-1 transition-all px-4 py-2 hover:bg-[#3E2723]/5 rounded-full"
+            >
+              <span className="material-symbols-outlined">add</span>
+              New
+            </button>
+          </div>
+
+          {/* Payment Methods */}
+          <div className="bg-white p-10 rounded-2xl border border-[#271310]/5 shadow-sm">
+            <h4 className="text-xl font-headline font-bold text-[#271310] mb-8 flex items-center gap-3">
+              <span className="material-symbols-outlined text-[#3E2723]">payments</span>
+              Payment Methods
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+              {/* Left Column */}
+              <div className="space-y-6">
+                <label className="flex items-center gap-4 group cursor-pointer">
+                  <input defaultChecked className="w-6 h-6 rounded border-[#271310]/20 bg-[#FDF9F0] text-[#3E2723] focus:ring-[#3E2723]" type="checkbox"/>
+                  <span className="text-[#271310]/80 font-medium group-hover:text-[#3E2723] transition-colors">Cash</span>
+                </label>
+                <div className="space-y-4">
+                  <label className="flex items-center gap-4 group cursor-pointer">
+                    <input defaultChecked className="w-6 h-6 rounded border-[#271310]/20 bg-[#FDF9F0] text-[#3E2723] focus:ring-[#3E2723]" type="checkbox"/>
+                    <span className="text-[#271310]/80 font-medium group-hover:text-[#3E2723] transition-colors">QR Payment (UPI)</span>
+                  </label>
+                  <div className="pl-10">
+                    <div className="relative">
+                      <input className="w-full bg-[#FDF9F0]/50 border-b-2 border-[#271310]/10 focus:border-[#3E2723] focus:ring-0 text-[#271310] font-data py-3 transition-all outline-none" placeholder="123@ybl.com" type="text"/>
+                      <span className="absolute right-4 top-3 text-[#271310]/40 text-[10px] uppercase font-bold tracking-tighter">UPI ID</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {/* Right Column */}
+              <div className="space-y-6">
+                <label className="flex items-center gap-4 group cursor-pointer">
+                  <input className="w-6 h-6 rounded border-[#271310]/20 bg-[#FDF9F0] text-[#3E2723] focus:ring-[#3E2723]" type="checkbox"/>
+                  <span className="text-[#271310]/80 font-medium group-hover:text-[#3E2723] transition-colors">Digital (Bank)</span>
+                </label>
+                <label className="flex items-center gap-4 group cursor-pointer">
+                  <input defaultChecked className="w-6 h-6 rounded border-[#271310]/20 bg-[#FDF9F0] text-[#3E2723] focus:ring-[#3E2723]" type="checkbox"/>
+                  <span className="text-[#271310]/80 font-medium group-hover:text-[#3E2723] transition-colors">Digital (Card)</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      {/* Background Decoration */}
+      <div className="fixed bottom-0 right-0 -z-10 opacity-20 pointer-events-none">
+        <img className="w-[600px] h-auto sepia mix-blend-multiply" alt="atmospheric cafe interior" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBcyr4vJXxEdFGx6zlkYJNkLs2ukkJPd4NPjidfD5u7JfzvhlcGiDLRTjgG9MHX18sDw0J58ArIQX0hrP5STAaGUoIsshc1H_gkCFcvlaiHiwkoV3iVIsFASEqN4e19pf9gOLn9d9fgYM3j4hyuRfBOiE2iFIgax-ccA2xkODZzlXDSG-5L4GaobPOdynb2nF76UI_H2_Wrgr2a3-_kQOG32dlnBFN8XtEgl5K0c3Gg7pdaDe24Z9-fVJ797pPXopasKCLpEm8iYKs"/>
       </div>
 
-      {/* Payment Breakdown */}
-      <div className="card p-6">
-        <h2 className="text-white font-semibold mb-4">Payment Breakdown</h2>
-        <div className="grid grid-cols-3 gap-4">
-          <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
-            <p className="text-green-400 text-sm mb-1">Cash</p>
-            <p className="text-white text-xl font-bold">₹{(dashboard?.paymentBreakdown?.cash || 0).toLocaleString()}</p>
-          </div>
-          <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
-            <p className="text-blue-400 text-sm mb-1">Digital</p>
-            <p className="text-white text-xl font-bold">₹{(dashboard?.paymentBreakdown?.digital || 0).toLocaleString()}</p>
-          </div>
-          <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-4">
-            <p className="text-purple-400 text-sm mb-1">UPI</p>
-            <p className="text-white text-xl font-bold">₹{(dashboard?.paymentBreakdown?.upi || 0).toLocaleString()}</p>
+      {/* Modal: New POS Terminal */}
+      {showModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+          <div className="absolute inset-0 bg-[#271310]/40 backdrop-blur-sm" onClick={() => setShowModal(false)}></div>
+          <div className="relative bg-white w-full max-w-md p-10 rounded-2xl border border-[#271310]/10 shadow-2xl">
+            <h3 className="text-3xl font-headline font-bold text-[#271310] mb-8">Create Terminal</h3>
+            <div className="space-y-10">
+              <div className="relative">
+                <label className="block text-xs font-bold text-[#271310]/40 uppercase tracking-widest mb-2">Terminal Name</label>
+                <input
+                  className="w-full bg-transparent border-b-2 border-[#271310]/10 focus:border-[#3E2723] focus:ring-0 text-2xl text-[#271310] font-headline placeholder-[#271310]/10 py-2 transition-all outline-none"
+                  placeholder="e.g. Terrace Bar"
+                  type="text"
+                  value={newTerminalName}
+                  onChange={(e) => setNewTerminalName(e.target.value)}
+                />
+              </div>
+              <div className="flex gap-4 pt-4">
+                <button
+                  onClick={() => { setShowModal(false); setNewTerminalName(""); }}
+                  className="flex-1 bg-[#3E2723] text-[#FDF9F0] font-bold py-4 rounded-full hover:bg-[#271310] hover:shadow-xl transition-all"
+                >
+                  Save
+                </button>
+                <button
+                  onClick={() => { setShowModal(false); setNewTerminalName(""); }}
+                  className="flex-1 border border-[#271310]/20 text-[#271310]/60 font-bold py-4 rounded-full hover:bg-[#FDF9F0] transition-all"
+                >
+                  Discard
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+      )}
+    </>
   );
 }
