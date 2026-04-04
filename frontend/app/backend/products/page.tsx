@@ -555,7 +555,7 @@ export default function ProductsPage() {
                       </button>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-white text-sm font-semibold">${p.price}</td>
+                  <td className="px-4 py-3 text-white text-sm font-semibold">₹{p.price}</td>
                   <td className="px-4 py-3 text-brand-muted text-sm">{p.taxPercent}%</td>
                   <td className="px-4 py-3 text-brand-muted text-sm">{p.unit}</td>
                   <td className="px-4 py-3">

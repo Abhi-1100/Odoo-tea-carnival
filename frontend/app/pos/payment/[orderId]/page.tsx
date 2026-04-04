@@ -97,7 +97,7 @@ export default function PaymentPage({ params }: { params: { orderId: string } })
         key: keyId,
         amount: order.amount,
         currency: order.currency,
-        name: "Odoo POS Cafe",
+        name: "Odoo Cafe",
         description: `Payment for Table ${displayTableNumber}`,
         order_id: order.id,
         handler: async (response: Record<string, string>) => {

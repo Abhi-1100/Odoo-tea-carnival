@@ -46,121 +46,123 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0d0d0b] flex items-center justify-center p-6 relative overflow-hidden noise-grain">
-      {/* Dynamic Background Glows */}
-      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#e8a838]/5 rounded-full blur-[120px] animate-pulse" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#e8a838]/5 rounded-full blur-[120px] animate-pulse delay-1000" />
-
-      <div className="relative z-10 w-full max-w-lg">
-        {/* Logo & Branding */}
-        <div className="text-center mb-12">
-          <div className="relative inline-block mb-6">
-            <div className="absolute inset-0 bg-[#e8a838]/20 rounded-[24px] blur-xl animate-pulse" />
-            <div className="relative w-20 h-20 bg-[#161614] border border-[#e8a838]/30 rounded-[24px] flex items-center justify-center transform rotate-12 hover:rotate-0 transition-transform duration-500 shadow-2xl shadow-[#e8a838]/10">
-              <Coffee size={36} className="text-[#e8a838]" />
-            </div>
-          </div>
-          <h1 className="text-5xl font-serif text-[#e8a838] tracking-tight mb-3">Odoo POS Cafe</h1>
-          <div className="w-24 h-[1px] bg-gradient-to-r from-transparent via-[#e8a838]/50 to-transparent mx-auto mb-4" />
-          <p className="text-[#f0dfdb]/40 font-sans uppercase tracking-[6px] text-[10px]">The Nocturnal Atelier</p>
-        </div>
-
-        {/* Login Card */}
-        <div className="bg-[#161614] rounded-[40px] p-10 md:p-14 border border-[#e8a838]/10 shadow-[0_32px_64px_-12px_rgba(232,168,56,0.08)] relative group overflow-hidden">
-          {/* Subtle Inner Glow */}
-          <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#e8a838]/20 to-transparent" />
+    <>
+      <div className="fixed top-0 left-0 w-full h-full opacity-[0.025] pointer-events-none z-[999]" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E\")" }} />
+      <main className="flex min-h-screen bg-[#0d0d0b]">
+        {/* Left Side: Immersive Imagery */}
+        <section className="hidden lg:flex w-7/12 relative overflow-hidden bg-surface-container-lowest">
+          <div className="absolute inset-0 z-10 bg-gradient-to-r from-transparent via-transparent to-[#0D0D0B]" />
+          <div className="absolute inset-0 z-10 bg-[#0D0D0B]/30" />
+          <img alt="Luxury dark cafe interior" className="absolute inset-0 w-full h-full object-cover scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCjt-w7vMirb3__QARtMZSEIIBYQw2Uzey8RA1XuWE5-grEo0YkIkeunIGNMjKxRq7jLLScywv6QDt4T6IiyM8lirHeQdOmF21pZK4UMDxYVMEqyxBVgrhrOXIyWbtZumxTutahwmkRIynL4aoLpjxvOR7e_B5UnBXij-aw7DVeS4uFOsu3lyJJoQuc1Ie2dnwkSpEmH7HukypCsAZmMN4DIyZ2Ecd2xnUjNgmd4IJ9vH-41ALQ3oWH_99W0kbtW2CwZU77TgCZj9o" />
           
-          <div className="space-y-10 relative z-10">
-            {/* Email Field */}
-            <div className="space-y-4">
-              <label className="block text-[10px] font-bold text-[#e8a838]/60 uppercase tracking-[4px] ml-1">Atelier Identifier</label>
-              <div className="relative">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => { setEmail(e.target.value); setErrors((p) => ({ ...p, email: undefined })); }}
-                  placeholder="name@atelier.com"
-                  className={`w-full bg-transparent border-b-2 py-4 px-1 text-lg font-sans placeholder:text-[#f0dfdb]/10 focus:outline-none transition-all duration-500 ${
-                    errors.email ? "border-red-500/50" : "border-[#e8a838]/20 focus:border-[#e8a838] focus:shadow-[0_8px_16px_-8px_rgba(232,168,56,0.2)]"
-                  }`}
-                />
-                <Mail size={18} className="absolute right-2 top-1/2 -translate-y-1/2 text-[#e8a838]/20" />
-              </div>
-              {errors.email && <p className="text-red-400 text-[10px] font-bold uppercase tracking-widest mt-2">{errors.email}</p>}
-            </div>
+          <div className="relative z-20 flex flex-col justify-end h-full p-20 max-w-2xl">
+            <div className="mb-6 h-px w-24 bg-primary-container/40" />
+            <h2 className="font-serif italic text-primary text-5xl tracking-tight leading-tight mb-4">
+              The Art of Service
+            </h2>
+            <p className="font-sans text-on-surface-variant text-lg leading-relaxed opacity-80">
+              Where precision meets passion. Access your atelier's terminal and orchestrate the perfect morning rush with effortless grace.
+            </p>
+          </div>
+        </section>
 
-            {/* Password Field */}
-            <div className="space-y-4">
-              <div className="flex justify-between items-end">
-                <label className="block text-[10px] font-bold text-[#e8a838]/60 uppercase tracking-[4px] ml-1">Access Protocol</label>
-                <Link href="#" className="text-[10px] font-bold text-[#e8a838]/40 hover:text-[#e8a838] uppercase tracking-[2px] transition-colors">Forgotten?</Link>
+        {/* Right Side: Login Form */}
+        <section className="w-full lg:w-5/12 flex flex-col justify-center items-center px-8 lg:px-24 bg-[#0D0D0B] z-30">
+          <div className="w-full max-w-md">
+            <header className="mb-12 text-center lg:text-left flex flex-col items-center lg:items-start gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-[#e8a838] rounded-xl flex items-center justify-center shadow-lg shadow-[#e8a838]/30">
+                  <Coffee size={20} className="text-white" />
+                </div>
+                <h1 className="font-serif italic text-primary text-4xl tracking-tight">Odoo Cafe</h1>
               </div>
-              <div className="relative">
-                <input
-                  type={showPass ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => { setPassword(e.target.value); setErrors((p) => ({ ...p, password: undefined })); }}
-                  placeholder="••••••••"
-                  className={`w-full bg-transparent border-b-2 py-4 px-1 text-lg font-mono tracking-widest placeholder:text-[#f0dfdb]/10 focus:outline-none transition-all duration-500 ${
-                    errors.password ? "border-red-500/50" : "border-[#e8a838]/20 focus:border-[#e8a838] focus:shadow-[0_8px_16px_-8px_rgba(232,168,56,0.2)]"
-                  }`}
-                  onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-                />
+              <p className="font-sans text-on-surface-variant/70 text-base uppercase tracking-[0.2em] font-light">Welcome back, artisan.</p>
+            </header>
+
+            <div className="space-y-8">
+              <div className="space-y-6">
+                {/* Email Field */}
+                <div className="group relative">
+                  <label className="block font-label text-[11px] uppercase tracking-widest text-on-tertiary-fixed mb-2 opacity-60 group-focus-within:text-primary transition-colors">
+                    Email Address
+                  </label>
+                  <div className="relative">
+                    <Mail className="absolute left-0 top-1/2 -translate-y-1/2 text-on-surface-variant/40" size={20} />
+                    <input 
+                      type="email"
+                      value={email}
+                      onChange={(e) => { setEmail(e.target.value); setErrors((p) => ({ ...p, email: undefined })); }}
+                      className={`w-full bg-transparent border-0 border-b ${errors.email ? 'border-red-500' : 'border-outline-variant'} py-3 pl-8 text-on-surface font-sans placeholder:text-on-surface-variant/20 focus:ring-0 focus:border-primary transition-all duration-300 outline-none`} 
+                      placeholder="artisan@odoocafe.com" 
+                    />
+                  </div>
+                  {errors.email && <p className="text-red-400 text-[10px] uppercase font-bold mt-1">{errors.email}</p>}
+                </div>
+
+                {/* Password Field */}
+                <div className="group relative">
+                  <div className="flex justify-between items-end mb-2">
+                    <label className="block font-label text-[11px] uppercase tracking-widest text-on-tertiary-fixed opacity-60 group-focus-within:text-primary transition-colors">
+                      Password
+                    </label>
+                    <a className="font-label text-[10px] uppercase tracking-widest text-primary/60 hover:text-primary transition-colors" href="#">Forgot?</a>
+                  </div>
+                  <div className="relative">
+                    <Lock className="absolute left-0 top-1/2 -translate-y-1/2 text-on-surface-variant/40" size={20} />
+                    <input 
+                      type={showPass ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => { setPassword(e.target.value); setErrors((p) => ({ ...p, password: undefined })); }}
+                      onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                      className={`w-full bg-transparent border-0 border-b ${errors.password ? 'border-red-500' : 'border-outline-variant'} py-3 pl-8 text-on-surface font-sans placeholder:text-on-surface-variant/20 focus:ring-0 focus:border-primary transition-all duration-300 outline-none`} 
+                      placeholder="••••••••" 
+                    />
+                    <button onClick={() => setShowPass(!showPass)} type="button" className="absolute right-0 top-1/2 -translate-y-1/2 text-on-surface-variant/40 hover:text-primary">
+                      {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                  {errors.password && <p className="text-red-400 text-[10px] uppercase font-bold mt-1">{errors.password}</p>}
+                </div>
+              </div>
+
+              <div className="pt-4">
                 <button 
-                  onClick={() => setShowPass(!showPass)} 
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-[#e8a838]/20 hover:text-[#e8a838] transition-colors"
+                  onClick={handleLogin}
+                  disabled={loading}
+                  className="w-full py-4 rounded-xl text-on-primary font-sans font-semibold tracking-wide transition-all active:scale-[0.98] shadow-2xl disabled:opacity-70"
+                  style={{ background: "linear-gradient(135deg, #E8A838 0%, #be8623 100%)", boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.15)" }}
                 >
-                  {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {loading ? 'Authenticating...' : 'Sign In'}
                 </button>
               </div>
-              {errors.password && <p className="text-red-400 text-[10px] font-bold uppercase tracking-widest mt-2">{errors.password}</p>}
+
+              <div className="grid grid-cols-2 gap-4 mt-8">
+                <button className="flex items-center justify-center gap-3 py-3 rounded-lg bg-surface-container-low hover:bg-surface-container-high transition-all group">
+                  <span className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant/80 group-hover:text-primary">Biometric</span>
+                </button>
+                <button className="flex items-center justify-center gap-3 py-3 rounded-lg bg-surface-container-low hover:bg-surface-container-high transition-all group">
+                  <span className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant/80 group-hover:text-primary">Staff Card</span>
+                </button>
+              </div>
             </div>
 
-            {/* Sign In Button */}
-            <button 
-              onClick={handleLogin} 
-              disabled={loading}
-              className="w-full bg-[#e8a838] text-[#0d0d0b] py-6 rounded-2xl font-bold uppercase tracking-[4px] hover:bg-[#f2ca50] transition-all transform active:scale-[0.98] shadow-xl shadow-[#e8a838]/10 relative overflow-hidden group"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-              {loading ? (
-                <div className="flex items-center justify-center gap-3">
-                  <div className="w-5 h-5 border-2 border-[#0d0d0b]/30 border-t-[#0d0d0b] rounded-full animate-spin" />
-                  Granting Access...
-                </div>
-              ) : (
-                <div className="flex items-center justify-center gap-3">
-                  Enter Atelier
-                  <ArrowRight size={20} className="group-hover:translate-x-2 transition-transform" />
-                </div>
-              )}
-            </button>
+            <footer className="mt-16 text-center lg:text-left">
+              <p className="font-sans text-on-surface-variant/40 text-sm">
+                Don't have an account? 
+                <Link className="text-primary hover:text-secondary-container transition-colors ml-2 font-semibold underline underline-offset-8 decoration-primary/20 hover:decoration-primary" href="/signup">
+                  Sign Up
+                </Link>
+              </p>
+            </footer>
           </div>
-
-          <p className="text-center text-[#f0dfdb]/20 text-[10px] uppercase tracking-[4px] mt-12">
-            Limited to Authorized Sommeliers & Personnel
-          </p>
-        </div>
-
-        {/* Demo Info */}
-        <div className="mt-12 text-center space-y-4">
-          <p className="text-[#f0dfdb]/30 text-sm">
-            Interested in joining our elite staff?{" "}
-            <Link href="/signup" className="text-[#e8a838] hover:underline font-bold">Request Access</Link>
-          </p>
-          <div className="inline-block px-6 py-2 bg-[#161614] border border-[#e8a838]/10 rounded-full">
-             <p className="text-[#e8a838]/40 text-[10px] font-mono tracking-widest uppercase">
-               Trial: admin@pos.com / admin123
-             </p>
-          </div>
-        </div>
-      </div>
+        </section>
+      </main>
 
       <style jsx global>{`
         .font-serif { font-family: 'Cormorant Garamond', serif; }
-        .font-sans { font-family: 'Space Grotesk', sans-serif; }
-        .font-mono { font-family: 'IBM Plex Mono', monospace; }
+        .font-sans { font-family: 'Sora', sans-serif; }
+        .font-label { font-family: 'Space Grotesk', sans-serif; }
       `}</style>
-    </div>
+    </>
   );
 }

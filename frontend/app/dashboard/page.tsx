@@ -121,10 +121,10 @@ export default function DashboardPage() {
 					{chartData.length > 0 ? (
 						<ResponsiveContainer width="100%" height={200}>
 							<BarChart data={chartData} barSize={32}>
-								<XAxis dataKey="date" tick={{ fill: "#94a3b8", fontSize: 12 }} axisLine={false} tickLine={false} />
-								<YAxis tick={{ fill: "#94a3b8", fontSize: 12 }} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`} />
-								<Tooltip contentStyle={{ background: "#2a2a3e", border: "1px solid #3a3a5e", borderRadius: "8px", color: "#fff" }} formatter={(v: number) => [`₹${v.toLocaleString()}`, "Sales"]} />
-								<Bar dataKey="sales" fill="#e84393" radius={[6, 6, 0, 0]} />
+								<XAxis dataKey="date" tick={{ fill: "#a59a96", fontSize: 12 }} axisLine={false} tickLine={false} />
+								<YAxis tick={{ fill: "#a59a96", fontSize: 12 }} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`} />
+								<Tooltip contentStyle={{ background: "#161614", border: "1px solid #261e1b", borderRadius: "8px", color: "#f0dfdb" }} formatter={(v: number) => [`₹${v.toLocaleString()}`, "Sales"]} />
+								<Bar dataKey="sales" fill="#e8a838" radius={[6, 6, 0, 0]} />
 							</BarChart>
 						</ResponsiveContainer>
 					) : (

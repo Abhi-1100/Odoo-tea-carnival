@@ -155,7 +155,7 @@ export default function BackendPaymentsPage() {
                       {methodLabel(group.method)}
                     </div>
                     <div className="col-span-3 text-left text-brand-muted">&nbsp;</div>
-                    <div className="col-span-4 text-right text-white font-semibold">${Math.round(group.total).toLocaleString()}</div>
+                    <div className="col-span-4 text-right text-white font-semibold">₹{Math.round(group.total).toLocaleString()}</div>
                   </button>
 
                   {isOpen && (
@@ -168,7 +168,7 @@ export default function BackendPaymentsPage() {
                               ? new Date(payment.paidAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "2-digit" })
                               : "-"}
                           </div>
-                          <div className="col-span-4 text-right text-white">${Math.round(payment.amountPaid).toLocaleString()}</div>
+                          <div className="col-span-4 text-right text-white">₹{Math.round(payment.amountPaid).toLocaleString()}</div>
                         </div>
                       ))}
                     </div>

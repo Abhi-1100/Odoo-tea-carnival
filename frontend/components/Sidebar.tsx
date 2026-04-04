@@ -37,7 +37,7 @@ export function Sidebar() {
           <Coffee size={18} className="text-white" />
         </div>
         <div>
-          <div className="text-white font-bold text-sm">Odoo POS</div>
+          <div className="text-white font-bold text-sm">Odoo Cafe</div>
           <div className="text-brand-muted text-xs">Cafe Manager</div>
         </div>
       </div>

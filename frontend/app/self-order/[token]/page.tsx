@@ -300,7 +300,7 @@ export default function SelfOrderPage({ params }: { params: { token: string } })
         key: keyId,
         amount: order.amount,
         currency: order.currency,
-        name: pageSettings?.restaurantName || 'Odoo POS Cafe',
+        name: pageSettings?.restaurantName || 'Odoo Cafe',
         description: `Self order payment - ${tableLabel}`,
         order_id: order.id,
         handler: async (response: Record<string, string>) => {

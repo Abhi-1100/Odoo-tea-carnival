@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Check } from "lucide-react";
+import { Check, Coffee } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
 
 export default function CustomerDisplay() {
@@ -19,8 +19,12 @@ export default function CustomerDisplay() {
     <div className="min-h-screen bg-brand-bg flex flex-col items-center justify-center p-8 text-center">
       {/* Header */}
       <div className="mb-10">
-        <div className="text-5xl mb-4">☕</div>
-        <h1 className="text-4xl font-bold text-white">Odoo POS Cafe</h1>
+        <div className="flex items-center justify-center gap-4 mb-4">
+          <div className="w-12 h-12 bg-brand-primary rounded-xl flex items-center justify-center shadow-lg shadow-brand-primary/30">
+            <Coffee size={24} className="text-white" />
+          </div>
+          <h1 className="text-4xl font-bold text-white">Odoo Cafe</h1>
+        </div>
         {tableNumber > 0 && <p className="text-brand-muted text-xl mt-2">Table {tableNumber}</p>}
       </div>
 

@@ -91,19 +91,19 @@ const LandingPage = () => {
                 title: 'Espresso Masterpieces',
                 desc: 'Hand-pressed shots of liquid gold, served with crema and character.',
                 img: 'https://images.unsplash.com/photo-1510707577719-faeb3711925b?q=80&w=2070&auto=format&fit=crop',
-                price: '$4.50'
+                price: '₹4.50'
               },
               {
                 title: 'Iced Favorites',
                 desc: 'Chilled perfection meticulously roasted for the ultimate refresh.',
                 img: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?q=80&w=2070&auto=format&fit=crop',
-                price: '$6.20'
+                price: '₹6.20'
               },
               {
                 title: 'Organic Beans',
                 desc: 'Sustainably sourced single-origin excellence in every pour.',
                 img: 'https://images.unsplash.com/photo-1447933601403-0c6688de566e?q=80&w=2070&auto=format&fit=crop',
-                price: '$18.00'
+                price: '₹18.00'
               }
             ].map((drink, i) => (
               <div key={i} className="group cursor-pointer">
@@ -141,8 +141,8 @@ const LandingPage = () => {
               </p>
               <div className="flex items-center gap-8">
                 <div className="flex flex-col">
-                  <span className="text-[10px] uppercase tracking-widest opacity-50 mb-1">Was $12.00</span>
-                  <span className="text-4xl font-mono text-[#d4af37]">$8.50</span>
+                  <span className="text-[10px] uppercase tracking-widest opacity-50 mb-1">Was ₹12.00</span>
+                  <span className="text-4xl font-mono text-[#d4af37]">₹8.50</span>
                 </div>
                 <button className="bg-[#d4af37] text-[#191210] px-10 py-5 rounded-full font-bold uppercase tracking-widest hover:bg-[#f2ca50] transition-all">
                   Claim Deal

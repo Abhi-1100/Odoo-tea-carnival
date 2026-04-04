@@ -18,7 +18,7 @@ export default function POSLayout({ children }: { children: React.ReactNode }) {
           <div className="w-8 h-8 bg-brand-primary rounded-lg flex items-center justify-center shadow-lg shadow-brand-primary/30">
             <Coffee size={15} className="text-white" />
           </div>
-          <span className="text-white font-bold text-sm hidden sm:block">Odoo POS Cafe</span>
+          <span className="text-white font-bold text-sm hidden sm:block">Odoo Cafe</span>
           {/* Tabs */}
           <div className="flex gap-1 ml-4">
             <Link href="/pos" className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${isFloor && !isRegister ? "bg-brand-primary text-white" : "text-brand-muted hover:text-white hover:bg-brand-bg"}`}>

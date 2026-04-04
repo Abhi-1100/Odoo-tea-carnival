@@ -348,7 +348,7 @@ export default function BackendOrdersPage() {
                         <tr key={item.id} className="border-b border-brand-border/30">
                           <td className="py-2 text-sky-300">{item.product.name} →</td>
                           <td className="py-2 text-white">{item.quantity}</td>
-                          <td className="py-2 text-white">${item.unitPrice ? `$${item.unitPrice}` : "-"}</td>
+                          <td className="py-2 text-white">{item.unitPrice ? `₹${item.unitPrice}` : "-"}</td>
                           <td className="py-2 text-white">5%</td>
                           <td className="py-2 text-white">Unit</td>
                           <td className="py-2 text-white">₹{Math.round(lineTotal).toLocaleString()}</td>

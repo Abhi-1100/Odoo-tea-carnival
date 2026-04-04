@@ -139,8 +139,9 @@ const MenuPage = () => {
         </div>
       </header>
 
-      {/* Category Tabs */}
-      <div className="pt-24 sticky top-20 z-40 bg-[#191210] py-6 shadow-2xl">
+      <div className="pt-20">
+        {/* Category Tabs */}
+        <div className="sticky top-20 z-40 bg-[#191210] py-6 shadow-xl border-b border-[#d4af37]/5">
         <div className="max-w-7xl mx-auto px-6 overflow-x-auto no-scrollbar scroll-smooth">
           <div className="flex items-center gap-8 min-w-max pb-2">
             {MOCK_CATEGORIES.map((cat) => (
@@ -228,6 +229,7 @@ const MenuPage = () => {
           ))}
         </div>
       </main>
+      </div>
 
       {/* Cart (Bucket) Side Drawer */}
       {isCartOpen && (

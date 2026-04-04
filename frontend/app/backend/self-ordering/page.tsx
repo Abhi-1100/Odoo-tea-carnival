@@ -50,9 +50,9 @@ export default function SelfOrderingSettingsPage() {
   const [uploading, setUploading] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [removingImageUrl, setRemovingImageUrl] = useState<string | null>(null);
-  const [themeColor, setThemeColor] = useState("#e84393");
+  const [themeColor, setThemeColor] = useState("#e8a838");
 
-  const previewToken = useMemo(() => tokens[0]?.token || "", [tokens]);
+  const previewToken = useMemo(() => tokens?.[0]?.token || "", [tokens]);
 
   const loadData = async () => {
     if (!token) return;
@@ -195,8 +195,7 @@ export default function SelfOrderingSettingsPage() {
       setRemovingImageUrl(null);
     }
   };
-
-  const backgroundSlots = Math.max(3, settings.backgroundImages.length);
+  const backgroundSlots = Math.max(3, settings.backgroundImages?.length || 0);
 
   return (
     <div className="p-8 space-y-6">
@@ -208,10 +207,10 @@ export default function SelfOrderingSettingsPage() {
       ) : (
         <>
           {settings.isEnabled && settings.mode === "qr_menu" && (
-            <div className="text-orange-300 text-3xl">QR Menu: It's only digital menu not able to order</div>
+            <div className="text-brand-primary text-3xl">QR Menu: It's only digital menu not able to order</div>
           )}
 
-          <div className="text-orange-300 font-medium tracking-wide">Setting</div>
+          <div className="text-brand-primary font-medium tracking-wide">Setting</div>
 
           <section className="card border border-brand-border/80 rounded-none overflow-hidden">
             <div className="px-4 py-2 bg-brand-bg/70 border-b border-brand-border/80 text-white font-semibold">
@@ -250,14 +249,14 @@ export default function SelfOrderingSettingsPage() {
                           <button
                             type="button"
                             onClick={previewWebpage}
-                            className="block text-sky-300 hover:text-sky-200 text-sm"
+                            className="block text-brand-teal hover:text-white text-sm"
                           >
                             Preview webpage --&gt;
                           </button>
                           <button
                             type="button"
                             onClick={downloadQrPdf}
-                            className="block text-sky-300 hover:text-sky-200 text-sm"
+                            className="block text-brand-teal hover:text-white text-sm"
                           >
                             Download QR code --&gt;
                           </button>
@@ -265,7 +264,7 @@ export default function SelfOrderingSettingsPage() {
 
                         <div className="max-w-xs border border-brand-primary/40 px-3 py-2 text-sm">
                           <div className="text-white mb-1">Payment Method</div>
-                          <label className="flex items-center gap-2 text-sky-200">
+                          <label className="flex items-center gap-2 text-brand-teal">
                             <input type="checkbox" checked disabled className="accent-brand-primary cursor-not-allowed" />
                             Pay at counter
                           </label>
@@ -283,14 +282,14 @@ export default function SelfOrderingSettingsPage() {
                           <button
                             type="button"
                             onClick={previewWebpage}
-                            className="block text-sky-300 hover:text-sky-200 text-sm"
+                            className="block text-brand-teal hover:text-white text-sm"
                           >
                             Preview webpage --&gt;
                           </button>
                           <button
                             type="button"
                             onClick={downloadQrPdf}
-                            className="block text-sky-300 hover:text-sky-200 text-sm"
+                            className="block text-brand-teal hover:text-white text-sm"
                           >
                             Download QR code --&gt;
                           </button>
@@ -343,7 +342,7 @@ export default function SelfOrderingSettingsPage() {
 
                 <div className="space-y-2">
                   {Array.from({ length: backgroundSlots }, (_, index) => {
-                    const image = settings.backgroundImages[index];
+                    const image = settings.backgroundImages?.[index];
 
                     return (
                       <div key={`bg-slot-${index}`} className="border border-amber-500/70 px-2 py-1 flex items-center gap-2 max-w-[220px]">
@@ -352,7 +351,7 @@ export default function SelfOrderingSettingsPage() {
                         ) : (
                           <ImagePlus size={14} className="text-brand-muted" />
                         )}
-                        <p className="text-xs text-pink-300">Image {index + 1}</p>
+                        <p className="text-xs text-brand-teal">Image {index + 1}</p>
                         {image && (
                           <button
                             type="button"

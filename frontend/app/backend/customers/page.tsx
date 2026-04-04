@@ -229,7 +229,7 @@ export default function BackendCustomersPage() {
                         <Phone size={13} /> {customer.phone}
                       </div>
                     </div>
-                    <div className="col-span-2 text-white font-semibold">${Math.round(Number(customer.totalSales || 0)).toLocaleString()}</div>
+                    <div className="col-span-2 text-white font-semibold">₹{Math.round(Number(customer.totalSales || 0)).toLocaleString()}</div>
                     <div className="col-span-1 flex justify-end gap-1">
                       <button onClick={() => handleEdit(customer)} className="h-7 w-7 rounded border border-brand-border text-brand-muted hover:text-white inline-flex items-center justify-center">
                         <Pencil size={12} />

@@ -3,7 +3,7 @@ import "./globals.css";
 import { Toaster } from "react-hot-toast";
 
 export const metadata: Metadata = {
-  title: "Odoo POS Cafe",
+  title: "Odoo Cafe",
   description: "Restaurant Point of Sale System",
 };
 
@@ -13,7 +13,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         {children}
         <Toaster
-          position="top-right"
+          position="bottom-right"
           toastOptions={{
             style: {
               background: "#2a2a3e",
