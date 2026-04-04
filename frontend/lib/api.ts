@@ -188,6 +188,40 @@ export const api = {
       const query = params ? '?' + new URLSearchParams(params).toString() : '';
       return apiFetch<{ success: boolean; data: unknown[] }>(`/reports/products${query}`, { token });
     },
+    exportPdf: async (token: string, params?: Record<string, string>) => {
+      const query = params ? '?' + new URLSearchParams(params).toString() : '';
+      const response = await fetch(`${API_BASE}/reports/export/pdf${query}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) {
+        let message = 'Failed to export PDF';
+        try {
+          const data = await response.json();
+          message = data?.message || message;
+        } catch {
+          // Ignore parse errors for binary responses.
+        }
+        throw new Error(message);
+      }
+      return response.blob();
+    },
+    exportXls: async (token: string, params?: Record<string, string>) => {
+      const query = params ? '?' + new URLSearchParams(params).toString() : '';
+      const response = await fetch(`${API_BASE}/reports/export/xls${query}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) {
+        let message = 'Failed to export XLS';
+        try {
+          const data = await response.json();
+          message = data?.message || message;
+        } catch {
+          // Ignore parse errors for binary responses.
+        }
+        throw new Error(message);
+      }
+      return response.blob();
+    },
   },
 
   selfOrder: {
