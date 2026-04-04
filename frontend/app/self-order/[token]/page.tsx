@@ -1,10 +1,11 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ShoppingBag, Plus, Minus, Check, ChevronDown } from "lucide-react";
 import { products, CATEGORIES } from "@/data/products";
 import { Product } from "@/data/products";
 import toast from "react-hot-toast";
 import clsx from "clsx";
+import { api } from "@/lib/api";
 
 interface CartItem { product: Product; qty: number; }
 
@@ -13,8 +14,33 @@ export default function SelfOrderPage({ params }: { params: { token: string } })
   const [cart, setCart] = useState<CartItem[]>([]);
   const [ordered, setOrdered] = useState(false);
   const [orderNum, setOrderNum] = useState("");
+  const [tableLabel, setTableLabel] = useState("Table");
+  const [mode, setMode] = useState<"online_ordering" | "qr_menu">("online_ordering");
 
-  const tableNum = params.token?.split("-")[1] || "?";
+  const tableNum = tableLabel.replace("Table ", "") || "?";
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadContext = async () => {
+      try {
+        const response = await api.selfOrder.validateToken(params.token);
+        if (!mounted) return;
+
+        setTableLabel(response.tableName || "Table");
+        setMode(response.mode);
+      } catch {
+        if (!mounted) return;
+        toast.error("Invalid or expired self-order token");
+      }
+    };
+
+    loadContext();
+
+    return () => {
+      mounted = false;
+    };
+  }, [params.token]);
 
   const filtered = products.filter(p => p.status === "active" && (cat === "All" || p.category === cat));
 
@@ -33,6 +59,7 @@ export default function SelfOrderPage({ params }: { params: { token: string } })
   const itemCount = cart.reduce((s, i) => s + i.qty, 0);
 
   const placeOrder = async () => {
+    if (mode !== "online_ordering") { toast.error("Ordering is disabled in QR Menu mode"); return; }
     if (!cart.length) { toast.error("Your cart is empty!"); return; }
     await new Promise(r => setTimeout(r, 1000));
     const num = `#${Math.floor(1000 + Math.random() * 9000)}`;
@@ -62,7 +89,7 @@ export default function SelfOrderPage({ params }: { params: { token: string } })
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-white font-bold text-lg">☕ Odoo POS Cafe</h1>
-            <p className="text-brand-muted text-xs">Table {tableNum}</p>
+            <p className="text-brand-muted text-xs">{tableLabel} {mode === "qr_menu" ? "(QR Menu)" : ""}</p>
           </div>
           {itemCount > 0 && (
             <div className="flex items-center gap-2 bg-brand-primary/20 border border-brand-primary/30 px-3 py-1.5 rounded-full">
@@ -108,7 +135,7 @@ export default function SelfOrderPage({ params }: { params: { token: string } })
       </div>
 
       {/* Bottom Cart Bar */}
-      {cart.length > 0 && (
+      {cart.length > 0 && mode === "online_ordering" && (
         <div className="fixed bottom-0 left-0 right-0 bg-brand-card border-t border-brand-border p-4">
           <button onClick={placeOrder} className="w-full bg-brand-primary hover:bg-pink-600 text-white font-bold py-4 rounded-2xl transition-all flex items-center justify-between px-5 shadow-2xl shadow-brand-primary/30">
             <span className="text-sm">{itemCount} items</span>

@@ -15,4 +15,10 @@ const placeOrderSchema = z.object({
   items: z.array(selfOrderItemSchema).min(1, 'At least one item is required'),
 });
 
-module.exports = { generateTokenSchema, placeOrderSchema };
+const updateSettingsSchema = z.object({
+  isEnabled: z.boolean(),
+  mode: z.enum(['online_ordering', 'qr_menu']),
+  payAtCounter: z.boolean().optional().default(true),
+});
+
+module.exports = { generateTokenSchema, placeOrderSchema, updateSettingsSchema };

@@ -98,6 +98,8 @@ export const api = {
       apiFetch<{ success: boolean; data: unknown }>(`/tables/${id}`, { method: 'PUT', body: data, token }),
     updateStatus: (id: number, status: string, token: string) =>
       apiFetch<{ success: boolean; data: unknown }>(`/tables/${id}/status`, { method: 'PUT', body: { status }, token }),
+    delete: (id: number, token: string) =>
+      apiFetch<{ success: boolean }>(`/tables/${id}`, { method: 'DELETE', token }),
   },
   
   sessions: {
@@ -186,6 +188,101 @@ export const api = {
       const query = params ? '?' + new URLSearchParams(params).toString() : '';
       return apiFetch<{ success: boolean; data: unknown[] }>(`/reports/products${query}`, { token });
     },
+  },
+
+  selfOrder: {
+    getSettings: (token: string) =>
+      apiFetch<{
+        success: boolean;
+        data: {
+          isEnabled: boolean;
+          mode: 'online_ordering' | 'qr_menu';
+          payAtCounter: boolean;
+          backgroundImages: string[];
+        };
+      }>('/self-order/settings', { token }),
+
+    saveSettings: (
+      data: { isEnabled: boolean; mode: 'online_ordering' | 'qr_menu'; payAtCounter?: boolean },
+      token: string,
+    ) => apiFetch<{ success: boolean; data: { isEnabled: boolean; mode: 'online_ordering' | 'qr_menu'; payAtCounter: boolean; backgroundImages: string[] } }>(
+      '/self-order/settings',
+      { method: 'PUT', body: data, token },
+    ),
+
+    uploadBackgroundImages: async (files: File[], token: string) => {
+      const formData = new FormData();
+      files.forEach((file) => formData.append('images', file));
+
+      const response = await fetch(`${API_BASE}/self-order/settings/background`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Background image upload failed');
+      }
+
+      return data as { success: boolean; images: string[] };
+    },
+
+    removeBackgroundImage: (imageUrl: string, token: string) =>
+      apiFetch<{ success: boolean; data: { backgroundImages: string[] } }>('/self-order/settings/background', {
+        method: 'DELETE',
+        body: { imageUrl },
+        token,
+      }),
+
+    generateTokens: (token: string) =>
+      apiFetch<{ success: boolean; tokens: { tableId: number; tableName: string; token: string; url: string }[] }>(
+        '/self-order/generate-tokens',
+        { method: 'POST', token },
+      ),
+
+    getTokens: (token: string) =>
+      apiFetch<{ success: boolean; tokens: { tableId: number; tableName: string; token: string; url: string }[] }>(
+        '/self-order/tokens',
+        { token },
+      ),
+
+    regenerateToken: (tableId: number, token: string) =>
+      apiFetch<{ success: boolean; token: { tableId: number; tableName: string; token: string; url: string } }>(
+        `/self-order/tokens/${tableId}/regenerate`,
+        { method: 'POST', token },
+      ),
+
+    downloadQrPdf: async (token: string) => {
+      const response = await fetch(`${API_BASE}/self-order/download-qr-pdf`, {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!response.ok) {
+        let message = 'Failed to download QR PDF';
+        try {
+          const err = await response.json();
+          message = err.message || message;
+        } catch {
+          // Ignore JSON parse errors for non-JSON responses.
+        }
+        throw new Error(message);
+      }
+
+      return response.blob();
+    },
+
+    validateToken: (token: string) =>
+      apiFetch<{
+        success: boolean;
+        valid: boolean;
+        tableId: number;
+        tableName: string;
+        sessionId: number | null;
+        mode: 'online_ordering' | 'qr_menu';
+        payAtCounter: boolean;
+      }>(`/self-order/validate/${token}`),
   },
 };
 

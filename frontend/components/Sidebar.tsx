@@ -12,7 +12,7 @@ const navItems = [
   { label: "Payment Methods", href: "/backend/payment-methods", icon: CreditCard },
   { label: "Floor Plan", href: "/backend/floors", icon: Map },
   { label: "POS Terminal", href: "/backend/terminal", icon: Monitor },
-  { label: "Self Ordering", href: "/backend/self-order", icon: QrCode },
+  { label: "Setting", href: "/backend/self-ordering", icon: QrCode },
   { label: "Kitchen Display", href: "/backend/kitchen-settings", icon: ChefHat },
   { label: "Reports", href: "/backend/reports", icon: BarChart3 },
 ];

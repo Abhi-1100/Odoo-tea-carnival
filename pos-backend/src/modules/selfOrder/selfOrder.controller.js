@@ -1,7 +1,90 @@
 const { v4: uuidv4 } = require('uuid');
+const QRCode = require('qrcode');
+const PDFDocument = require('pdfkit');
+const fs = require('fs');
+const path = require('path');
 const prisma = require('../../config/db');
 const { AppError } = require('../../middleware/errorHandler');
 const { getIO } = require('../../config/socket');
+
+const DEFAULT_SETTINGS = {
+  isEnabled: false,
+  mode: 'online_ordering',
+  payAtCounter: true,
+  backgroundImages: [],
+};
+
+function toSafeImages(value) {
+  if (!Array.isArray(value)) return [];
+  return value.filter((item) => typeof item === 'string');
+}
+
+function getFrontendBaseUrl(req) {
+  return process.env.SELF_ORDER_BASE_URL || process.env.FRONTEND_URL || 'http://localhost:3000';
+}
+
+function buildSelfOrderUrl(req, token) {
+  return `${getFrontendBaseUrl(req).replace(/\/$/, '')}/s/${token}`;
+}
+
+function generateRandomToken(length = 8) {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  let token = '';
+  for (let i = 0; i < length; i += 1) {
+    token += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return token;
+}
+
+async function createUniquePermanentToken() {
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    const token = generateRandomToken(8);
+    const exists = await prisma.selfOrderToken.findUnique({ where: { token } });
+    if (!exists) return token;
+  }
+
+  // Fallback in the very unlikely case of collisions.
+  return uuidv4().replace(/-/g, '').slice(0, 8);
+}
+
+async function getOrCreateSettings() {
+  const existing = await prisma.selfOrderSettings.findFirst();
+  if (existing) return existing;
+
+  return prisma.selfOrderSettings.create({
+    data: DEFAULT_SETTINGS,
+  });
+}
+
+async function getLatestOpenSessionId() {
+  const session = await prisma.posSession.findFirst({
+    where: { status: 'open' },
+    orderBy: { openedAt: 'desc' },
+    select: { id: true },
+  });
+
+  return session?.id || null;
+}
+
+async function mapPermanentTokens(req) {
+  const records = await prisma.selfOrderToken.findMany({
+    where: {
+      isPermanent: true,
+      table: { isActive: true },
+    },
+    include: {
+      table: { select: { id: true, tableNumber: true } },
+    },
+    orderBy: { table: { tableNumber: 'asc' } },
+  });
+
+  return records.map((record) => ({
+    tableId: record.tableId,
+    tableName: `Table ${record.table.tableNumber}`,
+    token: record.token,
+    url: record.url || buildSelfOrderUrl(req, record.token),
+  }));
+}
 
 /**
  * Generate auto-incremented order number: ORD-YYYY-XXXX
@@ -37,16 +120,329 @@ async function validateToken(token) {
   });
 
   if (!tokenRecord) throw new AppError('Invalid self-order token', 404);
-  if (tokenRecord.isUsed) throw new AppError('This self-order token has already been used', 400);
+  if (!tokenRecord.isPermanent && tokenRecord.isUsed) {
+    throw new AppError('This self-order token has already been used', 400);
+  }
   if (tokenRecord.expiresAt && new Date() > tokenRecord.expiresAt) {
     throw new AppError('Self-order token has expired', 400);
   }
-  if (tokenRecord.session.status !== 'open') {
+  if (tokenRecord.session && tokenRecord.session.status !== 'open') {
     throw new AppError('The POS session is no longer active', 400);
+  }
+  if (!tokenRecord.table?.isActive) {
+    throw new AppError('Table is inactive', 400);
   }
 
   return tokenRecord;
 }
+
+const getSettings = async (req, res, next) => {
+  try {
+    const settings = await getOrCreateSettings();
+    res.json({
+      success: true,
+      data: {
+        isEnabled: settings.isEnabled,
+        mode: settings.mode,
+        payAtCounter: true,
+        backgroundImages: toSafeImages(settings.backgroundImages),
+      },
+    });
+  } catch (error) { next(error); }
+};
+
+const saveSettings = async (req, res, next) => {
+  try {
+    const settings = await getOrCreateSettings();
+    const { isEnabled, mode } = req.body;
+
+    const updated = await prisma.selfOrderSettings.update({
+      where: { id: settings.id },
+      data: {
+        isEnabled,
+        mode,
+        payAtCounter: true,
+      },
+    });
+
+    res.json({
+      success: true,
+      data: {
+        isEnabled: updated.isEnabled,
+        mode: updated.mode,
+        payAtCounter: true,
+        backgroundImages: toSafeImages(updated.backgroundImages),
+      },
+    });
+  } catch (error) { next(error); }
+};
+
+const uploadBackgroundImages = async (req, res, next) => {
+  try {
+    const settings = await getOrCreateSettings();
+    const files = Array.isArray(req.files) ? req.files : [];
+
+    if (!files.length) {
+      throw new AppError('At least one image file is required', 400);
+    }
+
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    const uploadedUrls = files.map((file) => `${baseUrl}/uploads/self-order-backgrounds/${file.filename}`);
+    const existingImages = toSafeImages(settings.backgroundImages);
+
+    await prisma.selfOrderSettings.update({
+      where: { id: settings.id },
+      data: {
+        backgroundImages: [...existingImages, ...uploadedUrls],
+      },
+    });
+
+    res.status(201).json({
+      success: true,
+      images: uploadedUrls,
+    });
+  } catch (error) { next(error); }
+};
+
+const removeBackgroundImage = async (req, res, next) => {
+  try {
+    const { imageUrl } = req.body || {};
+    if (!imageUrl) {
+      throw new AppError('imageUrl is required', 400);
+    }
+
+    const settings = await getOrCreateSettings();
+    const existingImages = toSafeImages(settings.backgroundImages);
+
+    if (!existingImages.includes(imageUrl)) {
+      throw new AppError('Background image not found', 404);
+    }
+
+    const updatedImages = existingImages.filter((img) => img !== imageUrl);
+
+    await prisma.selfOrderSettings.update({
+      where: { id: settings.id },
+      data: { backgroundImages: updatedImages },
+    });
+
+    // Best-effort local file cleanup for uploaded assets.
+    try {
+      const parsed = new URL(imageUrl);
+      const pathname = parsed.pathname || '';
+      if (pathname.startsWith('/uploads/self-order-backgrounds/')) {
+        const filename = path.basename(pathname);
+        const filePath = path.join(process.cwd(), 'uploads', 'self-order-backgrounds', filename);
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+      }
+    } catch (e) {
+      // Ignore file delete errors to avoid blocking settings updates.
+    }
+
+    res.json({
+      success: true,
+      data: {
+        backgroundImages: updatedImages,
+      },
+    });
+  } catch (error) { next(error); }
+};
+
+const generateTokensForAllTables = async (req, res, next) => {
+  try {
+    const tables = await prisma.table.findMany({
+      where: { isActive: true },
+      orderBy: { tableNumber: 'asc' },
+      select: { id: true, tableNumber: true },
+    });
+
+    const latestOpenSessionId = await getLatestOpenSessionId();
+
+    for (const table of tables) {
+      const existing = await prisma.selfOrderToken.findFirst({
+        where: { tableId: table.id, isPermanent: true },
+      });
+
+      if (existing) {
+        const expectedUrl = buildSelfOrderUrl(req, existing.token);
+        if (existing.url !== expectedUrl) {
+          await prisma.selfOrderToken.update({
+            where: { id: existing.id },
+            data: { url: expectedUrl },
+          });
+        }
+        continue;
+      }
+
+      const token = await createUniquePermanentToken();
+      await prisma.selfOrderToken.create({
+        data: {
+          token,
+          tableId: table.id,
+          sessionId: latestOpenSessionId,
+          isPermanent: true,
+          isUsed: false,
+          url: buildSelfOrderUrl(req, token),
+        },
+      });
+    }
+
+    const tokens = await mapPermanentTokens(req);
+    res.status(201).json({ success: true, tokens });
+  } catch (error) { next(error); }
+};
+
+const getAllTableTokens = async (req, res, next) => {
+  try {
+    const tokens = await mapPermanentTokens(req);
+    res.json({ success: true, tokens });
+  } catch (error) { next(error); }
+};
+
+const regenerateTokenForTable = async (req, res, next) => {
+  try {
+    const tableId = parseInt(req.params.tableId, 10);
+    if (Number.isNaN(tableId)) throw new AppError('Invalid table id', 400);
+
+    const table = await prisma.table.findUnique({
+      where: { id: tableId },
+      select: { id: true, tableNumber: true, isActive: true },
+    });
+
+    if (!table || !table.isActive) {
+      throw new AppError('Active table not found', 404);
+    }
+
+    const token = await createUniquePermanentToken();
+    const url = buildSelfOrderUrl(req, token);
+    const latestOpenSessionId = await getLatestOpenSessionId();
+    const existing = await prisma.selfOrderToken.findFirst({
+      where: { tableId, isPermanent: true },
+    });
+
+    let record;
+    if (existing) {
+      record = await prisma.selfOrderToken.update({
+        where: { id: existing.id },
+        data: {
+          token,
+          url,
+          expiresAt: null,
+          isUsed: false,
+          sessionId: latestOpenSessionId,
+        },
+      });
+    } else {
+      record = await prisma.selfOrderToken.create({
+        data: {
+          token,
+          url,
+          tableId,
+          sessionId: latestOpenSessionId,
+          isPermanent: true,
+          isUsed: false,
+        },
+      });
+    }
+
+    res.status(201).json({
+      success: true,
+      token: {
+        tableId,
+        tableName: `Table ${table.tableNumber}`,
+        token: record.token,
+        url: record.url || url,
+      },
+    });
+  } catch (error) { next(error); }
+};
+
+const downloadQrPdf = async (req, res, next) => {
+  try {
+    let tokens = await mapPermanentTokens(req);
+    if (!tokens.length) {
+      const tables = await prisma.table.findMany({
+        where: { isActive: true },
+        orderBy: { tableNumber: 'asc' },
+        select: { id: true },
+      });
+      const latestOpenSessionId = await getLatestOpenSessionId();
+
+      for (const table of tables) {
+        const token = await createUniquePermanentToken();
+        await prisma.selfOrderToken.create({
+          data: {
+            token,
+            tableId: table.id,
+            sessionId: latestOpenSessionId,
+            isPermanent: true,
+            isUsed: false,
+            url: buildSelfOrderUrl(req, token),
+          },
+        });
+      }
+
+      tokens = await mapPermanentTokens(req);
+    }
+
+    if (!tokens.length) {
+      throw new AppError('No active tables available to generate QR codes', 400);
+    }
+
+    const doc = new PDFDocument({ margin: 40, size: 'A4' });
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename="table-qr-codes.pdf"');
+
+    doc.pipe(res);
+    doc.fontSize(18).font('Helvetica-Bold').text('Self Ordering QR Codes', { align: 'center' });
+    doc.moveDown(0.6);
+    doc.fontSize(10).font('Helvetica').fillColor('#666666').text(`Generated: ${new Date().toLocaleString()}`, { align: 'center' });
+    doc.moveDown(1.2);
+
+    for (let i = 0; i < tokens.length; i += 1) {
+      const item = tokens[i];
+      const qrDataUrl = await QRCode.toDataURL(item.url, { width: 220, margin: 1 });
+      const qrBase64 = qrDataUrl.split(',')[1];
+      const qrBuffer = Buffer.from(qrBase64, 'base64');
+
+      if (i > 0) doc.addPage();
+
+      doc.fontSize(20).fillColor('#111111').font('Helvetica-Bold').text(item.tableName, 40, 50);
+      doc.image(qrBuffer, 160, 120, { width: 280, height: 280 });
+      doc.moveDown(19);
+      doc.fontSize(12).fillColor('#333333').font('Helvetica').text(item.url, { align: 'center' });
+      doc.moveDown(1);
+      doc.fontSize(10).fillColor('#666666').text('Scan this QR on mobile will open a URL in mobile browser', {
+        align: 'center',
+      });
+    }
+
+    doc.end();
+  } catch (error) { next(error); }
+};
+
+const validateTokenAndGetInfo = async (req, res, next) => {
+  try {
+    const tokenRecord = await validateToken(req.params.token);
+    const settings = await getOrCreateSettings();
+    const activeSession = await prisma.posSession.findFirst({
+      where: { status: 'open' },
+      orderBy: { openedAt: 'desc' },
+      select: { id: true },
+    });
+
+    res.json({
+      success: true,
+      valid: true,
+      tableId: tokenRecord.tableId,
+      tableName: `Table ${tokenRecord.table.tableNumber}`,
+      sessionId: tokenRecord.sessionId || activeSession?.id || null,
+      mode: settings.mode,
+      payAtCounter: true,
+    });
+  } catch (error) { next(error); }
+};
 
 /** POST /api/self-order/generate-token — Auth required */
 const generateToken = async (req, res, next) => {
@@ -96,14 +492,21 @@ const generateToken = async (req, res, next) => {
 const getSession = async (req, res, next) => {
   try {
     const tokenRecord = await validateToken(req.params.token);
+    const settings = await getOrCreateSettings();
+    const activeSession = await prisma.posSession.findFirst({
+      where: { status: 'open' },
+      orderBy: { openedAt: 'desc' },
+      select: { id: true, terminalName: true },
+    });
 
     res.json({
       success: true,
       data: {
         tableId: tokenRecord.tableId,
         tableNumber: tokenRecord.table.tableNumber,
-        sessionId: tokenRecord.sessionId,
-        terminalName: tokenRecord.session.terminalName,
+        sessionId: tokenRecord.sessionId || activeSession?.id || null,
+        terminalName: tokenRecord.session?.terminalName || activeSession?.terminalName || null,
+        mode: settings.mode,
       },
     });
   } catch (error) { next(error); }
@@ -132,6 +535,30 @@ const getProducts = async (req, res, next) => {
 const placeOrder = async (req, res, next) => {
   try {
     const tokenRecord = await validateToken(req.params.token);
+    const settings = await getOrCreateSettings();
+
+    if (!settings.isEnabled) {
+      throw new AppError('Self ordering is disabled', 400);
+    }
+    if (settings.mode !== 'online_ordering') {
+      throw new AppError('Ordering is disabled in QR Menu mode', 400);
+    }
+
+    let sessionId = tokenRecord.sessionId;
+    if (!sessionId) {
+      const activeSession = await prisma.posSession.findFirst({
+        where: { status: 'open' },
+        orderBy: { openedAt: 'desc' },
+        select: { id: true },
+      });
+
+      sessionId = activeSession?.id || null;
+    }
+
+    if (!sessionId) {
+      throw new AppError('No active POS session found', 400);
+    }
+
     const { items } = req.body;
 
     // Fetch product details for pricing
@@ -176,7 +603,7 @@ const placeOrder = async (req, res, next) => {
     const order = await prisma.order.create({
       data: {
         orderNumber,
-        sessionId: tokenRecord.sessionId,
+        sessionId,
         tableId: tokenRecord.tableId,
         selfOrderTokenId: tokenRecord.id,
         orderType: 'self_order',
@@ -232,11 +659,12 @@ const placeOrder = async (req, res, next) => {
       } catch (e) { /* socket not available */ }
     }
 
-    // Mark token as used
-    await prisma.selfOrderToken.update({
-      where: { id: tokenRecord.id },
-      data: { isUsed: true },
-    });
+    if (!tokenRecord.isPermanent) {
+      await prisma.selfOrderToken.update({
+        where: { id: tokenRecord.id },
+        data: { isUsed: true },
+      });
+    }
 
     res.status(201).json({
       success: true,
@@ -248,4 +676,18 @@ const placeOrder = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-module.exports = { generateToken, getSession, getProducts, placeOrder };
+module.exports = {
+  generateToken,
+  getSession,
+  getProducts,
+  placeOrder,
+  getSettings,
+  saveSettings,
+  uploadBackgroundImages,
+  removeBackgroundImage,
+  generateTokensForAllTables,
+  getAllTableTokens,
+  regenerateTokenForTable,
+  downloadQrPdf,
+  validateTokenAndGetInfo,
+};

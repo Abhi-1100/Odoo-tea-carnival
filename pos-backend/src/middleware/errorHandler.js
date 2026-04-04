@@ -8,6 +8,31 @@ const errorHandler = (err, req, res, next) => {
     console.error(err.stack);
   }
 
+  // Multer upload errors
+  if (err.name === 'MulterError') {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({
+        success: false,
+        message: 'Image is too large. Maximum size is 15MB per file.',
+        code: 400,
+      });
+    }
+
+    return res.status(400).json({
+      success: false,
+      message: err.message || 'Invalid file upload request.',
+      code: 400,
+    });
+  }
+
+  if (err.message === 'Only image files are allowed') {
+    return res.status(400).json({
+      success: false,
+      message: 'Only image files are allowed.',
+      code: 400,
+    });
+  }
+
   // Prisma known errors
   if (err.code === 'P2002') {
     return res.status(409).json({
