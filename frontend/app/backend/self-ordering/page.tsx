@@ -52,6 +52,24 @@ export default function SelfOrderingSettingsPage() {
   const [removingImageUrl, setRemovingImageUrl] = useState<string | null>(null);
   const [themeColor, setThemeColor] = useState("#e8a838");
 
+  const resolveBackgroundUrl = (rawUrl: string) => {
+    if (!rawUrl) return "";
+    if (rawUrl.startsWith("/")) return rawUrl;
+
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+    const apiOrigin = apiBase.replace(/\/api\/?$/, "");
+
+    try {
+      const parsed = new URL(rawUrl);
+      if (parsed.pathname.startsWith("/uploads/")) {
+        return `${apiOrigin}${parsed.pathname}`;
+      }
+      return rawUrl;
+    } catch {
+      return rawUrl;
+    }
+  };
+
   const previewToken = useMemo(() => tokens?.[0]?.token || "", [tokens]);
 
   const loadData = async () => {
@@ -149,14 +167,49 @@ export default function SelfOrderingSettingsPage() {
       return;
     }
 
-    let tokenToPreview = previewToken;
+    const findFirstValidToken = async (candidateTokens: TableToken[]) => {
+      for (const item of candidateTokens) {
+        try {
+          const check = await api.selfOrder.validateToken(item.token);
+          if (check.valid) return item.token;
+        } catch {
+          // Try next token.
+        }
+      }
+      return "";
+    };
+
+    let tokenToPreview = "";
+
+    if (previewToken) {
+      try {
+        const check = await api.selfOrder.validateToken(previewToken);
+        if (check.valid) tokenToPreview = previewToken;
+      } catch {
+        // Fall back to token list validation/regeneration below.
+      }
+    }
+
+    if (!tokenToPreview) {
+      tokenToPreview = await findFirstValidToken(tokens);
+    }
 
     if (!tokenToPreview) {
       try {
         await api.selfOrder.generateTokens(token);
         const tokensRes = await api.selfOrder.getTokens(token);
         setTokens(tokensRes.tokens);
-        tokenToPreview = tokensRes.tokens[0]?.token || "";
+        tokenToPreview = await findFirstValidToken(tokensRes.tokens);
+
+        // Last fallback: regenerate first table token explicitly.
+        if (!tokenToPreview && tokensRes.tokens[0]?.tableId) {
+          const regenerated = await api.selfOrder.regenerateToken(tokensRes.tokens[0].tableId, token);
+          tokenToPreview = regenerated.token?.token || "";
+          if (tokenToPreview) {
+            const refreshed = await api.selfOrder.getTokens(token);
+            setTokens(refreshed.tokens);
+          }
+        }
       } catch (error) {
         toast.error(error instanceof Error ? error.message : "Unable to prepare preview URL");
         return;
@@ -253,13 +306,6 @@ export default function SelfOrderingSettingsPage() {
                           >
                             Preview webpage --&gt;
                           </button>
-                          <button
-                            type="button"
-                            onClick={downloadQrPdf}
-                            className="block text-brand-teal hover:text-white text-sm"
-                          >
-                            Download QR code --&gt;
-                          </button>
                         </div>
 
                         <div className="max-w-xs border border-brand-primary/40 px-3 py-2 text-sm">
@@ -285,13 +331,6 @@ export default function SelfOrderingSettingsPage() {
                             className="block text-brand-teal hover:text-white text-sm"
                           >
                             Preview webpage --&gt;
-                          </button>
-                          <button
-                            type="button"
-                            onClick={downloadQrPdf}
-                            className="block text-brand-teal hover:text-white text-sm"
-                          >
-                            Download QR code --&gt;
                           </button>
                         </div>
 
@@ -347,7 +386,7 @@ export default function SelfOrderingSettingsPage() {
                     return (
                       <div key={`bg-slot-${index}`} className="border border-amber-500/70 px-2 py-1 flex items-center gap-2 max-w-[220px]">
                         {image ? (
-                          <img src={image} alt={`Background ${index + 1}`} className="h-5 w-5 object-cover" />
+                          <img src={resolveBackgroundUrl(image)} alt={`Background ${index + 1}`} className="h-5 w-5 object-cover" />
                         ) : (
                           <ImagePlus size={14} className="text-brand-muted" />
                         )}
@@ -376,7 +415,7 @@ export default function SelfOrderingSettingsPage() {
               Save Settings
             </Button>
 
-            {settings.isEnabled && settings.mode === "online_ordering" && (
+            {settings.isEnabled && (settings.mode === "online_ordering" || settings.mode === "qr_menu") && (
               <Button variant="outline" icon={<Download size={16} />} onClick={downloadQrPdf} loading={downloading}>
                 Download QR code --&gt;
               </Button>

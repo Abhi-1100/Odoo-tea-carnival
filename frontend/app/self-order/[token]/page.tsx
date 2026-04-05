@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Check, Minus, Plus, Search } from "lucide-react";
+import { ArrowLeft, Check, Coffee, Minus, Plus, Search } from "lucide-react";
 import toast from "react-hot-toast";
 import clsx from "clsx";
 import { api } from "@/lib/api";
@@ -70,6 +70,24 @@ export default function SelfOrderPage({ params }: { params: { token: string } })
   const [splashIndex, setSplashIndex] = useState(0);
   const [processingPayment, setProcessingPayment] = useState(false);
 
+  const resolveBackgroundUrl = (rawUrl: string) => {
+    if (!rawUrl) return "";
+    if (rawUrl.startsWith("/")) return rawUrl;
+
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+    const apiOrigin = apiBase.replace(/\/api\/?$/, "");
+
+    try {
+      const parsed = new URL(rawUrl);
+      if (parsed.pathname.startsWith("/uploads/")) {
+        return `${apiOrigin}${parsed.pathname}`;
+      }
+      return rawUrl;
+    } catch {
+      return rawUrl;
+    }
+  };
+
   const isViewOnly = mode === "qr_menu";
 
   const [isLoading, setIsLoading] = useState(true);
@@ -114,7 +132,8 @@ export default function SelfOrderPage({ params }: { params: { token: string } })
   useEffect(() => {
     if (!pageSettings?.backgroundImages?.length) return;
     const timer = setInterval(() => {
-      setSplashIndex((prev) => (prev + 1) % pageSettings.backgroundImages.length);
+      const sliderLength = Math.min(3, pageSettings.backgroundImages.length);
+      setSplashIndex((prev) => (prev + 1) % sliderLength);
     }, 3500);
     return () => clearInterval(timer);
   }, [pageSettings?.backgroundImages]);
@@ -156,11 +175,21 @@ export default function SelfOrderPage({ params }: { params: { token: string } })
     };
   }, [screen, params.token, currentOrderId]);
 
-  const filtered = products.filter(
-    (p) =>
-      (cat === "all" || p.categoryId === cat) &&
-      p.name.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  const filtered = useMemo(() => {
+    const query = searchTerm.trim().toLowerCase();
+    return products.filter((p) => {
+      const inSelectedCategory = cat === "all" || p.categoryId === cat;
+      const matchesSearch =
+        query.length === 0 ||
+        p.name.toLowerCase().includes(query) ||
+        (p.description || "").toLowerCase().includes(query) ||
+        p.variants.some((v) => (`${v.attribute} ${v.value}`).toLowerCase().includes(query)) ||
+        p.addons.some((a) => a.name.toLowerCase().includes(query));
+
+      // When user searches, show matches from all categories.
+      return query.length > 0 ? matchesSearch : inSelectedCategory;
+    });
+  }, [products, cat, searchTerm]);
 
   const addToCart = (p: MobileProduct, variantId: number | null = null, addonIds: number[] = []) => {
     if (isViewOnly) {
@@ -336,7 +365,12 @@ export default function SelfOrderPage({ params }: { params: { token: string } })
     }
   };
 
-  const activeBackground = pageSettings?.backgroundImages?.[splashIndex] || null;
+  const sliderImages = useMemo(
+    () => (pageSettings?.backgroundImages || []).map(resolveBackgroundUrl).filter(Boolean).slice(0, 3),
+    [pageSettings?.backgroundImages],
+  );
+
+  const activeBackground = sliderImages[splashIndex] || null;
 
   const splashBackgroundStyle = activeBackground
     ? {
@@ -353,7 +387,7 @@ export default function SelfOrderPage({ params }: { params: { token: string } })
     backgroundColor: pageSettings?.backgroundColor || '#0b0e14',
   };
 
-  const backgroundStyle = screen === "splash" ? splashBackgroundStyle : pageBackgroundStyle;
+  const backgroundStyle = screen === "splash" ? pageBackgroundStyle : pageBackgroundStyle;
 
   if (isLoading) {
     return (
@@ -366,11 +400,18 @@ export default function SelfOrderPage({ params }: { params: { token: string } })
 
   // QR Menu View - Digital menu card (view-only)
   if (isViewOnly && screen === "menu") {
-    const filtered = products.filter(
-      (p) =>
-        (cat === "all" || p.categoryId === cat) &&
-        p.name.toLowerCase().includes(searchTerm.toLowerCase()),
-    );
+    const filtered = products.filter((p) => {
+      const query = searchTerm.trim().toLowerCase();
+      const inSelectedCategory = cat === "all" || p.categoryId === cat;
+      const matchesSearch =
+        query.length === 0 ||
+        p.name.toLowerCase().includes(query) ||
+        (p.description || "").toLowerCase().includes(query) ||
+        p.variants.some((v) => (`${v.attribute} ${v.value}`).toLowerCase().includes(query)) ||
+        p.addons.some((a) => a.name.toLowerCase().includes(query));
+
+      return query.length > 0 ? matchesSearch : inSelectedCategory;
+    });
 
     return (
       <div className="min-h-screen flex items-center justify-center p-4" style={pageBackgroundStyle}>
@@ -469,12 +510,59 @@ export default function SelfOrderPage({ params }: { params: { token: string } })
   if (screen === "splash") {
     return (
       <div className="min-h-screen bg-brand-bg flex items-center justify-center p-6" style={backgroundStyle}>
-        <div className="w-[320px] max-w-full h-[640px] rounded-2xl border border-brand-border bg-black/65 backdrop-blur-sm flex flex-col items-center justify-between p-5">
-          <div className="text-white/90 text-sm border border-white/40 rounded-md px-5 py-1">{pageSettings?.logo ? 'Logo' : 'Logo'}</div>
+        <div className="w-[320px] max-w-full h-[640px] rounded-2xl border border-brand-border bg-black/65 backdrop-blur-sm overflow-hidden flex flex-col">
+          <div className="relative flex-1">
+            {sliderImages.length > 0 ? (
+              sliderImages.map((image, index) => (
+                <div
+                  key={`${image}-${index}`}
+                  className={`absolute inset-0 transition-opacity duration-700 ${index === splashIndex ? "opacity-100" : "opacity-0"}`}
+                  style={{
+                    backgroundImage: `linear-gradient(rgba(11,14,20,0.35), rgba(11,14,20,0.6)), url(${image})`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                  }}
+                />
+              ))
+            ) : (
+              <div className="absolute inset-0" style={{ backgroundColor: pageSettings?.backgroundColor || "#95416a" }} />
+            )}
+
+            <div className="absolute inset-0 p-5 flex flex-col items-center justify-between">
+              <div className="mt-1">
+                {pageSettings?.logo ? (
+                  <img
+                    src={resolveBackgroundUrl(pageSettings.logo)}
+                    alt="Cafe logo"
+                    className="h-12 w-12 rounded-xl object-cover border border-white/50 bg-black/25"
+                  />
+                ) : (
+                  <div className="h-12 w-12 rounded-2xl bg-[#e8a838] flex items-center justify-center shadow-xl shadow-[#e8a838]/40 border border-[#ffd77a]/40">
+                    <Coffee size={24} className="text-white" />
+                  </div>
+                )}
+              </div>
+
+              {sliderImages.length > 1 && (
+                <div className="flex items-center gap-2 mb-2">
+                  {sliderImages.map((_, index) => (
+                    <button
+                      key={`dot-${index}`}
+                      type="button"
+                      aria-label={`Slide ${index + 1}`}
+                      onClick={() => setSplashIndex(index)}
+                      className={`h-2.5 rounded-full transition-all ${index === splashIndex ? "w-6 bg-white" : "w-2.5 bg-white/50"}`}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
           <button
             onClick={() => setScreen("menu")}
             disabled={isViewOnly}
-            className={`w-full py-3 rounded-lg font-semibold ${isViewOnly ? "bg-gray-500 text-gray-300 cursor-not-allowed" : "bg-[#c9b1c6] text-black"}`}
+            className={`m-5 mt-4 w-[calc(100%-40px)] py-3 rounded-lg font-semibold ${isViewOnly ? "bg-gray-500 text-gray-300 cursor-not-allowed" : "bg-[#c9b1c6] text-black"}`}
           >
             {isViewOnly ? "Menu Only" : "Order Here"}
           </button>

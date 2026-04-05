@@ -180,7 +180,7 @@ async function validateToken(token) {
   if (!tokenRecord.isPermanent && tokenRecord.isUsed) {
     throw new AppError('This self-order token has already been used', 400);
   }
-  if (tokenRecord.expiresAt && new Date() > tokenRecord.expiresAt) {
+  if (!tokenRecord.isPermanent && tokenRecord.expiresAt && new Date() > tokenRecord.expiresAt) {
     throw new AppError('Self-order token has expired', 400);
   }
   if (tokenRecord.session && tokenRecord.session.status !== 'open') {
