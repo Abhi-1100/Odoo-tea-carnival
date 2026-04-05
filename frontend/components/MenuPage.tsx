@@ -116,7 +116,7 @@ const MenuPage = () => {
           </Link>
           
           <div className="flex flex-col items-center">
-            <span className="text-xl font-serif font-bold tracking-tight text-[#d4af37]">COFFEE LEO</span>
+            <span className="text-xl font-serif font-bold tracking-tight text-[#d4af37]">Odoo Cafe</span>
             <span className="text-[8px] tracking-[4px] uppercase opacity-40">Menu Selection</span>
           </div>
 
@@ -139,9 +139,9 @@ const MenuPage = () => {
         </div>
       </header>
 
-      <div className="pt-20">
+      <div className="pt-24 px-4 relative z-40">
         {/* Category Tabs */}
-        <div className="sticky top-20 z-40 bg-[#191210] py-6 shadow-xl border-b border-[#d4af37]/5">
+        <div className="sticky top-24 z-40 bg-[#161614]/85 backdrop-blur-xl py-3 px-6 shadow-2xl shadow-[#161614]/20 rounded-full max-w-5xl mx-auto border border-[#d4af37]/20">
         <div className="max-w-7xl mx-auto px-6 overflow-x-auto no-scrollbar scroll-smooth">
           <div className="flex items-center gap-8 min-w-max pb-2">
             {MOCK_CATEGORIES.map((cat) => (

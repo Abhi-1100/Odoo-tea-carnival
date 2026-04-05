@@ -3,23 +3,24 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { Coffee } from "lucide-react";
+import { Coffee, Eye, EyeOff, Lock, Mail, User } from "lucide-react";
 import { api } from "@/lib/api";
 
 export default function SignupPage() {
   const router = useRouter();
-  const [form, setForm] = useState({ name: "", restaurant: "", email: "", password: "", terms: false });
+  const [form, setForm] = useState({ name: "", email: "", password: "", confirmPassword: "", terms: false });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const validate = () => {
     const e: Record<string, string> = {};
     if (!form.name) e.name = "Required";
-    if (!form.restaurant) e.restaurant = "Required";
     if (!form.email) e.email = "Required";
     else if (!/\S+@\S+\.\S+/.test(form.email)) e.email = "Invalid email";
     if (!form.password) e.password = "Required";
     else if (form.password.length < 6) e.password = "Min 6 characters";
+    if (!form.confirmPassword) e.confirmPassword = "Required";
+    else if (form.confirmPassword !== form.password) e.confirmPassword = "Passwords do not match";
     if (!form.terms) e.terms = "You must agree to terms";
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -90,24 +91,47 @@ export default function SignupPage() {
             <form className="space-y-8" onSubmit={handleSignup}>
               {/* Form Fields */}
               <div className="space-y-6">
+                {/* Full Name */}
                 <div className="relative group">
                   <label className="font-label text-[10px] uppercase tracking-widest text-primary/70 mb-2 block transition-colors group-focus-within:text-primary">Full Name</label>
-                  <input value={form.name} onChange={(e) => setField("name", e.target.value)} type="text" placeholder="Julian Thorne" className={`w-full bg-surface-container-high border-0 border-b ${errors.name ? 'border-red-500' : 'border-outline-variant'} py-3 px-3 text-on-surface placeholder:text-on-surface/20 focus:ring-0 focus:border-primary focus:shadow-[0_0_15px_rgba(232,168,56,0.15)] transition-all outline-none`} />
+                  <div className="relative">
+                    <User className="absolute left-0 top-1/2 -translate-y-1/2 text-on-surface-variant/40" size={18} />
+                    <input value={form.name} onChange={(e) => setField("name", e.target.value)} type="text" placeholder="Julian Thorne" className={`w-full bg-surface-container-high border-0 border-b ${errors.name ? 'border-red-500' : 'border-outline-variant'} py-3 pl-7 text-on-surface placeholder:text-on-surface/20 focus:ring-0 focus:border-primary focus:shadow-[0_0_15px_rgba(232,168,56,0.15)] transition-all outline-none`} />
+                  </div>
+                  {errors.name && <p className="text-red-400 text-[10px] uppercase font-bold mt-1">{errors.name}</p>}
                 </div>
-                
-                <div className="relative group">
-                  <label className="font-label text-[10px] uppercase tracking-widest text-primary/70 mb-2 block transition-colors group-focus-within:text-primary">Restaurant Name</label>
-                  <input value={form.restaurant} onChange={(e) => setField("restaurant", e.target.value)} type="text" placeholder="Nocturnal Atelier" className={`w-full bg-surface-container-high border-0 border-b ${errors.restaurant ? 'border-red-500' : 'border-outline-variant'} py-3 px-3 text-on-surface placeholder:text-on-surface/20 focus:ring-0 focus:border-primary focus:shadow-[0_0_15px_rgba(232,168,56,0.15)] transition-all outline-none`} />
-                </div>
-                
+
+                {/* Email */}
                 <div className="relative group">
                   <label className="font-label text-[10px] uppercase tracking-widest text-primary/70 mb-2 block transition-colors group-focus-within:text-primary">Email Address</label>
-                  <input value={form.email} onChange={(e) => setField("email", e.target.value)} type="email" placeholder="curator@atelier.com" className={`w-full bg-surface-container-high border-0 border-b ${errors.email ? 'border-red-500' : 'border-outline-variant'} py-3 px-3 text-on-surface placeholder:text-on-surface/20 focus:ring-0 focus:border-primary focus:shadow-[0_0_15px_rgba(232,168,56,0.15)] transition-all outline-none`} />
+                  <div className="relative">
+                    <Mail className="absolute left-0 top-1/2 -translate-y-1/2 text-on-surface-variant/40" size={18} />
+                    <input value={form.email} onChange={(e) => setField("email", e.target.value)} type="email" placeholder="curator@atelier.com" className={`w-full bg-surface-container-high border-0 border-b ${errors.email ? 'border-red-500' : 'border-outline-variant'} py-3 pl-7 text-on-surface placeholder:text-on-surface/20 focus:ring-0 focus:border-primary focus:shadow-[0_0_15px_rgba(232,168,56,0.15)] transition-all outline-none`} />
+                  </div>
+                  {errors.email && <p className="text-red-400 text-[10px] uppercase font-bold mt-1">{errors.email}</p>}
                 </div>
-                
+
+                {/* Password */}
                 <div className="relative group">
                   <label className="font-label text-[10px] uppercase tracking-widest text-primary/70 mb-2 block transition-colors group-focus-within:text-primary">Password</label>
-                  <input value={form.password} onChange={(e) => setField("password", e.target.value)} type="password" placeholder="••••••••••••" className={`w-full bg-surface-container-high border-0 border-b ${errors.password ? 'border-red-500' : 'border-outline-variant'} py-3 px-3 text-on-surface placeholder:text-on-surface/20 focus:ring-0 focus:border-primary focus:shadow-[0_0_15px_rgba(232,168,56,0.15)] transition-all outline-none`} />
+                  <div className="relative">
+                    <Lock className="absolute left-0 top-1/2 -translate-y-1/2 text-on-surface-variant/40" size={18} />
+                    <input value={form.password} onChange={(e) => setField("password", e.target.value)} type="password" placeholder="••••••••••••" className={`w-full bg-surface-container-high border-0 border-b ${errors.password ? 'border-red-500' : 'border-outline-variant'} py-3 pl-7 text-on-surface placeholder:text-on-surface/20 focus:ring-0 focus:border-primary focus:shadow-[0_0_15px_rgba(232,168,56,0.15)] transition-all outline-none`} />
+                  </div>
+                  {errors.password && <p className="text-red-400 text-[10px] uppercase font-bold mt-1">{errors.password}</p>}
+                </div>
+
+                {/* Confirm Password */}
+                <div className="relative group">
+                  <label className="font-label text-[10px] uppercase tracking-widest text-primary/70 mb-2 block transition-colors group-focus-within:text-primary">Confirm Password</label>
+                  <div className="relative">
+                    <Lock className="absolute left-0 top-1/2 -translate-y-1/2 text-on-surface-variant/40" size={18} />
+                    <input value={form.confirmPassword} onChange={(e) => setField("confirmPassword", e.target.value)} type="password" placeholder="••••••••••••" className={`w-full bg-surface-container-high border-0 border-b ${errors.confirmPassword ? 'border-red-500' : form.confirmPassword && form.confirmPassword === form.password ? 'border-green-500' : 'border-outline-variant'} py-3 pl-7 text-on-surface placeholder:text-on-surface/20 focus:ring-0 focus:border-primary focus:shadow-[0_0_15px_rgba(232,168,56,0.15)] transition-all outline-none`} />
+                    {form.confirmPassword && form.confirmPassword === form.password && (
+                      <span className="absolute right-0 top-1/2 -translate-y-1/2 text-green-400 text-xs">✓</span>
+                    )}
+                  </div>
+                  {errors.confirmPassword && <p className="text-red-400 text-[10px] uppercase font-bold mt-1">{errors.confirmPassword}</p>}
                 </div>
               </div>
 

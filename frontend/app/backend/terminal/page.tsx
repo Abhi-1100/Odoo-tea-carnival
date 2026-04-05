@@ -141,112 +141,121 @@ export default function TerminalPage() {
       </div>
 
       <div className="card p-0 overflow-hidden">
-        <div className="border-b border-brand-border px-4 py-3 flex items-center justify-between relative">
+        <div className="border-b border-brand-border px-4 py-3 flex items-center justify-between">
           <button
             onClick={() => setShowTopMenu((v) => !v)}
-            className="inline-flex items-center gap-2 rounded-lg border border-brand-border bg-brand-bg/50 px-3 py-2 text-sm text-brand-muted hover:text-white hover:border-brand-primary/50 transition-colors"
+            className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors ${
+              showTopMenu
+                ? "border-brand-primary/60 bg-brand-primary/10 text-brand-primary"
+                : "border-brand-border bg-brand-bg/50 text-brand-muted hover:text-white hover:border-brand-primary/50"
+            }`}
           >
             <LayoutGrid size={14} />
             Navigation Menu
           </button>
+        </div>
 
-          {showTopMenu && (
-            <div className="absolute right-4 top-14 z-20 w-[min(880px,calc(100vw-3rem))] rounded-2xl border border-brand-border/70 bg-gradient-to-br from-[#181f34] via-[#171d31] to-[#121827] p-5 shadow-[0_20px_60px_rgba(3,8,23,.55)]">
-              <div className="mb-4 flex items-center justify-between">
-                <div>
-                  <h3 className="text-white text-3xl font-semibold leading-none">Menu</h3>
-                  <p className="mt-1 text-xs text-brand-muted">Jump to core POS modules</p>
-                </div>
-                <button
-                  onClick={() => setShowTopMenu(false)}
-                  className="rounded-md border border-brand-border px-2.5 py-1 text-xs text-brand-muted hover:text-white"
-                >
-                  Close
-                </button>
+        {showTopMenu && (
+          <div className="border-b border-brand-border bg-gradient-to-br from-[#2a1f0e] via-[#1e1612] to-[#14100c] p-6">
+            <div className="mb-5 flex items-center justify-between">
+              <div>
+                <h3 className="text-white text-2xl font-bold font-serif leading-none tracking-tight">
+                  Quick Navigation
+                </h3>
+                <p className="mt-1 text-xs text-brand-muted/70 tracking-wide">Jump to core POS modules</p>
               </div>
+              <button
+                onClick={() => setShowTopMenu(false)}
+                className="rounded-lg border border-brand-border/60 px-3 py-1.5 text-xs text-brand-muted hover:text-white hover:border-brand-primary/50 hover:bg-brand-primary/10 transition-all"
+              >
+                ✕ Close
+              </button>
+            </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                <div className="rounded-xl border border-brand-border/70 bg-brand-bg/30 p-3">
-                  <div className="mb-3 flex items-center gap-2 text-white font-semibold">
-                    <ClipboardList size={14} className="text-brand-primary" />
-                    Orders
-                  </div>
-                  <div className="space-y-2">
-                    <button
-                      onClick={() => navigateTo("/backend/orders")}
-                      className="w-full rounded-lg border border-transparent bg-brand-bg px-3 py-2 text-left text-brand-muted hover:text-white hover:border-brand-primary/40"
-                    >
-                      Orders
-                    </button>
-                    <button
-                      onClick={() => navigateTo("/backend/payments")}
-                      className="w-full rounded-lg border border-transparent px-3 py-2 text-left text-brand-muted hover:text-white hover:border-brand-primary/40 hover:bg-brand-bg/60"
-                    >
-                      Payment
-                    </button>
-                    <button
-                      onClick={() => navigateTo("/backend/customers")}
-                      className="w-full rounded-lg border border-transparent px-3 py-2 text-left text-brand-muted hover:text-white hover:border-brand-primary/40 hover:bg-brand-bg/60"
-                    >
-                      Customer
-                    </button>
-                  </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+              {/* Orders */}
+              <div className="rounded-xl border border-brand-primary/20 bg-brand-primary/5 p-4 hover:border-brand-primary/40 transition-colors">
+                <div className="mb-3 flex items-center gap-2 text-brand-primary font-semibold text-xs uppercase tracking-widest">
+                  <ClipboardList size={14} />
+                  Orders
                 </div>
-
-                <div className="rounded-xl border border-brand-border/70 bg-brand-bg/30 p-3">
-                  <div className="mb-3 flex items-center gap-2 text-white font-semibold">
-                    <Box size={14} className="text-brand-primary" />
-                    Products
-                  </div>
-                  <div className="space-y-2">
-                    <button
-                      onClick={() => navigateTo("/backend/products")}
-                      className="w-full rounded-lg border border-transparent bg-brand-bg px-3 py-2 text-left text-brand-muted hover:text-white hover:border-brand-primary/40"
-                    >
-                      Products
-                    </button>
-                    <button
-                      onClick={() => navigateTo("/backend/categories")}
-                      className="w-full rounded-lg border border-transparent px-3 py-2 text-left text-brand-muted hover:text-white hover:border-brand-primary/40 hover:bg-brand-bg/60"
-                    >
-                      Category
-                    </button>
-                  </div>
-                </div>
-
-                <div className="rounded-xl border border-brand-border/70 bg-brand-bg/30 p-3">
-                  <div className="mb-3 flex items-center gap-2 text-white font-semibold">
-                    <BarChart3 size={14} className="text-brand-primary" />
-                    Reporting
-                  </div>
-                  <div className="space-y-2">
-                    <button
-                      onClick={() => navigateTo("/backend/reports")}
-                      className="w-full rounded-lg border border-transparent bg-brand-bg px-3 py-2 text-left text-brand-muted hover:text-white hover:border-brand-primary/40"
-                    >
-                      Dashboard
-                    </button>
-                  </div>
+                <div className="space-y-1.5">
+                  <button
+                    onClick={() => navigateTo("/backend/orders")}
+                    className="w-full rounded-lg bg-brand-bg/60 border border-brand-border/40 px-3 py-2.5 text-left text-brand-muted hover:text-white hover:border-brand-primary/40 hover:bg-brand-primary/10 transition-all text-sm"
+                  >
+                    📋 Orders
+                  </button>
+                  <button
+                    onClick={() => navigateTo("/backend/payments")}
+                    className="w-full rounded-lg border border-transparent px-3 py-2.5 text-left text-brand-muted hover:text-white hover:border-brand-primary/40 hover:bg-brand-primary/10 transition-all text-sm"
+                  >
+                    💳 Payment
+                  </button>
+                  <button
+                    onClick={() => navigateTo("/backend/customers")}
+                    className="w-full rounded-lg border border-transparent px-3 py-2.5 text-left text-brand-muted hover:text-white hover:border-brand-primary/40 hover:bg-brand-primary/10 transition-all text-sm"
+                  >
+                    👥 Customer
+                  </button>
                 </div>
               </div>
 
-              <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 text-xs text-brand-muted">
-                <div className="rounded-lg bg-brand-bg/40 px-3 py-2 inline-flex items-center gap-2">
-                  <Wallet size={13} />
-                  Billing and payments
+              {/* Products */}
+              <div className="rounded-xl border border-brand-primary/20 bg-brand-primary/5 p-4 hover:border-brand-primary/40 transition-colors">
+                <div className="mb-3 flex items-center gap-2 text-brand-primary font-semibold text-xs uppercase tracking-widest">
+                  <Box size={14} />
+                  Products
                 </div>
-                <div className="rounded-lg bg-brand-bg/40 px-3 py-2 inline-flex items-center gap-2">
-                  <Tags size={13} />
-                  Product and category setup
+                <div className="space-y-1.5">
+                  <button
+                    onClick={() => navigateTo("/backend/products")}
+                    className="w-full rounded-lg bg-brand-bg/60 border border-brand-border/40 px-3 py-2.5 text-left text-brand-muted hover:text-white hover:border-brand-primary/40 hover:bg-brand-primary/10 transition-all text-sm"
+                  >
+                    📦 Products
+                  </button>
+                  <button
+                    onClick={() => navigateTo("/backend/categories")}
+                    className="w-full rounded-lg border border-transparent px-3 py-2.5 text-left text-brand-muted hover:text-white hover:border-brand-primary/40 hover:bg-brand-primary/10 transition-all text-sm"
+                  >
+                    🏷️ Category
+                  </button>
                 </div>
-                <div className="rounded-lg bg-brand-bg/40 px-3 py-2 inline-flex items-center gap-2">
-                  <Users size={13} />
-                  Staff and customer visibility
+              </div>
+
+              {/* Reporting */}
+              <div className="rounded-xl border border-brand-primary/20 bg-brand-primary/5 p-4 hover:border-brand-primary/40 transition-colors">
+                <div className="mb-3 flex items-center gap-2 text-brand-primary font-semibold text-xs uppercase tracking-widest">
+                  <BarChart3 size={14} />
+                  Reporting
+                </div>
+                <div className="space-y-1.5">
+                  <button
+                    onClick={() => navigateTo("/backend/reports")}
+                    className="w-full rounded-lg bg-brand-bg/60 border border-brand-border/40 px-3 py-2.5 text-left text-brand-muted hover:text-white hover:border-brand-primary/40 hover:bg-brand-primary/10 transition-all text-sm"
+                  >
+                    📊 Dashboard
+                  </button>
                 </div>
               </div>
             </div>
-          )}
-        </div>
+
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="rounded-lg border border-brand-border/30 bg-brand-bg/30 px-3 py-2 inline-flex items-center gap-2 text-xs text-brand-muted/60">
+                <Wallet size={12} className="text-brand-primary/60" />
+                Billing and payments
+              </div>
+              <div className="rounded-lg border border-brand-border/30 bg-brand-bg/30 px-3 py-2 inline-flex items-center gap-2 text-xs text-brand-muted/60">
+                <Tags size={12} className="text-brand-primary/60" />
+                Product and category setup
+              </div>
+              <div className="rounded-lg border border-brand-border/30 bg-brand-bg/30 px-3 py-2 inline-flex items-center gap-2 text-xs text-brand-muted/60">
+                <Users size={12} className="text-brand-primary/60" />
+                Staff and customer visibility
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="p-4">
           <div className="border border-brand-border rounded-md p-4 relative">
@@ -269,10 +278,13 @@ export default function TerminalPage() {
                   <MoreVertical size={16} />
                 </button>
                 {showQuickMenu && (
-                  <div className="absolute right-0 top-11 bg-[#1c2131] border border-brand-border rounded-md min-w-[170px] z-20 shadow-lg">
-                    <button onClick={() => router.push("/backend/payment-methods")} className="w-full text-left px-3 py-2 text-brand-muted hover:text-white hover:bg-brand-bg">Setting</button>
-                    <button onClick={() => { setShowQuickMenu(false); router.push("/kitchen"); }} className="w-full text-left px-3 py-2 text-brand-muted hover:text-white hover:bg-brand-bg">Kitchen Display</button>
-                    <button onClick={() => router.push("/pos/customer-display")} className="w-full text-left px-3 py-2 text-brand-muted hover:text-white hover:bg-brand-bg">Customer Display</button>
+                  <div className="absolute right-0 top-11 bg-gradient-to-b from-[#2a1f0e] to-[#1a1410] border border-brand-primary/20 rounded-xl min-w-[190px] z-20 shadow-2xl shadow-black/40 overflow-hidden">
+                    <div className="px-3 pt-3 pb-1.5 text-[10px] uppercase tracking-widest text-brand-primary/60 font-semibold">Quick Links</div>
+                    <button onClick={() => router.push("/backend/payment-methods")} className="w-full text-left px-3 py-2.5 text-brand-muted hover:text-white hover:bg-brand-primary/10 transition-colors text-sm flex items-center gap-2"><span>⚙️</span> Setting</button>
+                    <button onClick={() => { setShowQuickMenu(false); router.push("/kitchen"); }} className="w-full text-left px-3 py-2.5 text-brand-muted hover:text-white hover:bg-brand-primary/10 transition-colors text-sm flex items-center gap-2"><span>🍳</span> Kitchen Display</button>
+                    <button onClick={() => router.push("/pos/customer-display")} className="w-full text-left px-3 py-2.5 text-brand-muted hover:text-white hover:bg-brand-primary/10 transition-colors text-sm flex items-center gap-2"><span>🖥️</span> Customer Display</button>
+                    <div className="h-px bg-brand-border/40 mx-3 my-1" />
+                    <button onClick={() => { setShowQuickMenu(false); router.push("/pos"); }} className="w-full text-left px-3 py-2.5 text-brand-primary/80 hover:text-brand-primary hover:bg-brand-primary/10 transition-colors text-sm flex items-center gap-2 mb-1"><span>🚀</span> Open POS</button>
                   </div>
                 )}
               </div>
