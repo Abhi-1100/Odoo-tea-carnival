@@ -8,6 +8,16 @@ import {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
+export class ApiError extends Error {
+  status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+  }
+}
+
 interface ApiOptions {
   method?: string;
   body?: unknown;
@@ -37,13 +47,13 @@ async function apiFetch<T>(endpoint: string, options: ApiOptions = {}): Promise<
     if (contentType && contentType.includes("application/json")) {
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.message || 'API request failed');
+        throw new ApiError(data.message || 'API request failed', response.status);
       }
       return data;
     }
     
     if (!response.ok) {
-      throw new Error(`API request failed with status ${response.status}`);
+      throw new ApiError(`API request failed with status ${response.status}`, response.status);
     }
     
     return {} as T;

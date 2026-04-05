@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { TrendingUp, Package, ShoppingCart, DollarSign, ArrowRight, Coffee, Loader2 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
 import { useAuthStore } from "@/store/authStore";
-import { api } from "@/lib/api";
+import { ApiError, api } from "@/lib/api";
 
 interface DashboardData {
 	totalSales: number;
@@ -18,9 +18,10 @@ interface DashboardData {
 
 export default function DashboardPage() {
 	const router = useRouter();
-	const { token, isAuthenticated, user, hasHydrated } = useAuthStore();
+	const { token, isAuthenticated, user, hasHydrated, logout } = useAuthStore();
 	const [dashboard, setDashboard] = useState<DashboardData | null>(null);
 	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState<string | null>(null);
 
 	useEffect(() => {
 		if (!hasHydrated) return;
@@ -32,17 +33,26 @@ export default function DashboardPage() {
 
 		const fetchDashboard = async () => {
 			try {
-				const response = await api.reports.dashboard(token, { period: "today" });
+				const response = await api.reports.dashboard(token, { period: "month" });
 				setDashboard(response.data as DashboardData);
+				setError(null);
 			} catch (error) {
 				console.error("Failed to fetch dashboard:", error);
+				const status = error instanceof ApiError ? error.status : undefined;
+				const message = error instanceof Error ? error.message.toLowerCase() : "";
+				if (status === 401 || status === 403 || message.includes("invalid token") || message.includes("token has expired")) {
+					logout();
+					router.replace("/login");
+					return;
+				}
+				setError("Unable to load dashboard stats right now.");
 			} finally {
 				setLoading(false);
 			}
 		};
 
 		fetchDashboard();
-	}, [hasHydrated, isAuthenticated, token, router]);
+	}, [hasHydrated, isAuthenticated, token, router, logout]);
 
 	if (loading) {
 		return (
@@ -94,9 +104,15 @@ export default function DashboardPage() {
 			<div>
 				<h1 className="text-2xl font-bold text-white">Dashboard</h1>
 				<p className="text-brand-muted text-sm mt-1">
-					Welcome back, {user?.name || "Admin"} - here's what's happening today.
+					Welcome back, {user?.name || "Admin"} - here's what's happening this month.
 				</p>
 			</div>
+
+			{error && (
+				<div className="card p-4 border border-red-500/20 bg-red-500/5 text-red-300 text-sm">
+					{error}
+				</div>
+			)}
 
 			<div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
 				{kpis.map((k) => (
@@ -117,7 +133,7 @@ export default function DashboardPage() {
 
 			<div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
 				<div className="card p-6 xl:col-span-2">
-					<h2 className="text-white font-semibold mb-4">Sales This Week</h2>
+					<h2 className="text-white font-semibold mb-4">Sales This Month</h2>
 					{chartData.length > 0 ? (
 						<ResponsiveContainer width="100%" height={200}>
 							<BarChart data={chartData} barSize={32}>
@@ -128,7 +144,7 @@ export default function DashboardPage() {
 							</BarChart>
 						</ResponsiveContainer>
 					) : (
-						<div className="h-[200px] flex items-center justify-center text-brand-muted">No sales data for today</div>
+						<div className="h-[200px] flex items-center justify-center text-brand-muted">No sales data for this month</div>
 					)}
 				</div>
 
