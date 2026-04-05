@@ -78,12 +78,14 @@ export default function SignupPage() {
         <section className="w-full md:w-1/2 flex items-center justify-center p-6 md:p-16 lg:p-24 bg-[#0D0D0B] z-20">
           <div className="w-full max-w-md">
             <header className="mb-12">
-              <div className="flex items-center gap-3 mb-8">
-                <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/30">
-                  <Coffee size={20} className="text-white" />
+              <Link href="/">
+                <div className="flex items-center gap-3 mb-8 cursor-pointer hover:opacity-80 transition-opacity duration-200">
+                  <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/30">
+                    <Coffee size={20} className="text-white" />
+                  </div>
+                  <span className="font-serif italic text-3xl text-primary tracking-tight">Odoo Cafe</span>
                 </div>
-                <span className="font-serif italic text-3xl text-primary tracking-tight">Odoo Cafe</span>
-              </div>
+              </Link>
               <h1 className="font-serif text-5xl text-on-surface mb-3 tracking-tight">Join the Atelier</h1>
               <p className="font-sans text-on-surface/60 text-sm tracking-wide">Start your journey as a culinary curator.</p>
             </header>

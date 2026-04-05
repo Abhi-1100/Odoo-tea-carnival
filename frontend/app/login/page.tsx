@@ -70,12 +70,14 @@ export default function LoginPage() {
         <section className="w-full lg:w-5/12 flex flex-col justify-center items-center px-8 lg:px-24 bg-[#0D0D0B] z-30">
           <div className="w-full max-w-md">
             <header className="mb-12 text-center lg:text-left flex flex-col items-center lg:items-start gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-[#e8a838] rounded-xl flex items-center justify-center shadow-lg shadow-[#e8a838]/30">
-                  <Coffee size={20} className="text-white" />
+              <Link href="/">
+                <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity duration-200">
+                  <div className="w-10 h-10 bg-[#e8a838] rounded-xl flex items-center justify-center shadow-lg shadow-[#e8a838]/30">
+                    <Coffee size={20} className="text-white" />
+                  </div>
+                  <h1 className="font-serif italic text-primary text-4xl tracking-tight">Odoo Cafe</h1>
                 </div>
-                <h1 className="font-serif italic text-primary text-4xl tracking-tight">Odoo Cafe</h1>
-              </div>
+              </Link>
               <p className="font-sans text-on-surface-variant/70 text-base uppercase tracking-[0.2em] font-light">Welcome back, artisan.</p>
             </header>
 

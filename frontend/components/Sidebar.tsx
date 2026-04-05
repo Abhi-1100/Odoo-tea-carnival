@@ -32,15 +32,17 @@ export function Sidebar() {
   return (
     <aside className="fixed left-0 top-0 h-full w-60 bg-brand-card border-r border-brand-border flex flex-col z-30">
       {/* Logo */}
-      <div className="flex items-center gap-3 px-4 py-5 border-b border-brand-border">
-        <div className="w-9 h-9 bg-brand-primary rounded-xl flex items-center justify-center shadow-lg shadow-brand-primary/30">
-          <Coffee size={18} className="text-white" />
+      <Link href="/">
+        <div className="flex items-center gap-3 px-4 py-5 border-b border-brand-border cursor-pointer hover:bg-brand-bg/50 transition-colors duration-150">
+          <div className="w-9 h-9 bg-brand-primary rounded-xl flex items-center justify-center shadow-lg shadow-brand-primary/30">
+            <Coffee size={18} className="text-white" />
+          </div>
+          <div>
+            <div className="text-white font-bold text-sm">Odoo Cafe</div>
+            <div className="text-brand-muted text-xs">Cafe Manager</div>
+          </div>
         </div>
-        <div>
-          <div className="text-white font-bold text-sm">Odoo Cafe</div>
-          <div className="text-brand-muted text-xs">Cafe Manager</div>
-        </div>
-      </div>
+      </Link>
 
       {/* Nav */}
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">

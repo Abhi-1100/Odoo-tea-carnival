@@ -1,10 +1,22 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { ShoppingBag, Menu as MenuIcon, ArrowRight, Instagram, Facebook, Twitter } from 'lucide-react';
+import { setPublicOrderToken } from '../lib/publicOrderSession';
 
 const LandingPage = () => {
+  const searchParams = useSearchParams();
+
+  // Handle token from QR code URL
+  useEffect(() => {
+    const token = searchParams.get('token');
+    if (token) {
+      setPublicOrderToken(token);
+    }
+  }, [searchParams]);
+
   return (
     <div className="min-h-screen bg-brand-card text-brand-muted font-sans selection:bg-brand-primary selection:text-brand-card">
       {/* Navigation */}
@@ -64,7 +76,7 @@ const LandingPage = () => {
               href="/menu"
               className="group flex items-center gap-3 bg-brand-primary text-brand-card px-8 py-4 rounded-full font-bold uppercase tracking-widest hover:bg-brand-primary-hover transition-all"
             >
-              Explore Menu
+              📸 Scan QR to Order
               <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
             </Link>
             <Link

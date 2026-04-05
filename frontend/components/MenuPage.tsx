@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { ChevronLeft, ShoppingBag, Plus, Info, Search, X, Minus, Trash2 } from 'lucide-react';
-import { MOCK_CATEGORIES, MOCK_PRODUCTS } from '../lib/mock-data';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { ChevronLeft, ShoppingBag, Plus, Info, Search, X, Minus, Trash2, Loader } from 'lucide-react';
+import { api, ApiError } from '../lib/api';
+import { getPublicOrderToken, setPublicOrderToken, loadPublicOrderCart, savePublicOrderCart, clearPublicOrderCart } from '../lib/publicOrderSession';
 import toast from 'react-hot-toast';
 
 interface CartItem {
@@ -16,29 +17,127 @@ interface CartItem {
   emoji: string;
 }
 
+interface MenuCategory {
+  id: number | string;
+  name: string;
+  color?: string;
+}
+
+interface MenuProduct {
+  id: number | string;
+  name: string;
+  price: number;
+  categoryId: number | string;
+  image: string | null;
+  description?: string;
+  emoji?: string;
+}
+
 const MenuPage = () => {
   const router = useRouter();
-  const [activeCategory, setActiveCategory] = useState(MOCK_CATEGORIES[0]?.id || 1);
+  const searchParams = useSearchParams();
+  const [token, setToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [categories, setCategories] = useState<MenuCategory[]>([]);
+  const [products, setProducts] = useState<MenuProduct[]>([]);
+  const [restaurantName, setRestaurantName] = useState('COFFEE LEO');
+  const [activeCategory, setActiveCategory] = useState<number | string | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [selectedProduct, setSelectedProduct] = useState<MenuProduct | null>(null);
 
-  // Persistence logic 
+  // Load token from URL or localStorage
+  useEffect(() => {
+    const urlToken = searchParams.get('token');
+    if (urlToken) {
+      setToken(urlToken);
+      setPublicOrderToken(urlToken);
+    } else {
+      const savedToken = getPublicOrderToken();
+      setToken(savedToken);
+    }
+  }, [searchParams]);
+
+  // Load menu data from API
+  useEffect(() => {
+    if (!token) {
+      setLoading(false);
+      setError('No table token found. Please scan QR code.');
+      return;
+    }
+
+    const loadMenu = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Fetch page settings and products
+        const [settingsRes, productsRes] = await Promise.all([
+          api.selfOrder.getPageSettings(token),
+          api.selfOrder.getProductsForPage(token)
+        ]);
+
+        if (settingsRes?.data?.restaurantName) {
+          setRestaurantName(settingsRes.data.restaurantName);
+        }
+
+        setCategories(productsRes?.categories || []);
+        setProducts(productsRes?.products || []);
+        
+        if (productsRes?.categories?.length > 0) {
+          setActiveCategory(productsRes.categories[0].id);
+        }
+        
+        setLoading(false);
+      } catch (err) {
+        console.error('Failed to load menu:', err);
+        if (err instanceof ApiError) {
+          setError(err.message);
+        } else {
+          setError('Failed to load menu. Please try again.');
+        }
+        setLoading(false);
+      }
+    };
+
+    loadMenu();
+  }, [token]);
+
+  // Load cart from localStorage when token changes
+  useEffect(() => {
+    if (token) {
+      const savedCart = loadPublicOrderCart<CartItem>(token);
+      setCart(savedCart);
+    }
+  }, [token]);
+
+  // Save cart to localStorage whenever it changes
+  useEffect(() => {
+    if (token) {
+      savePublicOrderCart(token, cart);
+    }
+  }, [cart, token]);
+
   const handleProceedToCheckout = () => {
     if (cart.length === 0) {
       toast.error('Your bucket is empty');
       return;
     }
-    localStorage.setItem('coffee-leo-cart', JSON.stringify(cart));
-    router.push('/checkout');
+    if (!token) {
+      toast.error('Invalid table token');
+      return;
+    }
+    router.push(`/checkout?token=${token}`);
   };
 
-  const filteredProducts = MOCK_PRODUCTS.filter(p => 
-    p.categoryId === activeCategory && 
-    (p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-     (p.description || '').toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const filteredProducts = products.filter(p => {
+    const categoryMatch = activeCategory === 'all' || p.categoryId === activeCategory;
+    const searchMatch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      (p.description || '').toLowerCase().includes(searchQuery.toLowerCase());
+    return categoryMatch && searchMatch;
+  });
 
   const cartCount = useMemo(() => cart.reduce((acc, item) => acc + item.quantity, 0), [cart]);
   const subtotal = useMemo(() => cart.reduce((acc, item) => acc + (item.price * item.quantity), 0), [cart]);
@@ -105,6 +204,35 @@ const MenuPage = () => {
     }).filter(item => item.quantity > 0));
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#191210] flex items-center justify-center">
+        <div className="text-center">
+          <Loader className="w-12 h-12 text-[#d4af37] animate-spin mx-auto mb-4" />
+          <p className="text-[#f0dfdb]">Loading menu...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#191210] flex items-center justify-center p-6">
+        <div className="max-w-md w-full text-center">
+          <div className="text-4xl mb-4">⚠️</div>
+          <h2 className="text-2xl font-serif text-[#d4af37] mb-4">Oops!</h2>
+          <p className="text-[#f0dfdb] mb-6">{error}</p>
+          <button
+            onClick={() => router.push('/')}
+            className="bg-[#d4af37] text-[#191210] px-6 py-3 rounded-2xl font-bold uppercase tracking-widest hover:bg-[#f2ca50] transition-all"
+          >
+            Back Home
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#191210] text-[#f0dfdb] font-sans selection:bg-[#d4af37] selection:text-[#191210] pb-24">
       {/* Header */}
@@ -116,7 +244,7 @@ const MenuPage = () => {
           </Link>
           
           <div className="flex flex-col items-center">
-            <span className="text-xl font-serif font-bold tracking-tight text-[#d4af37]">Odoo Cafe</span>
+            <span className="text-xl font-serif font-bold tracking-tight text-[#d4af37]">{restaurantName}</span>
             <span className="text-[8px] tracking-[4px] uppercase opacity-40">Menu Selection</span>
           </div>
 
@@ -144,7 +272,20 @@ const MenuPage = () => {
         <div className="sticky top-24 z-40 bg-[#161614]/85 backdrop-blur-xl py-3 px-6 shadow-2xl shadow-[#161614]/20 rounded-full max-w-5xl mx-auto border border-[#d4af37]/20">
         <div className="max-w-7xl mx-auto px-6 overflow-x-auto no-scrollbar scroll-smooth">
           <div className="flex items-center gap-8 min-w-max pb-2">
-            {MOCK_CATEGORIES.map((cat) => (
+            <button
+              onClick={() => setActiveCategory('all')}
+              className={`group relative flex flex-col items-center transition-all ${
+                activeCategory === 'all' ? 'text-[#d4af37]' : 'text-[#f0dfdb]/40 hover:text-[#f0dfdb]/80'
+              }`}
+            >
+              <span className="text-sm font-bold uppercase tracking-[4px] mb-2 opacity-100">
+                All
+              </span>
+              <div className={`h-[2px] bg-[#d4af37] transition-all duration-300 rounded-full ${
+                activeCategory === 'all' ? 'w-full opacity-100' : 'w-0 opacity-0 group-hover:w-4 group-hover:opacity-50'
+              }`} />
+            </button>
+            {categories.map((cat) => (
               <button
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id)}
@@ -179,9 +320,13 @@ const MenuPage = () => {
                     alt={product.name} 
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
-                ) : (
+                ) : product.emoji ? (
                   <div className="w-full h-full flex items-center justify-center text-6xl opacity-50 grayscale group-hover:grayscale-0 transition-all duration-500">
                     {product.emoji}
+                  </div>
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-[#d4af37]/20 to-[#191210] flex items-center justify-center">
+                    <ShoppingBag className="text-[#d4af37] opacity-30" size={48} />
                   </div>
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#191210]/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
